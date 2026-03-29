@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Central de eventos da Santa Casa de Misericordia para cadastro de eventos, categorias e inscricoes."
+  >
+  <title>Central de Eventos | Santa Casa de Misericordia</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero" id="top">
+      <nav class="topbar" aria-label="Navegacao principal">
+        <div class="brand">
+          <span class="brand__eyebrow">Hospital Santa Casa de Misericordia</span>
+          <strong class="brand__title">Central de Eventos</strong>
+        </div>
+
+        <div class="topbar__actions">
+          <a class="ghost-link" href="#admin">Administracao</a>
+          <a class="ghost-link" href="#eventos">Eventos</a>
+          <a class="ghost-link" href="#inscricoes">Inscricoes</a>
+          <button class="ghost-button" id="loadDemoButton" type="button">Inserir demonstracao</button>
+        </div>
+      </nav>
+
+      <div class="hero__content">
+        <div class="hero__copy">
+          <p class="eyebrow">Gestao centralizada de eventos hospitalares</p>
+          <h1>Crie eventos, distribua categorias e acompanhe inscricoes em uma experiencia unica.</h1>
+          <p class="hero__description">
+            Um painel elegante para organizar a agenda institucional da Santa Casa, com visao clara de
+            categorias, vagas e participantes.
+          </p>
+
+          <div class="hero__actions">
+            <a class="button button--primary" href="#admin">Cadastrar evento</a>
+            <a class="button button--secondary" href="#inscricoes">Abrir inscricoes</a>
+          </div>
+        </div>
+
+        <aside class="hero__panel panel">
+          <div class="hero__panel-header">
+            <p class="eyebrow">Panorama rapido</p>
+            <h2>Indicadores da central</h2>
+          </div>
+
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <p class="hero__panel-note">
+            Os dados ficam armazenados no navegador atual, o que facilita demonstracoes e validacao inicial do fluxo.
+          </p>
+        </aside>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="section" id="admin">
+        <div class="section__header">
+          <div>
+            <p class="eyebrow">Painel administrativo</p>
+            <h2>Cadastro de eventos</h2>
+          </div>
+          <p class="section__description">
+            Registre o evento principal e depois adicione quantas categorias forem necessarias diretamente dentro do card.
+          </p>
+        </div>
+
+        <div class="admin-layout">
+          <form class="panel form-panel" id="eventForm">
+            <div class="panel__header">
+              <h3>Novo evento</h3>
+              <p>Preencha os dados obrigatorios para criar o card do evento.</p>
+            </div>
+
+            <div class="form-grid">
+              <label class="field field--full">
+                <span>NOME DO EVENTO</span>
+                <input type="text" name="name" placeholder="Ex.: Semana de Seguranca do Paciente" required>
+              </label>
+
+              <label class="field">
+                <span>DATA/HORA INICIO DO EVENTO</span>
+                <input type="datetime-local" name="start" required>
+              </label>
+
+              <label class="field">
+                <span>DATA/HORA FIM DO EVENTO</span>
+                <input type="datetime-local" name="end" required>
+              </label>
+
+              <label class="field">
+                <span>MATRICULA DO RESPONSAVEL</span>
+                <input type="text" name="managerId" placeholder="Ex.: 458721" required>
+              </label>
+
+              <label class="field">
+                <span>SETOR RESPONSAVEL</span>
+                <input type="text" name="sector" placeholder="Ex.: Educacao Continuada" required>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="button button--primary" type="submit">Criar evento</button>
+              <button class="button button--ghost" type="reset">Limpar formulario</button>
+            </div>
+          </form>
+
+          <aside class="panel info-panel">
+            <div class="panel__header">
+              <h3>Como o fluxo foi pensado</h3>
+            </div>
+
+            <div class="info-stack">
+              <article class="info-card">
+                <span class="info-card__index">01</span>
+                <div>
+                  <h4>Evento principal</h4>
+                  <p>O evento concentra as informacoes institucionais e funciona como contenedor das categorias.</p>
+                </div>
+              </article>
+
+              <article class="info-card">
+                <span class="info-card__index">02</span>
+                <div>
+                  <h4>Categorias ilimitadas</h4>
+                  <p>O administrador pode abrir quantas categorias quiser no mesmo evento, cada uma com suas vagas.</p>
+                </div>
+              </article>
+
+              <article class="info-card">
+                <span class="info-card__index">03</span>
+                <div>
+                  <h4>Inscricao simplificada</h4>
+                  <p>O participante escolhe a categoria e conclui a inscricao informando matricula, setor e contato.</p>
+                </div>
+              </article>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="eventos">
+        <div class="section__header">
+          <div>
+            <p class="eyebrow">Eventos cadastrados</p>
+            <h2>Cards com categorias integradas</h2>
+          </div>
+          <p class="section__description">
+            Cada card reune os detalhes do evento e o cadastro das categorias daquele mesmo evento.
+          </p>
+        </div>
+
+        <div class="event-grid" id="eventsList"></div>
+
+        <div class="empty-state" id="emptyState" hidden>
+          <div class="empty-state__badge">Sem eventos ainda</div>
+          <h3>Comece criando o primeiro evento da central.</h3>
+          <p>Assim que um evento for salvo, ele aparecera aqui com espaco para o cadastro das categorias.</p>
+        </div>
+      </section>
+
+      <section class="section" id="inscricoes">
+        <div class="section__header">
+          <div>
+            <p class="eyebrow">Portal do participante</p>
+            <h2>Inscricoes por categoria</h2>
+          </div>
+          <p class="section__description">
+            O usuario visualiza os eventos ativos, escolhe a categoria desejada e se inscreve em poucos passos.
+          </p>
+        </div>
+
+        <div class="registration-grid" id="registrationList"></div>
+
+        <div class="empty-state" id="registrationEmptyState" hidden>
+          <div class="empty-state__badge">Aguardando categorias</div>
+          <h3>As inscricoes serao liberadas depois do cadastro das categorias.</h3>
+          <p>Cadastre pelo menos uma categoria em um evento para liberar este painel.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Central de Eventos SCMJF</p>
+      <span>Santa Casa de Misericordia | <span id="currentYear"></span></span>
+    </footer>
+  </div>
+
+  <div class="modal" id="enrollmentModal" hidden>
+    <div class="modal__backdrop" data-close-modal="true"></div>
+
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal__close" id="closeModalButton" type="button" aria-label="Fechar formulario">
+        Fechar
+      </button>
+
+      <div class="modal__header">
+        <p class="eyebrow">Nova inscricao</p>
+        <h2 id="modalTitle">Inscricao em categoria</h2>
+        <p id="modalSubtitle"></p>
+      </div>
+
+      <form class="modal__form" id="enrollmentForm">
+        <input type="hidden" name="eventId">
+        <input type="hidden" name="categoryId">
+
+        <label class="field">
+          <span>MATRICULA</span>
+          <input type="text" name="matricula" placeholder="Informe a matricula" required>
+        </label>
+
+        <label class="field">
+          <span>SETOR</span>
+          <input type="text" name="sector" placeholder="Informe o setor" required>
+        </label>
+
+        <label class="field field--full">
+          <span>CONTATO</span>
+          <input type="text" name="contact" placeholder="Telefone, ramal ou e-mail" required>
+        </label>
+
+        <div class="form-actions">
+          <button class="button button--primary" type="submit">Confirmar inscricao</button>
+          <button class="button button--ghost" id="cancelModalButton" type="button">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
