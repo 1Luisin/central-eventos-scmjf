@@ -89,6 +89,10 @@ button {
   padding: 20px 0 48px;
 }
 
+.page-shell--narrow {
+  width: min(calc(100% - 32px), 1100px);
+}
+
 .hero,
 .section,
 .footer,
@@ -181,8 +185,16 @@ button {
   gap: 28px;
 }
 
+.hero__content--single {
+  grid-template-columns: 1fr 0.9fr;
+}
+
 .hero__copy {
   padding: 22px 8px 12px;
+}
+
+.hero__copy--compact h1 {
+  max-width: 14ch;
 }
 
 .hero__copy h1,
@@ -345,9 +357,44 @@ button {
   gap: 24px;
 }
 
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
 .form-panel,
 .info-panel {
   padding: 24px;
+}
+
+.action-card,
+.summary-card {
+  padding: 24px;
+}
+
+.action-card h3,
+.summary-card h3 {
+  margin: 16px 0 10px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+
+.action-card p,
+.summary-card__meta {
+  margin: 0;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.action-card__actions,
+.summary-card__actions,
+.event-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .panel__header {
@@ -398,6 +445,26 @@ button {
   resize: vertical;
 }
 
+.inline-note {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  color: var(--text-soft);
+  background: rgba(179, 92, 104, 0.08);
+  border: 1px dashed rgba(179, 92, 104, 0.18);
+}
+
+.category-fieldset {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  border: none;
+}
+
+.category-fieldset:disabled {
+  opacity: 0.56;
+}
+
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
@@ -435,7 +502,8 @@ button {
 }
 
 .event-grid,
-.registration-grid {
+.registration-grid,
+.summary-grid {
   display: grid;
   gap: 22px;
 }
@@ -658,6 +726,24 @@ button {
   gap: 14px;
 }
 
+.summary-card {
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(179, 92, 104, 0.12);
+}
+
+.summary-card--selected {
+  border-color: rgba(179, 92, 104, 0.32);
+  box-shadow: 0 14px 30px rgba(96, 45, 53, 0.12);
+}
+
+.summary-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
 .public-category-actions {
   display: flex;
   justify-content: space-between;
@@ -787,7 +873,9 @@ button {
 
 @media (max-width: 960px) {
   .hero__content,
+  .hero__content--single,
   .admin-layout,
+  .action-grid,
   .section__header {
     grid-template-columns: 1fr;
     display: grid;
@@ -801,7 +889,8 @@ button {
   .footer,
   .public-category-actions,
   .event-card__header,
-  .registration-card__header {
+  .registration-card__header,
+  .summary-card__head {
     flex-direction: column;
     align-items: start;
   }

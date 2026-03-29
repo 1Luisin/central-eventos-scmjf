@@ -1,13 +1,23 @@
 const STORAGE_KEY = "scmjf-central-eventos-v1";
 
-const eventForm = document.querySelector("#eventForm");
+const statsGrid = document.querySelector("#statsGrid");
 const eventsList = document.querySelector("#eventsList");
 const registrationList = document.querySelector("#registrationList");
 const emptyState = document.querySelector("#emptyState");
 const registrationEmptyState = document.querySelector("#registrationEmptyState");
-const statsGrid = document.querySelector("#statsGrid");
 const loadDemoButton = document.querySelector("#loadDemoButton");
 const currentYear = document.querySelector("#currentYear");
+
+const eventForm = document.querySelector("#eventForm");
+const categoryRegistrationForm = document.querySelector("#categoryRegistrationForm");
+const categoryEventSelect = document.querySelector("#categoryEventSelect");
+const categoryFieldset = document.querySelector("#categoryFieldset");
+const categoryFormEmptyState = document.querySelector("#categoryFormEmptyState");
+const eventSummaryList = document.querySelector("#eventSummaryList");
+const categorySubmitButton = categoryRegistrationForm
+  ? categoryRegistrationForm.querySelector('button[type="submit"]')
+  : null;
+
 const enrollmentModal = document.querySelector("#enrollmentModal");
 const enrollmentForm = document.querySelector("#enrollmentForm");
 const modalSubtitle = document.querySelector("#modalSubtitle");
@@ -16,26 +26,55 @@ const cancelModalButton = document.querySelector("#cancelModalButton");
 const toastStack = document.querySelector("#toastStack");
 
 const state = {
-  events: loadEvents(),
+  events: loadEvents().sort(sortEventsByStart),
 };
 
 bindEvents();
 render();
 
 function bindEvents() {
-  currentYear.textContent = String(new Date().getFullYear());
+  if (currentYear) {
+    currentYear.textContent = String(new Date().getFullYear());
+  }
 
-  eventForm.addEventListener("submit", handleEventSubmit);
-  eventsList.addEventListener("submit", handleCategorySubmit);
-  registrationList.addEventListener("click", handleRegistrationActions);
-  loadDemoButton.addEventListener("click", handleLoadDemo);
-  enrollmentForm.addEventListener("submit", handleEnrollmentSubmit);
-  closeModalButton.addEventListener("click", closeEnrollmentModal);
-  cancelModalButton.addEventListener("click", closeEnrollmentModal);
-  enrollmentModal.addEventListener("click", handleModalBackdropClick);
+  if (eventForm) {
+    eventForm.addEventListener("submit", handleEventSubmit);
+  }
+
+  if (categoryRegistrationForm) {
+    categoryRegistrationForm.addEventListener("submit", handleCategoryRegistrationSubmit);
+  }
+
+  if (categoryEventSelect) {
+    categoryEventSelect.addEventListener("change", handleCategoryEventChange);
+  }
+
+  if (registrationList) {
+    registrationList.addEventListener("click", handleRegistrationActions);
+  }
+
+  if (loadDemoButton) {
+    loadDemoButton.addEventListener("click", handleLoadDemo);
+  }
+
+  if (enrollmentForm) {
+    enrollmentForm.addEventListener("submit", handleEnrollmentSubmit);
+  }
+
+  if (closeModalButton) {
+    closeModalButton.addEventListener("click", closeEnrollmentModal);
+  }
+
+  if (cancelModalButton) {
+    cancelModalButton.addEventListener("click", closeEnrollmentModal);
+  }
+
+  if (enrollmentModal) {
+    enrollmentModal.addEventListener("click", handleModalBackdropClick);
+  }
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !enrollmentModal.hidden) {
+    if (event.key === "Escape" && enrollmentModal && !enrollmentModal.hidden) {
       closeEnrollmentModal();
     }
   });
@@ -66,30 +105,33 @@ function handleEventSubmit(event) {
 
   state.events = [newEvent, ...state.events].sort(sortEventsByStart);
   persist();
-  render();
   eventForm.reset();
-  showToast("Evento criado com sucesso.");
-  document.querySelector("#eventos").scrollIntoView({ behavior: "smooth", block: "start" });
-}
 
-function handleCategorySubmit(event) {
-  const form = event.target;
-
-  if (!form.matches(".category-form")) {
-    return;
+  if (categoryEventSelect) {
+    syncCategorySelection(newEvent.id);
   }
 
+  render();
+  showToast("Evento criado com sucesso.");
+
+  if (categoryRegistrationForm) {
+    window.location.hash = "categorias";
+    focusCategoryNameField();
+  }
+}
+
+function handleCategoryRegistrationSubmit(event) {
   event.preventDefault();
 
-  const eventId = form.dataset.eventId;
+  const formData = new FormData(categoryRegistrationForm);
+  const eventId = String(formData.get("eventId") || "");
   const eventItem = state.events.find((item) => item.id === eventId);
 
   if (!eventItem) {
-    showToast("Nao foi possivel localizar o evento para cadastrar a categoria.", "error");
+    showToast("Selecione um evento valido para vincular a categoria.", "error");
     return;
   }
 
-  const formData = new FormData(form);
   const capacity = Number(formData.get("capacity"));
 
   if (!Number.isInteger(capacity) || capacity <= 0) {
@@ -109,9 +151,16 @@ function handleCategorySubmit(event) {
 
   eventItem.categories = [...eventItem.categories, category];
   persist();
+  categoryRegistrationForm.reset();
+  syncCategorySelection(eventId);
   render();
-  form.reset();
-  showToast("Categoria adicionada ao evento.");
+  focusCategoryNameField();
+  showToast("Categoria adicionada ao evento selecionado.");
+}
+
+function handleCategoryEventChange() {
+  syncCategorySelection(categoryEventSelect.value);
+  render();
 }
 
 function handleRegistrationActions(event) {
@@ -147,7 +196,6 @@ function handleEnrollmentSubmit(event) {
   }
 
   const matricula = String(formData.get("matricula") || "").trim();
-
   const alreadyRegistered = found.category.subscriptions.some(
     (subscription) => subscription.matricula.toLowerCase() === matricula.toLowerCase(),
   );
@@ -239,11 +287,20 @@ function handleLoadDemo() {
 
   state.events = [demoEvent, ...state.events].sort(sortEventsByStart);
   persist();
+
+  if (categoryEventSelect && !getRequestedManagementEventId()) {
+    syncCategorySelection(demoEvent.id);
+  }
+
   render();
   showToast("Demonstracao inserida para facilitar a validacao do layout.");
 }
 
 function openEnrollmentModal(eventId, categoryId) {
+  if (!enrollmentModal || !enrollmentForm || !modalSubtitle) {
+    return;
+  }
+
   const found = findCategory(eventId, categoryId);
 
   if (!found) {
@@ -265,6 +322,10 @@ function openEnrollmentModal(eventId, categoryId) {
 }
 
 function closeEnrollmentModal() {
+  if (!enrollmentModal) {
+    return;
+  }
+
   enrollmentModal.hidden = true;
   document.body.classList.remove("modal-open");
 }
@@ -277,11 +338,16 @@ function handleModalBackdropClick(event) {
 
 function render() {
   renderStats();
-  renderEvents();
+  renderEventsDashboard();
   renderRegistrationCards();
+  renderManagementPage();
 }
 
 function renderStats() {
+  if (!statsGrid) {
+    return;
+  }
+
   const totalEvents = state.events.length;
   const totalCategories = state.events.reduce((total, eventItem) => total + eventItem.categories.length, 0);
   const totalSubscriptions = state.events.reduce(
@@ -318,7 +384,11 @@ function renderStats() {
     .join("");
 }
 
-function renderEvents() {
+function renderEventsDashboard() {
+  if (!eventsList || !emptyState) {
+    return;
+  }
+
   if (state.events.length === 0) {
     eventsList.innerHTML = "";
     emptyState.hidden = false;
@@ -344,9 +414,7 @@ function renderEvents() {
               </p>
             </div>
 
-            <div class="metric-pill">
-              ${eventItem.categories.length} categoria(s)
-            </div>
+            <div class="metric-pill">${eventItem.categories.length} categoria(s)</div>
           </div>
 
           <div class="event-card__detail-list">
@@ -359,43 +427,11 @@ function renderEvents() {
               ${categoriesMarkup}
             </div>
 
-            <form class="category-form" data-event-id="${eventItem.id}">
-              <h4>Adicionar categoria</h4>
-              <p>As categorias cadastradas aqui ficarao visiveis dentro deste mesmo card de evento.</p>
-
-              <div class="category-form__grid">
-                <label class="field field--full">
-                  <span>NOME DA CATEGORIA</span>
-                  <input type="text" name="name" placeholder="Ex.: Minicurso de Atualizacao Clinica" required>
-                </label>
-
-                <label class="field">
-                  <span>QUANTOS PODEM SE INSCREVER (VAGAS)</span>
-                  <input type="number" name="capacity" min="1" step="1" placeholder="Ex.: 30" required>
-                </label>
-
-                <label class="field">
-                  <span>SE E PERMITIDO INSCRICOES EXTERNAS (S/N)</span>
-                  <select name="allowExternal" required>
-                    <option value="nao">N</option>
-                    <option value="sim">S</option>
-                  </select>
-                </label>
-
-                <label class="field field--full">
-                  <span>DESCRICAO DA CATEGORIA</span>
-                  <textarea
-                    name="description"
-                    placeholder="Descreva objetivo, publico e formato da categoria"
-                    required
-                  ></textarea>
-                </label>
-              </div>
-
-              <div class="form-actions">
-                <button class="button button--primary" type="submit">Salvar categoria</button>
-              </div>
-            </form>
+            <div class="event-card__actions">
+              <a class="button button--primary" href="cadastro.html?eventId=${eventItem.id}#categorias">
+                Cadastrar categoria neste evento
+              </a>
+            </div>
           </div>
         </article>
       `;
@@ -456,6 +492,10 @@ function renderAdminCategoryCard(category) {
 }
 
 function renderRegistrationCards() {
+  if (!registrationList || !registrationEmptyState) {
+    return;
+  }
+
   const eventsWithCategories = state.events.filter((eventItem) => eventItem.categories.length > 0);
 
   if (eventsWithCategories.length === 0) {
@@ -546,6 +586,150 @@ function renderPublicCategoryCard(eventItem, category) {
       </div>
     </article>
   `;
+}
+
+function renderManagementPage() {
+  if (!categoryRegistrationForm || !categoryEventSelect || !categoryFieldset || !categoryFormEmptyState) {
+    return;
+  }
+
+  const hasEvents = state.events.length > 0;
+  const selectedEventId = hasEvents ? getRequestedManagementEventId() : "";
+
+  if (!hasEvents) {
+    categoryEventSelect.innerHTML = '<option value="">Nenhum evento cadastrado</option>';
+    categoryFieldset.disabled = true;
+    categoryFormEmptyState.hidden = false;
+    if (categorySubmitButton) {
+      categorySubmitButton.disabled = true;
+    }
+  } else {
+    categoryEventSelect.innerHTML = state.events
+      .map(
+        (eventItem) => `
+          <option value="${eventItem.id}">
+            ${escapeHtml(eventItem.name)} | ${escapeHtml(formatShortDate(eventItem.start))}
+          </option>
+        `,
+      )
+      .join("");
+
+    categoryEventSelect.value = selectedEventId;
+    categoryFieldset.disabled = false;
+    categoryFormEmptyState.hidden = true;
+    if (categorySubmitButton) {
+      categorySubmitButton.disabled = false;
+    }
+    updateManagementUrl(selectedEventId);
+  }
+
+  renderManagementSummary(selectedEventId);
+}
+
+function renderManagementSummary(selectedEventId) {
+  if (!eventSummaryList) {
+    return;
+  }
+
+  if (state.events.length === 0) {
+    eventSummaryList.innerHTML = `
+      <div class="empty-card">
+        Nenhum evento cadastrado ainda. Use o formulario acima para criar o primeiro evento antes de abrir categorias.
+      </div>
+    `;
+    return;
+  }
+
+  eventSummaryList.innerHTML = state.events
+    .map((eventItem) => {
+      const selectedClass = eventItem.id === selectedEventId ? " summary-card--selected" : "";
+      const buttonClass = eventItem.id === selectedEventId ? "button button--primary" : "button button--ghost";
+
+      return `
+        <article class="summary-card${selectedClass}">
+          <div class="summary-card__head">
+            <div>
+              <span class="card-badge">Evento disponivel</span>
+              <h3>${escapeHtml(eventItem.name)}</h3>
+              <p class="summary-card__meta">
+                ${escapeHtml(formatDateTime(eventItem.start))} ate ${escapeHtml(formatDateTime(eventItem.end))}
+              </p>
+            </div>
+
+            <span class="metric-pill">${eventItem.categories.length} categoria(s)</span>
+          </div>
+
+          <div class="summary-card__actions">
+            <a class="${buttonClass}" href="cadastro.html?eventId=${eventItem.id}#categorias">
+              ${eventItem.id === selectedEventId ? "Evento selecionado" : "Usar neste cadastro"}
+            </a>
+            <a class="button button--secondary" href="index.html#eventos">Ver no painel</a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function getRequestedManagementEventId() {
+  const requestedId = new URLSearchParams(window.location.search).get("eventId");
+
+  if (requestedId && state.events.some((eventItem) => eventItem.id === requestedId)) {
+    return requestedId;
+  }
+
+  if (categoryEventSelect && state.events.some((eventItem) => eventItem.id === categoryEventSelect.value)) {
+    return categoryEventSelect.value;
+  }
+
+  return state.events[0] ? state.events[0].id : "";
+}
+
+function syncCategorySelection(eventId) {
+  if (!categoryEventSelect) {
+    return;
+  }
+
+  const validEventId = state.events.some((eventItem) => eventItem.id === eventId)
+    ? eventId
+    : state.events[0]
+      ? state.events[0].id
+      : "";
+
+  categoryEventSelect.value = validEventId;
+  updateManagementUrl(validEventId);
+}
+
+function updateManagementUrl(eventId) {
+  if (!categoryEventSelect) {
+    return;
+  }
+
+  try {
+    const url = new URL(window.location.href);
+
+    if (eventId) {
+      url.searchParams.set("eventId", eventId);
+    } else {
+      url.searchParams.delete("eventId");
+    }
+
+    history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function focusCategoryNameField() {
+  if (!categoryRegistrationForm) {
+    return;
+  }
+
+  const categoryNameField = categoryRegistrationForm.querySelector('input[name="name"]');
+
+  if (categoryNameField) {
+    categoryNameField.focus();
+  }
 }
 
 function findCategory(eventId, categoryId) {
@@ -651,38 +835,38 @@ function sortEventsByStart(first, second) {
 }
 
 function normalizeEvent(eventItem) {
-  const categories = Array.isArray(eventItem?.categories) ? eventItem.categories.map(normalizeCategory) : [];
+  const categories = Array.isArray(eventItem && eventItem.categories) ? eventItem.categories.map(normalizeCategory) : [];
 
   return {
-    id: String(eventItem?.id || createId("evt")),
-    name: String(eventItem?.name || "Evento sem nome"),
-    start: String(eventItem?.start || ""),
-    end: String(eventItem?.end || ""),
-    managerId: String(eventItem?.managerId || ""),
-    sector: String(eventItem?.sector || ""),
-    createdAt: String(eventItem?.createdAt || new Date().toISOString()),
+    id: String((eventItem && eventItem.id) || createId("evt")),
+    name: String((eventItem && eventItem.name) || "Evento sem nome"),
+    start: String((eventItem && eventItem.start) || ""),
+    end: String((eventItem && eventItem.end) || ""),
+    managerId: String((eventItem && eventItem.managerId) || ""),
+    sector: String((eventItem && eventItem.sector) || ""),
+    createdAt: String((eventItem && eventItem.createdAt) || new Date().toISOString()),
     categories,
   };
 }
 
 function normalizeCategory(category) {
-  const subscriptions = Array.isArray(category?.subscriptions)
+  const subscriptions = Array.isArray(category && category.subscriptions)
     ? category.subscriptions.map((subscription) => ({
-        id: String(subscription?.id || createId("sub")),
-        matricula: String(subscription?.matricula || ""),
-        sector: String(subscription?.sector || ""),
-        contact: String(subscription?.contact || ""),
-        createdAt: String(subscription?.createdAt || new Date().toISOString()),
+        id: String((subscription && subscription.id) || createId("sub")),
+        matricula: String((subscription && subscription.matricula) || ""),
+        sector: String((subscription && subscription.sector) || ""),
+        contact: String((subscription && subscription.contact) || ""),
+        createdAt: String((subscription && subscription.createdAt) || new Date().toISOString()),
       }))
     : [];
 
   return {
-    id: String(category?.id || createId("cat")),
-    name: String(category?.name || "Categoria sem nome"),
-    capacity: Math.max(Number(category?.capacity) || 0, 0),
-    allowExternal: Boolean(category?.allowExternal),
-    description: String(category?.description || ""),
-    createdAt: String(category?.createdAt || new Date().toISOString()),
+    id: String((category && category.id) || createId("cat")),
+    name: String((category && category.name) || "Categoria sem nome"),
+    capacity: Math.max(Number(category && category.capacity) || 0, 0),
+    allowExternal: Boolean(category && category.allowExternal),
+    description: String((category && category.description) || ""),
+    createdAt: String((category && category.createdAt) || new Date().toISOString()),
     subscriptions,
   };
 }
@@ -697,6 +881,10 @@ function escapeHtml(value) {
 }
 
 function showToast(message, tone = "success") {
+  if (!toastStack) {
+    return;
+  }
+
   const toast = document.createElement("div");
   toast.className = `toast ${tone === "success" ? "" : `toast--${tone}`}`.trim();
   toast.textContent = message;

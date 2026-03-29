@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Tela de cadastro de eventos e categorias da Santa Casa de Misericordia."
+  >
+  <title>Cadastros | Central de Eventos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell page-shell--narrow">
+    <header class="hero hero--compact" id="top">
+      <nav class="topbar" aria-label="Navegacao principal">
+        <div class="brand">
+          <span class="brand__eyebrow">Hospital Santa Casa de Misericordia</span>
+          <strong class="brand__title">Central de Eventos</strong>
+        </div>
+
+        <div class="topbar__actions">
+          <a class="ghost-link" href="index.html">Painel principal</a>
+          <a class="ghost-link" href="#evento">Novo evento</a>
+          <a class="ghost-link" href="#categorias">Nova categoria</a>
+          <button class="ghost-button" id="loadDemoButton" type="button">Inserir demonstracao</button>
+        </div>
+      </nav>
+
+      <div class="hero__content hero__content--single">
+        <div class="hero__copy hero__copy--compact">
+          <p class="eyebrow">Tela de cadastro</p>
+          <h1>Registre eventos e categorias fora do painel principal.</h1>
+          <p class="hero__description">
+            Depois do cadastro, volte ao painel principal para acompanhar os cards, as categorias criadas
+            e as inscricoes realizadas.
+          </p>
+
+          <div class="hero__actions">
+            <a class="button button--primary" href="#evento">Cadastrar evento</a>
+            <a class="button button--secondary" href="index.html">Voltar ao painel</a>
+          </div>
+        </div>
+
+        <aside class="hero__panel panel">
+          <div class="hero__panel-header">
+            <p class="eyebrow">Panorama rapido</p>
+            <h2>Indicadores da central</h2>
+          </div>
+
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <p class="hero__panel-note">
+            Se ainda nao houver eventos, cadastre um primeiro evento abaixo para liberar o formulario de categorias.
+          </p>
+        </aside>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="section" id="evento">
+        <div class="section__header">
+          <div>
+            <p class="eyebrow">Cadastro principal</p>
+            <h2>Novo evento</h2>
+          </div>
+          <p class="section__description">
+            Preencha os dados institucionais do evento e depois siga para o cadastro das categorias.
+          </p>
+        </div>
+
+        <div class="admin-layout">
+          <form class="panel form-panel" id="eventForm">
+            <div class="panel__header">
+              <h3>Registrar evento</h3>
+              <p>Os eventos criados aqui vao aparecer automaticamente no painel principal.</p>
+            </div>
+
+            <div class="form-grid">
+              <label class="field field--full">
+                <span>NOME DO EVENTO</span>
+                <input type="text" name="name" placeholder="Ex.: Semana de Seguranca do Paciente" required>
+              </label>
+
+              <label class="field">
+                <span>DATA/HORA INICIO DO EVENTO</span>
+                <input type="datetime-local" name="start" required>
+              </label>
+
+              <label class="field">
+                <span>DATA/HORA FIM DO EVENTO</span>
+                <input type="datetime-local" name="end" required>
+              </label>
+
+              <label class="field">
+                <span>MATRICULA DO RESPONSAVEL</span>
+                <input type="text" name="managerId" placeholder="Ex.: 458721" required>
+              </label>
+
+              <label class="field">
+                <span>SETOR RESPONSAVEL</span>
+                <input type="text" name="sector" placeholder="Ex.: Educacao Continuada" required>
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <button class="button button--primary" type="submit">Salvar evento</button>
+              <button class="button button--ghost" type="reset">Limpar formulario</button>
+            </div>
+          </form>
+
+          <aside class="panel info-panel">
+            <div class="panel__header">
+              <h3>Fluxo recomendado</h3>
+              <p>Use esta sequencia para manter o cadastro organizado.</p>
+            </div>
+
+            <div class="info-stack">
+              <article class="info-card">
+                <span class="info-card__index">01</span>
+                <div>
+                  <h4>Crie o evento</h4>
+                  <p>Salve os dados institucionais para gerar a base do evento no sistema.</p>
+                </div>
+              </article>
+
+              <article class="info-card">
+                <span class="info-card__index">02</span>
+                <div>
+                  <h4>Adicione categorias</h4>
+                  <p>Selecione o evento desejado e cadastre uma ou varias categorias para ele.</p>
+                </div>
+              </article>
+
+              <article class="info-card">
+                <span class="info-card__index">03</span>
+                <div>
+                  <h4>Volte ao painel</h4>
+                  <p>Consulte os cards e acompanhe as inscricoes no painel principal.</p>
+                </div>
+              </article>
+            </div>
+
+            <div class="form-actions">
+              <a class="button button--secondary" href="index.html">Voltar ao painel</a>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="categorias">
+        <div class="section__header">
+          <div>
+            <p class="eyebrow">Categorias do evento</p>
+            <h2>Nova categoria</h2>
+          </div>
+          <p class="section__description">
+            Selecione um evento existente e vincule a categoria diretamente a ele.
+          </p>
+        </div>
+
+        <div class="admin-layout">
+          <form class="panel form-panel" id="categoryRegistrationForm">
+            <div class="panel__header">
+              <h3>Registrar categoria</h3>
+              <p>O administrador pode cadastrar quantas categorias quiser dentro do mesmo evento.</p>
+            </div>
+
+            <div class="inline-note" id="categoryFormEmptyState" hidden>
+              Cadastre um evento primeiro para liberar o formulario de categorias.
+            </div>
+
+            <fieldset class="category-fieldset" id="categoryFieldset">
+              <div class="form-grid">
+                <label class="field field--full">
+                  <span>EVENTO DO CADASTRO</span>
+                  <select name="eventId" id="categoryEventSelect" required></select>
+                </label>
+
+                <label class="field field--full">
+                  <span>NOME DA CATEGORIA</span>
+                  <input type="text" name="name" placeholder="Ex.: Oficina de Humanizacao" required>
+                </label>
+
+                <label class="field">
+                  <span>QUANTOS PODEM SE INSCREVER (VAGAS)</span>
+                  <input type="number" name="capacity" min="1" step="1" placeholder="Ex.: 30" required>
+                </label>
+
+                <label class="field">
+                  <span>SE E PERMITIDO INSCRICOES EXTERNAS (S/N)</span>
+                  <select name="allowExternal" required>
+                    <option value="nao">N</option>
+                    <option value="sim">S</option>
+                  </select>
+                </label>
+
+                <label class="field field--full">
+                  <span>DESCRICAO DA CATEGORIA</span>
+                  <textarea
+                    name="description"
+                    placeholder="Descreva o objetivo, o publico e o formato da categoria"
+                    required
+                  ></textarea>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="form-actions">
+              <button class="button button--primary" type="submit">Salvar categoria</button>
+              <a class="button button--ghost" href="index.html">Voltar ao painel</a>
+            </div>
+          </form>
+
+          <aside class="panel info-panel">
+            <div class="panel__header">
+              <h3>Eventos disponiveis</h3>
+              <p>Escolha um evento abaixo para abrir o cadastro da categoria ja com ele selecionado.</p>
+            </div>
+
+            <div class="summary-grid" id="eventSummaryList"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Central de Eventos SCMJF</p>
+      <span>Santa Casa de Misericordia | <span id="currentYear"></span></span>
+    </footer>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
