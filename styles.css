@@ -1,19 +1,19 @@
 :root {
-  --bg: #f4ede3;
-  --surface: rgba(255, 252, 247, 0.82);
-  --surface-strong: #fffaf1;
-  --surface-contrast: #f1e4d2;
-  --text: #17342e;
-  --text-soft: #5f7069;
-  --line: rgba(23, 52, 46, 0.12);
-  --primary: #12695d;
-  --primary-strong: #0a4941;
-  --accent: #cb6845;
-  --accent-soft: #efd8c7;
-  --warning: #c98d27;
-  --success-soft: #dcefe6;
-  --shadow-lg: 0 26px 70px rgba(11, 48, 43, 0.14);
-  --shadow-md: 0 18px 42px rgba(11, 48, 43, 0.1);
+  --bg: #f6eeea;
+  --surface: rgba(255, 250, 248, 0.84);
+  --surface-strong: #fff8f6;
+  --surface-contrast: #f4dfda;
+  --text: #4f2b30;
+  --text-soft: #7b5d62;
+  --line: rgba(108, 54, 61, 0.14);
+  --primary: #b35c68;
+  --primary-strong: #8b414d;
+  --accent: #cf9385;
+  --accent-soft: #f2deda;
+  --warning: #c7a07c;
+  --success-soft: #f0e0dc;
+  --shadow-lg: 0 26px 70px rgba(96, 45, 53, 0.16);
+  --shadow-md: 0 18px 42px rgba(96, 45, 53, 0.12);
   --radius-xl: 32px;
   --radius-lg: 24px;
   --radius-md: 18px;
@@ -35,9 +35,9 @@ body {
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(18, 105, 93, 0.18), transparent 28%),
-    radial-gradient(circle at 88% 14%, rgba(203, 104, 69, 0.14), transparent 24%),
-    linear-gradient(180deg, #f8f2e9 0%, #f2e6d7 48%, #efe5dc 100%);
+    radial-gradient(circle at top left, rgba(179, 92, 104, 0.22), transparent 30%),
+    radial-gradient(circle at 88% 14%, rgba(207, 147, 133, 0.18), transparent 24%),
+    linear-gradient(180deg, #fcf3f1 0%, #f7ece8 48%, #f3e5e2 100%);
 }
 
 body::before,
@@ -50,8 +50,8 @@ body::after {
 
 body::before {
   background-image:
-    linear-gradient(rgba(23, 52, 46, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23, 52, 46, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(108, 54, 61, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108, 54, 61, 0.04) 1px, transparent 1px);
   background-size: 54px 54px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 88%);
 }
@@ -103,7 +103,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.36);
   border-radius: 40px;
   background:
-    linear-gradient(135deg, rgba(255, 251, 246, 0.86), rgba(255, 247, 238, 0.72)),
+    linear-gradient(135deg, rgba(255, 250, 248, 0.9), rgba(251, 242, 240, 0.76)),
     rgba(255, 255, 255, 0.3);
   box-shadow: var(--shadow-lg);
   backdrop-filter: blur(18px);
@@ -118,7 +118,7 @@ button {
   top: -90px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, rgba(18, 105, 93, 0.22), rgba(18, 105, 93, 0.02) 64%),
+    radial-gradient(circle at center, rgba(179, 92, 104, 0.24), rgba(179, 92, 104, 0.03) 64%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
 }
 
@@ -171,7 +171,7 @@ button {
 .ghost-link:hover,
 .ghost-button:hover {
   transform: translateY(-2px);
-  border-color: rgba(18, 105, 93, 0.36);
+  border-color: rgba(179, 92, 104, 0.36);
   background: rgba(255, 255, 255, 0.62);
 }
 
@@ -253,14 +253,14 @@ button {
 .button--primary {
   color: #fdfaf4;
   background: linear-gradient(135deg, var(--primary), var(--primary-strong));
-  box-shadow: 0 16px 28px rgba(18, 105, 93, 0.28);
+  box-shadow: 0 16px 28px rgba(179, 92, 104, 0.28);
 }
 
 .button--secondary,
 .button--ghost {
   color: var(--primary-strong);
   background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(18, 105, 93, 0.16);
+  border: 1px solid rgba(179, 92, 104, 0.16);
 }
 
 .panel,
@@ -297,7 +297,7 @@ button {
   padding: 18px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(18, 105, 93, 0.12);
+  border: 1px solid rgba(179, 92, 104, 0.12);
 }
 
 .stat-card strong {
@@ -386,7 +386,7 @@ button {
 .field select {
   width: 100%;
   padding: 14px 16px;
-  border: 1px solid rgba(18, 105, 93, 0.16);
+  border: 1px solid rgba(179, 92, 104, 0.16);
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.82);
   color: var(--text);
@@ -402,8 +402,8 @@ button {
 .field textarea:focus,
 .field select:focus {
   outline: none;
-  border-color: rgba(18, 105, 93, 0.45);
-  box-shadow: 0 0 0 4px rgba(18, 105, 93, 0.12);
+  border-color: rgba(179, 92, 104, 0.42);
+  box-shadow: 0 0 0 4px rgba(179, 92, 104, 0.12);
   background: #fffefb;
 }
 
@@ -419,7 +419,7 @@ button {
   padding: 18px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(18, 105, 93, 0.12);
+  border: 1px solid rgba(179, 92, 104, 0.12);
 }
 
 .info-card__index {
@@ -459,7 +459,7 @@ button {
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(18, 105, 93, 0.15), rgba(18, 105, 93, 0.02) 68%);
+  background: radial-gradient(circle at center, rgba(179, 92, 104, 0.16), rgba(179, 92, 104, 0.02) 68%);
 }
 
 .event-card__header,
@@ -495,22 +495,22 @@ button {
 
 .card-badge {
   color: var(--primary-strong);
-  background: rgba(18, 105, 93, 0.11);
+  background: rgba(179, 92, 104, 0.11);
 }
 
 .metric-pill {
   background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(18, 105, 93, 0.14);
+  border: 1px solid rgba(179, 92, 104, 0.14);
 }
 
 .status-pill {
-  color: #7a4d00;
-  background: rgba(201, 141, 39, 0.12);
+  color: #8a6651;
+  background: rgba(199, 160, 124, 0.18);
 }
 
 .status-pill--success {
   color: var(--primary-strong);
-  background: rgba(18, 105, 93, 0.12);
+  background: rgba(179, 92, 104, 0.12);
 }
 
 .event-card__detail-list,
@@ -525,7 +525,7 @@ button {
   padding: 12px 14px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.62);
-  border: 1px solid rgba(18, 105, 93, 0.1);
+  border: 1px solid rgba(179, 92, 104, 0.1);
   color: var(--text-soft);
 }
 
@@ -546,7 +546,7 @@ button {
   padding: 18px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(18, 105, 93, 0.12);
+  border: 1px solid rgba(179, 92, 104, 0.12);
 }
 
 .category-card__head {
@@ -575,17 +575,17 @@ button {
 
 .tag {
   color: var(--primary-strong);
-  background: rgba(18, 105, 93, 0.11);
+  background: rgba(179, 92, 104, 0.11);
 }
 
 .tag--accent {
-  color: #7d3d27;
-  background: rgba(203, 104, 69, 0.12);
+  color: #8b5f57;
+  background: rgba(207, 147, 133, 0.2);
 }
 
 .tag--full {
-  color: #7a2a2a;
-  background: rgba(177, 68, 68, 0.12);
+  color: #8a4250;
+  background: rgba(179, 92, 104, 0.16);
 }
 
 .progress {
@@ -593,7 +593,7 @@ button {
   height: 10px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(18, 105, 93, 0.08);
+  background: rgba(179, 92, 104, 0.08);
 }
 
 .progress__bar {
@@ -614,8 +614,8 @@ button {
   gap: 12px;
   padding: 12px 14px;
   border-radius: 16px;
-  background: rgba(244, 237, 227, 0.95);
-  border: 1px solid rgba(18, 105, 93, 0.08);
+  background: rgba(250, 241, 239, 0.96);
+  border: 1px solid rgba(179, 92, 104, 0.08);
 }
 
 .subscription-item strong,
@@ -637,8 +637,8 @@ button {
   margin-top: 20px;
   padding: 18px;
   border-radius: var(--radius-lg);
-  background: rgba(240, 248, 244, 0.58);
-  border: 1px solid rgba(18, 105, 93, 0.12);
+  background: rgba(251, 241, 239, 0.68);
+  border: 1px solid rgba(179, 92, 104, 0.12);
 }
 
 .category-form h4 {
@@ -671,7 +671,7 @@ button {
   border-radius: var(--radius-lg);
   color: var(--text-soft);
   background: rgba(255, 255, 255, 0.5);
-  border: 1px dashed rgba(18, 105, 93, 0.18);
+  border: 1px dashed rgba(179, 92, 104, 0.18);
 }
 
 .empty-state {
@@ -682,7 +682,7 @@ button {
 .empty-state__badge {
   margin: 0 auto 12px;
   color: var(--primary-strong);
-  background: rgba(18, 105, 93, 0.12);
+  background: rgba(179, 92, 104, 0.12);
 }
 
 .footer {
@@ -716,7 +716,7 @@ button {
 .modal__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(14, 34, 30, 0.52);
+  background: rgba(58, 28, 34, 0.52);
   backdrop-filter: blur(8px);
 }
 
@@ -736,7 +736,7 @@ button {
   padding: 8px 12px;
   border-radius: 999px;
   color: var(--text-soft);
-  background: rgba(18, 105, 93, 0.08);
+  background: rgba(179, 92, 104, 0.08);
 }
 
 .modal__form {
@@ -760,7 +760,7 @@ button {
   padding: 14px 16px;
   border-radius: 18px;
   color: #fdfaf4;
-  background: rgba(23, 52, 46, 0.92);
+  background: rgba(79, 43, 48, 0.92);
   box-shadow: var(--shadow-md);
   animation: fade-up 0.3s ease both;
 }
