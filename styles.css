@@ -972,6 +972,21 @@ button {
   align-items: start;
 }
 
+.summary-card__body {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.category-card__subheading {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
 .public-category-actions {
   display: flex;
   justify-content: space-between;

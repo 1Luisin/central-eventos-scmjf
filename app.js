@@ -392,22 +392,6 @@ function renderEventsDashboard() {
 function renderDashboardCategoryCard(eventItem, category) {
   const occupancy = getOccupancy(category);
   const remaining = Math.max(category.capacity - category.subscriptions.length, 0);
-  const subscriptionList =
-    category.subscriptions.length > 0
-      ? category.subscriptions
-          .map(
-            (subscription) => `
-              <div class="subscription-item">
-                <div>
-                  <strong>Matricula ${escapeHtml(subscription.matricula)}</strong>
-                  <span>${escapeHtml(subscription.sector)}</span>
-                </div>
-                <small>${escapeHtml(subscription.contact)}</small>
-              </div>
-            `,
-          )
-          .join("")
-      : `<div class="empty-card">Ainda nao ha inscritos nesta categoria.</div>`;
 
   return `
     <article class="category-card">
@@ -432,10 +416,6 @@ function renderDashboardCategoryCard(eventItem, category) {
 
       <div class="progress" aria-hidden="true">
         <div class="progress__bar" style="width: ${occupancy}%"></div>
-      </div>
-
-      <div class="subscription-list">
-        ${subscriptionList}
       </div>
 
       <div class="category-card__actions">
@@ -503,6 +483,10 @@ function renderManagementSummary(selectedEventId) {
     .map((eventItem) => {
       const selectedClass = eventItem.id === selectedEventId ? " summary-card--selected" : "";
       const buttonClass = eventItem.id === selectedEventId ? "button button--primary" : "button button--ghost";
+      const categoriesMarkup =
+        eventItem.categories.length > 0
+          ? eventItem.categories.map((category) => renderAdministrativeCategoryCard(category)).join("")
+          : `<div class="empty-card">Nenhuma categoria cadastrada ainda para este evento.</div>`;
 
       return `
         <article class="summary-card${selectedClass}">
@@ -518,6 +502,10 @@ function renderManagementSummary(selectedEventId) {
             <span class="metric-pill">${eventItem.categories.length} categoria(s)</span>
           </div>
 
+          <div class="summary-card__body">
+            ${categoriesMarkup}
+          </div>
+
           <div class="summary-card__actions">
             <a class="${buttonClass}" href="cadastro.html?eventId=${eventItem.id}#categorias">
               ${eventItem.id === selectedEventId ? "Evento selecionado" : "Usar neste cadastro"}
@@ -528,6 +516,60 @@ function renderManagementSummary(selectedEventId) {
       `;
     })
     .join("");
+}
+
+function renderAdministrativeCategoryCard(category) {
+  const occupancy = getOccupancy(category);
+  const remaining = Math.max(category.capacity - category.subscriptions.length, 0);
+  const subscriptionList =
+    category.subscriptions.length > 0
+      ? category.subscriptions
+          .map(
+            (subscription) => `
+              <div class="subscription-item">
+                <div>
+                  <strong>Matricula ${escapeHtml(subscription.matricula)}</strong>
+                  <span>${escapeHtml(subscription.sector)}</span>
+                </div>
+                <small>${escapeHtml(subscription.contact)}</small>
+              </div>
+            `,
+          )
+          .join("")
+      : `<div class="empty-card">Ainda nao ha inscritos nesta categoria.</div>`;
+
+  return `
+    <article class="category-card">
+      <div class="category-card__head">
+        <div>
+          <h4>${escapeHtml(category.name)}</h4>
+          <div class="tag-group">
+            <span class="tag">${category.subscriptions.length}/${category.capacity} inscricoes</span>
+            <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
+              ${category.allowExternal ? "Inscricao externa permitida" : "Somente publico interno"}
+            </span>
+            ${remaining === 0 ? '<span class="tag tag--full">Vagas esgotadas</span>' : ""}
+          </div>
+        </div>
+
+        <span class="status-pill ${remaining > 0 ? "status-pill--success" : ""}">
+          ${remaining} vaga(s) restante(s)
+        </span>
+      </div>
+
+      <p class="category-card__description">${escapeHtml(category.description)}</p>
+
+      <div class="progress" aria-hidden="true">
+        <div class="progress__bar" style="width: ${occupancy}%"></div>
+      </div>
+
+      <p class="category-card__subheading">Participantes inscritos</p>
+
+      <div class="subscription-list">
+        ${subscriptionList}
+      </div>
+    </article>
+  `;
 }
 
 function renderRegistrationPage() {
