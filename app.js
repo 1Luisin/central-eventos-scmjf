@@ -1,4 +1,5 @@
 const STORAGE_KEY = "scmjf-central-eventos-v1";
+const PAGE_TRANSITION_DURATION = 360;
 
 const statsGrid = document.querySelector("#statsGrid");
 const eventsList = document.querySelector("#eventsList");
@@ -38,6 +39,8 @@ bindEvents();
 render();
 
 function bindEvents() {
+  initializePageTransitions();
+
   if (currentYear) {
     currentYear.textContent = String(new Date().getFullYear());
   }
@@ -65,6 +68,93 @@ function bindEvents() {
   if (loadDemoButton) {
     loadDemoButton.addEventListener("click", handleLoadDemo);
   }
+}
+
+function initializePageTransitions() {
+  const systemShell = document.querySelector(".system-shell");
+
+  if (!systemShell || !document.body) {
+    return;
+  }
+
+  const overlay = document.createElement("div");
+  overlay.className = "page-transition-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+  document.body.append(overlay);
+
+  window.addEventListener("pageshow", () => {
+    document.body.classList.remove("page-transitioning");
+  });
+
+  document.addEventListener("click", handlePageTransitionNavigation);
+}
+
+function handlePageTransitionNavigation(event) {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
+  }
+
+  const link = event.target.closest("a[href]");
+
+  if (!link || link.target === "_blank" || link.hasAttribute("download")) {
+    return;
+  }
+
+  const rawHref = link.getAttribute("href");
+
+  if (
+    !rawHref ||
+    rawHref.startsWith("#") ||
+    rawHref.startsWith("mailto:") ||
+    rawHref.startsWith("tel:") ||
+    rawHref.startsWith("javascript:")
+  ) {
+    return;
+  }
+
+  const destination = new URL(link.href, window.location.href);
+  const current = new URL(window.location.href);
+  const sameDocumentAnchor =
+    destination.origin === current.origin &&
+    destination.pathname === current.pathname &&
+    destination.search === current.search &&
+    destination.hash !== current.hash;
+  const sameUrl =
+    destination.origin === current.origin &&
+    destination.pathname === current.pathname &&
+    destination.search === current.search &&
+    destination.hash === current.hash;
+
+  if (sameDocumentAnchor || sameUrl || destination.origin !== current.origin) {
+    return;
+  }
+
+  event.preventDefault();
+  navigateWithTransition(destination.href);
+}
+
+function navigateWithTransition(url) {
+  if (!document.body || document.body.classList.contains("page-transitioning")) {
+    return;
+  }
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.location.href = url;
+    return;
+  }
+
+  document.body.classList.add("page-transitioning");
+
+  window.setTimeout(() => {
+    window.location.href = url;
+  }, PAGE_TRANSITION_DURATION);
 }
 
 function handleEventSubmit(event) {
