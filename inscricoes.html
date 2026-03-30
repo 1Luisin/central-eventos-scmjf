@@ -5,33 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta
     name="description"
-    content="Tela de inscricoes da central de eventos da Santa Casa de Misericordia."
+    content="Tela de inscrições da central de eventos da Santa Casa de Misericórdia."
   >
-  <title>Inscricoes | Central de Eventos</title>
+  <title>Inscrições | Central de Eventos</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="system-shell">
     <aside class="system-sidebar">
       <div class="system-sidebar__brand">
-        <span class="brand__eyebrow">Hospital Santa Casa de Misericordia</span>
+        <span class="brand__eyebrow">Hospital Santa Casa de Misericórdia</span>
         <strong class="brand__title">Central de Eventos</strong>
       </div>
 
       <nav class="system-nav" aria-label="Menu principal">
         <a class="system-nav__link" href="index.html">Dashboard</a>
         <a class="system-nav__link" href="cadastro.html">Cadastros</a>
-        <a class="system-nav__link system-nav__link--active" href="inscricoes.html">Inscricoes</a>
+        <a class="system-nav__link system-nav__link--active" href="inscricoes.html">Inscrições</a>
       </nav>
 
       <section class="panel system-sidebar__panel">
         <p class="eyebrow">Portal do participante</p>
-        <h2>Inscricoes por categoria</h2>
+        <h2>Inscrições por categoria</h2>
         <p>
-          Selecione uma categoria na lista principal, preencha os dados do participante e confirme a inscricao nesta mesma tela.
+          Selecione uma categoria na lista principal, preencha os dados do participante e confirme a inscrição nesta mesma tela.
         </p>
         <div class="system-sidebar__actions">
-          <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstracao</button>
+          <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstração</button>
           <a class="button button--secondary" href="cadastro.html">Abrir cadastros</a>
         </div>
       </section>
@@ -40,10 +40,10 @@
     <div class="system-main">
       <header class="app-header">
         <div>
-          <p class="eyebrow">Inscricoes</p>
-          <h1>Tela de inscricao</h1>
+          <p class="eyebrow">Inscrições</p>
+          <h1>Tela de inscrição</h1>
           <p class="app-header__description">
-            Escolha uma categoria aberta, confira as vagas disponiveis e registre a inscricao do participante.
+            Escolha uma categoria aberta, confira as vagas disponíveis e registre a inscrição do participante.
           </p>
         </div>
 
@@ -62,7 +62,7 @@
                 <h2>Selecione uma categoria</h2>
               </div>
               <p class="section__description">
-                A coluna ao lado mostra o formulario de inscricao da categoria atualmente selecionada.
+                A coluna ao lado mostra o formulário de inscrição da categoria atualmente selecionada.
               </p>
             </div>
 
@@ -70,7 +70,7 @@
 
             <div class="empty-state" id="registrationEmptyState" hidden>
               <div class="empty-state__badge">Aguardando categorias</div>
-              <h3>As inscricoes serao liberadas quando houver categorias cadastradas.</h3>
+              <h3>As inscrições serão liberadas quando houver categorias cadastradas.</h3>
               <p>Use a tela de cadastros para adicionar categorias a um evento e depois volte aqui.</p>
             </div>
           </section>
@@ -78,16 +78,16 @@
           <section class="panel section-panel form-panel--sticky">
             <div class="section-panel__header">
               <div>
-                <p class="eyebrow">Formulario de inscricao</p>
+                <p class="eyebrow">Formulário de inscrição</p>
                 <h2>Categoria selecionada</h2>
               </div>
             </div>
 
             <div class="selection-card">
-              <span class="card-badge">Selecao atual</span>
+              <span class="card-badge">Seleção atual</span>
               <h3 id="enrollmentSelectionTitle">Escolha uma categoria</h3>
               <p class="summary-card__meta" id="enrollmentSelectionMeta">
-                Selecione uma categoria na lista ao lado para liberar o formulario de inscricao.
+                Selecione uma categoria na lista ao lado para liberar o formulário de inscrição.
               </p>
               <div class="tag-group" id="enrollmentSelectionTags"></div>
             </div>
@@ -97,14 +97,14 @@
               <input type="hidden" name="categoryId">
 
               <div class="inline-note" id="enrollmentStatusNote">
-                Selecione uma categoria para comecar.
+                Selecione uma categoria para começar.
               </div>
 
               <fieldset class="category-fieldset" id="enrollmentFieldset">
                 <div class="form-grid">
                   <label class="field">
-                    <span>MATRICULA</span>
-                    <input type="text" name="matricula" placeholder="Informe a matricula" required>
+                    <span>MATRÍCULA</span>
+                    <input type="text" name="matricula" placeholder="Informe a matrícula" required>
                   </label>
 
                   <label class="field">
@@ -119,7 +119,7 @@
                 </div>
 
                 <div class="form-actions">
-                  <button class="button button--primary" type="submit">Confirmar inscricao</button>
+                  <button class="button button--primary" type="submit">Confirmar inscrição</button>
                   <a class="button button--ghost" href="index.html">Voltar ao dashboard</a>
                 </div>
               </fieldset>
@@ -130,7 +130,7 @@
 
       <footer class="footer">
         <p>Central de Eventos SCMJF</p>
-        <span>Santa Casa de Misericordia | <span id="currentYear"></span></span>
+        <span>Santa Casa de Misericórdia | <span id="currentYear"></span></span>
       </footer>
     </div>
   </div>

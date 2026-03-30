@@ -115,14 +115,14 @@ function handleCategoryRegistrationSubmit(event) {
   const eventItem = state.events.find((item) => item.id === eventId);
 
   if (!eventItem) {
-    showToast("Selecione um evento valido para vincular a categoria.", "error");
+    showToast("Selecione um evento válido para vincular a categoria.", "error");
     return;
   }
 
   const capacity = Number(formData.get("capacity"));
 
   if (!Number.isInteger(capacity) || capacity <= 0) {
-    showToast("Informe um numero de vagas valido para a categoria.", "error");
+    showToast("Informe um número de vagas válido para a categoria.", "error");
     return;
   }
 
@@ -169,12 +169,12 @@ function handleEnrollmentSubmit(event) {
   const found = findCategory(eventId, categoryId);
 
   if (!found) {
-    showToast("Nao foi possivel encontrar a categoria selecionada.", "error");
+    showToast("Não foi possível encontrar a categoria selecionada.", "error");
     return;
   }
 
   if (isCategoryFull(found.category)) {
-    showToast("As vagas desta categoria ja foram preenchidas.", "warning");
+    showToast("As vagas desta categoria já foram preenchidas.", "warning");
     renderRegistrationPage();
     return;
   }
@@ -185,7 +185,7 @@ function handleEnrollmentSubmit(event) {
   );
 
   if (alreadyRegistered) {
-    showToast("Esta matricula ja esta inscrita nesta categoria.", "warning");
+    showToast("Esta matrícula já está inscrita nesta categoria.", "warning");
     return;
   }
 
@@ -203,24 +203,24 @@ function handleEnrollmentSubmit(event) {
   persist();
   clearEnrollmentFormFields();
   render();
-  showToast("Inscricao realizada com sucesso.");
+  showToast("Inscrição realizada com sucesso.");
 }
 
 function handleLoadDemo() {
   const alreadyLoaded = state.events.some((eventItem) => eventItem.id === "demo-event");
 
   if (alreadyLoaded) {
-    showToast("A demonstracao ja foi inserida neste navegador.", "warning");
+    showToast("A demonstração já foi inserida neste navegador.", "warning");
     return;
   }
 
   const demoEvent = {
     id: "demo-event",
-    name: "Jornada de Humanizacao Assistencial",
+    name: "Jornada de Humanização Assistencial",
     start: buildFutureDate(3, 8, 30),
     end: buildFutureDate(3, 17, 30),
     managerId: "SCM-10248",
-    sector: "Educacao Continuada",
+    sector: "Educação Continuada",
     createdAt: new Date().toISOString(),
     categories: [
       {
@@ -229,7 +229,7 @@ function handleLoadDemo() {
         capacity: 80,
         allowExternal: true,
         description:
-          "Abertura institucional com foco em acolhimento, seguranca do paciente e experiencias humanizadas.",
+          "Abertura institucional com foco em acolhimento, segurança do paciente e experiências humanizadas.",
         createdAt: new Date().toISOString(),
         subscriptions: [
           {
@@ -250,17 +250,17 @@ function handleLoadDemo() {
       },
       {
         id: "demo-cat-2",
-        name: "Oficina de Comunicacao com Familiares",
+        name: "Oficina de Comunicação com Familiares",
         capacity: 24,
         allowExternal: false,
         description:
-          "Encontro pratico para equipes assistenciais aperfeicoarem comunicacao sensivel em situacoes criticas.",
+          "Encontro prático para equipes assistenciais aperfeiçoarem comunicação sensível em situações críticas.",
         createdAt: new Date().toISOString(),
         subscriptions: [
           {
             id: "demo-sub-3",
             matricula: "30987",
-            sector: "Servico Social",
+            sector: "Serviço Social",
             contact: "social@santacasa.local",
             createdAt: new Date().toISOString(),
           },
@@ -282,7 +282,7 @@ function handleLoadDemo() {
   }
 
   render();
-  showToast("Demonstracao inserida para facilitar a validacao do layout.");
+  showToast("Demonstração inserida para facilitar a validação do layout.");
 }
 
 function render() {
@@ -317,8 +317,8 @@ function renderStats() {
   const cards = [
     { value: totalEvents, label: "Eventos ativos" },
     { value: totalCategories, label: "Categorias abertas" },
-    { value: totalSubscriptions, label: "Inscricoes registradas" },
-    { value: remainingSeats, label: "Vagas disponiveis" },
+    { value: totalSubscriptions, label: "Inscrições registradas" },
+    { value: remainingSeats, label: "Vagas disponíveis" },
   ];
 
   statsGrid.innerHTML = cards
@@ -359,7 +359,7 @@ function renderEventsDashboard() {
               <span class="card-badge">Evento institucional</span>
               <h3>${escapeHtml(eventItem.name)}</h3>
               <p class="event-card__meta">
-                ${escapeHtml(formatDateTime(eventItem.start))} ate ${escapeHtml(formatDateTime(eventItem.end))}
+                ${escapeHtml(formatDateTime(eventItem.start))} até ${escapeHtml(formatDateTime(eventItem.end))}
               </p>
             </div>
 
@@ -367,8 +367,8 @@ function renderEventsDashboard() {
           </div>
 
           <div class="event-card__detail-list">
-            <div class="detail-chip">Matricula responsavel: <strong>${escapeHtml(eventItem.managerId)}</strong></div>
-            <div class="detail-chip">Setor responsavel: <strong>${escapeHtml(eventItem.sector)}</strong></div>
+            <div class="detail-chip">Matrícula responsável: <strong>${escapeHtml(eventItem.managerId)}</strong></div>
+            <div class="detail-chip">Setor responsável: <strong>${escapeHtml(eventItem.sector)}</strong></div>
           </div>
 
           <div class="event-card__body">
@@ -380,7 +380,7 @@ function renderEventsDashboard() {
               <a class="button button--primary" href="cadastro.html?eventId=${eventItem.id}#categorias">
                 Gerenciar categorias
               </a>
-              <a class="button button--secondary" href="inscricoes.html">Abrir inscricoes</a>
+              <a class="button button--secondary" href="inscricoes.html">Abrir inscrições</a>
             </div>
           </div>
         </article>
@@ -399,9 +399,9 @@ function renderDashboardCategoryCard(eventItem, category) {
         <div>
           <h4>${escapeHtml(category.name)}</h4>
           <div class="tag-group">
-            <span class="tag">${category.subscriptions.length}/${category.capacity} inscricoes</span>
+            <span class="tag">${category.subscriptions.length}/${category.capacity} inscrições</span>
             <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
-              ${category.allowExternal ? "Inscricao externa permitida" : "Somente publico interno"}
+              ${category.allowExternal ? "Inscrição externa permitida" : "Somente público interno"}
             </span>
             ${remaining === 0 ? '<span class="tag tag--full">Vagas esgotadas</span>' : ""}
           </div>
@@ -420,7 +420,7 @@ function renderDashboardCategoryCard(eventItem, category) {
 
       <div class="category-card__actions">
         <a class="button button--ghost" href="inscricoes.html?eventId=${eventItem.id}&categoryId=${category.id}">
-          Ir para inscricao
+          Ir para inscrição
         </a>
       </div>
     </article>
@@ -473,7 +473,7 @@ function renderManagementSummary(selectedEventId) {
   if (state.events.length === 0) {
     eventSummaryList.innerHTML = `
       <div class="empty-card">
-        Nenhum evento cadastrado ainda. Use o formulario acima para criar o primeiro evento antes de abrir categorias.
+        Nenhum evento cadastrado ainda. Use o formulário acima para criar o primeiro evento antes de abrir categorias.
       </div>
     `;
     return;
@@ -492,10 +492,10 @@ function renderManagementSummary(selectedEventId) {
         <article class="summary-card${selectedClass}">
           <div class="summary-card__head">
             <div>
-              <span class="card-badge">Evento disponivel</span>
+              <span class="card-badge">Evento disponível</span>
               <h3>${escapeHtml(eventItem.name)}</h3>
               <p class="summary-card__meta">
-                ${escapeHtml(formatDateTime(eventItem.start))} ate ${escapeHtml(formatDateTime(eventItem.end))}
+                ${escapeHtml(formatDateTime(eventItem.start))} até ${escapeHtml(formatDateTime(eventItem.end))}
               </p>
             </div>
 
@@ -510,7 +510,7 @@ function renderManagementSummary(selectedEventId) {
             <a class="${buttonClass}" href="cadastro.html?eventId=${eventItem.id}#categorias">
               ${eventItem.id === selectedEventId ? "Evento selecionado" : "Usar neste cadastro"}
             </a>
-            <a class="button button--secondary" href="inscricoes.html">Abrir inscricoes</a>
+            <a class="button button--secondary" href="inscricoes.html">Abrir inscrições</a>
           </div>
         </article>
       `;
@@ -528,7 +528,7 @@ function renderAdministrativeCategoryCard(category) {
             (subscription) => `
               <div class="subscription-item">
                 <div>
-                  <strong>Matricula ${escapeHtml(subscription.matricula)}</strong>
+                  <strong>Matrícula ${escapeHtml(subscription.matricula)}</strong>
                   <span>${escapeHtml(subscription.sector)}</span>
                 </div>
                 <small>${escapeHtml(subscription.contact)}</small>
@@ -536,7 +536,7 @@ function renderAdministrativeCategoryCard(category) {
             `,
           )
           .join("")
-      : `<div class="empty-card">Ainda nao ha inscritos nesta categoria.</div>`;
+      : `<div class="empty-card">Ainda não há inscritos nesta categoria.</div>`;
 
   return `
     <article class="category-card">
@@ -544,9 +544,9 @@ function renderAdministrativeCategoryCard(category) {
         <div>
           <h4>${escapeHtml(category.name)}</h4>
           <div class="tag-group">
-            <span class="tag">${category.subscriptions.length}/${category.capacity} inscricoes</span>
+            <span class="tag">${category.subscriptions.length}/${category.capacity} inscrições</span>
             <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
-              ${category.allowExternal ? "Inscricao externa permitida" : "Somente publico interno"}
+              ${category.allowExternal ? "Inscrição externa permitida" : "Somente público interno"}
             </span>
             ${remaining === 0 ? '<span class="tag tag--full">Vagas esgotadas</span>' : ""}
           </div>
@@ -606,19 +606,19 @@ function renderRegistrationPage() {
         <article class="registration-card">
           <div class="registration-card__header">
             <div>
-              <span class="card-badge">Inscricoes abertas</span>
+              <span class="card-badge">Inscrições abertas</span>
               <h3>${escapeHtml(eventItem.name)}</h3>
               <p class="registration-card__meta">
-                ${escapeHtml(formatDateTime(eventItem.start))} ate ${escapeHtml(formatDateTime(eventItem.end))}
+                ${escapeHtml(formatDateTime(eventItem.start))} até ${escapeHtml(formatDateTime(eventItem.end))}
               </p>
             </div>
 
-            <span class="metric-pill">${eventItem.categories.length} opcao(oes)</span>
+            <span class="metric-pill">${eventItem.categories.length} opção(ões)</span>
           </div>
 
           <div class="registration-card__detail-list">
-            <div class="detail-chip">Setor responsavel: <strong>${escapeHtml(eventItem.sector)}</strong></div>
-            <div class="detail-chip">Responsavel: <strong>${escapeHtml(eventItem.managerId)}</strong></div>
+            <div class="detail-chip">Setor responsável: <strong>${escapeHtml(eventItem.sector)}</strong></div>
+            <div class="detail-chip">Responsável: <strong>${escapeHtml(eventItem.managerId)}</strong></div>
           </div>
 
           <div class="registration-card__body">
@@ -650,7 +650,7 @@ function renderRegistrationCategoryCard(eventItem, category) {
           <div class="tag-group">
             <span class="tag">${category.subscriptions.length}/${category.capacity} ocupadas</span>
             <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
-              ${category.allowExternal ? "Aceita inscricoes externas" : "Inscricao interna"}
+              ${category.allowExternal ? "Aceita inscrições externas" : "Inscrição interna"}
             </span>
           </div>
         </div>
@@ -669,7 +669,7 @@ function renderRegistrationCategoryCard(eventItem, category) {
       <div class="public-category-actions">
         <div class="tag-group">
           <span class="tag">Evento: ${escapeHtml(eventItem.name)}</span>
-          <span class="tag">Inicio ${escapeHtml(formatShortDate(eventItem.start))}</span>
+          <span class="tag">Início ${escapeHtml(formatShortDate(eventItem.start))}</span>
         </div>
 
         <button
@@ -707,9 +707,9 @@ function renderEnrollmentWorkspace() {
     enrollmentForm.elements.categoryId.value = "";
     enrollmentFieldset.disabled = true;
     enrollmentSelectionTitle.textContent = "Escolha uma categoria";
-    enrollmentSelectionMeta.textContent = "Selecione uma categoria na lista ao lado para liberar o formulario de inscricao.";
+    enrollmentSelectionMeta.textContent = "Selecione uma categoria na lista ao lado para liberar o formulário de inscrição.";
     enrollmentSelectionTags.innerHTML = "";
-    enrollmentStatusNote.textContent = "Selecione uma categoria para comecar.";
+    enrollmentStatusNote.textContent = "Selecione uma categoria para começar.";
     return;
   }
 
@@ -720,18 +720,18 @@ function renderEnrollmentWorkspace() {
   enrollmentForm.elements.categoryId.value = found.category.id;
   enrollmentSelectionTitle.textContent = found.category.name;
   enrollmentSelectionMeta.textContent =
-    `${found.event.name} | ${formatDateTime(found.event.start)} ate ${formatDateTime(found.event.end)}`;
+    `${found.event.name} | ${formatDateTime(found.event.start)} até ${formatDateTime(found.event.end)}`;
   enrollmentSelectionTags.innerHTML = `
     <span class="tag">${found.category.subscriptions.length}/${found.category.capacity} ocupadas</span>
     <span class="tag ${found.category.allowExternal ? "" : "tag--accent"}">
-      ${found.category.allowExternal ? "Aceita inscricoes externas" : "Somente publico interno"}
+      ${found.category.allowExternal ? "Aceita inscrições externas" : "Somente público interno"}
     </span>
   `;
 
   enrollmentFieldset.disabled = full;
   enrollmentStatusNote.textContent = full
-    ? "Esta categoria esta lotada no momento. Escolha outra categoria para realizar a inscricao."
-    : `${remaining} vaga(s) restante(s). Preencha os dados do participante para concluir a inscricao.`;
+    ? "Esta categoria está lotada no momento. Escolha outra categoria para realizar a inscrição."
+    : `${remaining} vaga(s) restante(s). Preencha os dados do participante para concluir a inscrição.`;
 }
 
 function getRequestedManagementEventId() {
@@ -935,7 +935,7 @@ function persist() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.events));
   } catch (error) {
     console.error(error);
-    showToast("Nao foi possivel salvar os dados no navegador.", "error");
+    showToast("Não foi possível salvar os dados no navegador.", "error");
   }
 }
 

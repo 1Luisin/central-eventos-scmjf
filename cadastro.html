@@ -14,25 +14,25 @@
   <div class="system-shell">
     <aside class="system-sidebar">
       <div class="system-sidebar__brand">
-        <span class="brand__eyebrow">Hospital Santa Casa de Misericordia</span>
+        <span class="brand__eyebrow">Hospital Santa Casa de Misericórdia</span>
         <strong class="brand__title">Central de Eventos</strong>
       </div>
 
       <nav class="system-nav" aria-label="Menu principal">
         <a class="system-nav__link" href="index.html">Dashboard</a>
         <a class="system-nav__link system-nav__link--active" href="cadastro.html">Cadastros</a>
-        <a class="system-nav__link" href="inscricoes.html">Inscricoes</a>
+        <a class="system-nav__link" href="inscricoes.html">Inscrições</a>
       </nav>
 
       <section class="panel system-sidebar__panel">
-        <p class="eyebrow">Area administrativa</p>
+        <p class="eyebrow">Área administrativa</p>
         <h2>Cadastros centrais</h2>
         <p>
-          Esta tela concentra os formularios de evento e categoria. Depois do cadastro, o dashboard
-          e a tela de inscricoes refletem os dados automaticamente.
+          Esta tela concentra os formulários de evento e categoria. Depois do cadastro, o dashboard
+          e a tela de inscrições refletem os dados automaticamente.
         </p>
         <div class="system-sidebar__actions">
-          <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstracao</button>
+          <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstração</button>
           <a class="button button--secondary" href="index.html">Voltar ao dashboard</a>
         </div>
       </section>
@@ -44,7 +44,7 @@
           <p class="eyebrow">Cadastros</p>
           <h1>Eventos e categorias</h1>
           <p class="app-header__description">
-            Registre os eventos da Santa Casa, selecione um evento existente e adicione quantas categorias forem necessarias.
+            Registre os eventos da Santa Casa, selecione um evento existente e adicione quantas categorias forem necessárias.
           </p>
         </div>
 
@@ -74,7 +74,7 @@
                 <h2>Novo evento</h2>
               </div>
               <p class="section__description">
-                Preencha os dados institucionais do evento para liberar o cadastro de categorias e as futuras inscricoes.
+                Preencha os dados institucionais do evento para liberar o cadastro de categorias e as futuras inscrições.
               </p>
             </div>
 
@@ -82,11 +82,11 @@
               <div class="form-grid">
                 <label class="field field--full">
                   <span>NOME DO EVENTO</span>
-                  <input type="text" name="name" placeholder="Ex.: Semana de Seguranca do Paciente" required>
+                  <input type="text" name="name" placeholder="Ex.: Semana de Segurança do Paciente" required>
                 </label>
 
                 <label class="field">
-                  <span>DATA/HORA INICIO DO EVENTO</span>
+                  <span>DATA/HORA INÍCIO DO EVENTO</span>
                   <input type="datetime-local" name="start" required>
                 </label>
 
@@ -96,19 +96,19 @@
                 </label>
 
                 <label class="field">
-                  <span>MATRICULA DO RESPONSAVEL</span>
+                  <span>MATRÍCULA DO RESPONSÁVEL</span>
                   <input type="text" name="managerId" placeholder="Ex.: 458721" required>
                 </label>
 
                 <label class="field">
-                  <span>SETOR RESPONSAVEL</span>
-                  <input type="text" name="sector" placeholder="Ex.: Educacao Continuada" required>
+                  <span>SETOR RESPONSÁVEL</span>
+                  <input type="text" name="sector" placeholder="Ex.: Educação Continuada" required>
                 </label>
               </div>
 
               <div class="form-actions">
                 <button class="button button--primary" type="submit">Salvar evento</button>
-                <button class="button button--ghost" type="reset">Limpar formulario</button>
+                <button class="button button--ghost" type="reset">Limpar formulário</button>
               </div>
             </form>
           </section>
@@ -120,13 +120,13 @@
                 <h2>Nova categoria</h2>
               </div>
               <p class="section__description">
-                Escolha o evento de destino e associe a categoria com vagas, permissao externa e descricao.
+                Escolha o evento de destino e associe a categoria com vagas, permissão externa e descrição.
               </p>
             </div>
 
             <form class="form-panel" id="categoryRegistrationForm">
               <div class="inline-note" id="categoryFormEmptyState" hidden>
-                Cadastre um evento primeiro para liberar o formulario de categorias.
+                Cadastre um evento primeiro para liberar o formulário de categorias.
               </div>
 
               <fieldset class="category-fieldset" id="categoryFieldset">
@@ -138,7 +138,7 @@
 
                   <label class="field field--full">
                     <span>NOME DA CATEGORIA</span>
-                    <input type="text" name="name" placeholder="Ex.: Oficina de Humanizacao" required>
+                    <input type="text" name="name" placeholder="Ex.: Oficina de Humanização" required>
                   </label>
 
                   <label class="field">
@@ -147,7 +147,7 @@
                   </label>
 
                   <label class="field">
-                    <span>SE E PERMITIDO INSCRICOES EXTERNAS (S/N)</span>
+                    <span>SÃO PERMITIDAS INSCRIÇÕES EXTERNAS? (S/N)</span>
                     <select name="allowExternal" required>
                       <option value="nao">N</option>
                       <option value="sim">S</option>
@@ -155,10 +155,10 @@
                   </label>
 
                   <label class="field field--full">
-                    <span>DESCRICAO DA CATEGORIA</span>
+                    <span>DESCRIÇÃO DA CATEGORIA</span>
                     <textarea
                       name="description"
-                      placeholder="Descreva o objetivo, o publico e o formato da categoria"
+                      placeholder="Descreva o objetivo, o público e o formato da categoria"
                       required
                     ></textarea>
                   </label>
@@ -167,7 +167,7 @@
 
               <div class="form-actions">
                 <button class="button button--primary" type="submit">Salvar categoria</button>
-                <a class="button button--secondary" href="inscricoes.html">Ir para inscricoes</a>
+                <a class="button button--secondary" href="inscricoes.html">Ir para inscrições</a>
               </div>
             </form>
           </section>
@@ -176,8 +176,8 @@
         <section class="panel section-panel">
           <div class="section-panel__header">
             <div>
-              <p class="eyebrow">Base disponivel</p>
-              <h2>Eventos ja cadastrados</h2>
+              <p class="eyebrow">Base disponível</p>
+              <h2>Eventos já cadastrados</h2>
             </div>
             <p class="section__description">
               Selecione um evento para cadastrar novas categorias e acompanhe abaixo as categorias e os inscritos de cada uma.
@@ -190,7 +190,7 @@
 
       <footer class="footer">
         <p>Central de Eventos SCMJF</p>
-        <span>Santa Casa de Misericordia | <span id="currentYear"></span></span>
+        <span>Santa Casa de Misericórdia | <span id="currentYear"></span></span>
       </footer>
     </div>
   </div>
