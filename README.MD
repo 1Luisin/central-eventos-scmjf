@@ -1,32 +1,57 @@
 # Central de Eventos SCMJF
 
-Aplicacao web estatica para a Santa Casa de Misericordia, criada para registrar eventos, cadastrar categorias dentro de cada evento e permitir inscricoes dos participantes por categoria.
+Aplicação web da Santa Casa de Misericórdia criada para registrar eventos, cadastrar categorias dentro de cada evento e permitir inscrições de participantes por categoria.
 
-## O que a aplicacao faz
+## O que a aplicação faz
 
-- Cadastra eventos com nome, data/hora de inicio e fim, matricula do responsavel e setor responsavel.
-- Permite adicionar quantas categorias forem necessarias dentro de cada evento.
-- Controla vagas por categoria e exibe se a categoria aceita inscricoes externas.
-- Registra inscricoes com matricula, setor e contato.
+- Cadastra eventos com nome, data/hora de início e fim, matrícula do responsável e setor responsável.
+- Permite adicionar quantas categorias forem necessárias dentro de cada evento.
+- Controla vagas por categoria e exibe se a categoria aceita inscrições externas.
+- Registra inscrições com matrícula, setor e contato.
 - Mostra cards modernos dos eventos com suas respectivas categorias no mesmo bloco.
 - Salva os dados no navegador com `localStorage`, sem depender de backend.
 
 ## Como usar
 
-1. Abra o arquivo `index.html` no navegador para acessar o dashboard do sistema.
-2. Use `cadastro.html` para registrar novos eventos e categorias.
-3. Use `inscricoes.html` para selecionar uma categoria e concluir a inscricao do participante.
-4. Volte ao dashboard sempre que quiser acompanhar a visao geral dos eventos e indicadores.
+1. Abra o arquivo `index.html` da raiz para entrar no diretório principal da aplicação.
+2. O ponto de entrada redireciona automaticamente para `app/pages/dashboard/`.
+3. Use `app/pages/cadastros/` para registrar novos eventos e categorias.
+4. Use `app/pages/inscricoes/` para selecionar uma categoria e concluir a inscrição do participante.
 
-## Estrutura
+## Estrutura profissional da aplicação
 
-- `index.html`: dashboard do sistema com indicadores, atalhos e cards dos eventos.
-- `cadastro.html`: tela administrativa para cadastrar eventos e categorias.
-- `inscricoes.html`: tela dedicada para selecionar categorias e registrar inscricoes.
-- `styles.css`: identidade visual, responsividade e animacoes.
-- `app.js`: regras de negocio, renderizacao, persistencia e interacoes compartilhadas entre as tres telas.
+```text
+.
+├── app/
+│   ├── assets/
+│   │   ├── scripts/
+│   │   │   └── app.js
+│   │   └── styles/
+│   │       └── main.css
+│   ├── modules/
+│   ├── pages/
+│   │   ├── cadastros/
+│   │   │   └── index.html
+│   │   ├── dashboard/
+│   │   │   └── index.html
+│   │   └── inscricoes/
+│   │       └── index.html
+│   ├── services/
+│   └── shared/
+├── index.html
+└── README.MD
+```
 
-## Observacoes
+## Critério da reorganização
 
-- Os dados ficam salvos apenas no navegador onde a aplicacao foi utilizada.
-- Para uso em producao multiusuario, o proximo passo ideal e ligar essa interface a uma API e banco de dados.
+- `app/pages/`: concentra as telas da aplicação e prepara o projeto para evoluir para rotas mais robustas.
+- `app/assets/`: centraliza CSS e JavaScript compartilhados.
+- `app/modules/`: reservado para futuros módulos de domínio, como eventos, categorias, usuários e inscrições.
+- `app/services/`: reservado para integrações futuras com API, autenticação e camada de dados.
+- `app/shared/`: reservado para utilitários, componentes reutilizáveis e contratos comuns.
+- `index.html` na raiz: funciona como porta de entrada estável do projeto e redireciona para o dashboard.
+
+## Observações
+
+- Os dados ainda ficam salvos apenas no navegador onde a aplicação foi utilizada.
+- Para uso em produção multiusuário, o próximo passo ideal é ligar essa interface a uma API e banco de dados.

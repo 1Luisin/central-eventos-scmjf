@@ -8,7 +8,7 @@
     content="Tela de inscrições da central de eventos da Santa Casa de Misericórdia."
   >
   <title>Inscrições | Central de Eventos</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../../assets/styles/main.css">
 </head>
 <body>
   <div class="system-shell">
@@ -19,9 +19,9 @@
       </div>
 
       <nav class="system-nav" aria-label="Menu principal">
-        <a class="system-nav__link" href="index.html">Dashboard</a>
-        <a class="system-nav__link" href="cadastro.html">Cadastros</a>
-        <a class="system-nav__link system-nav__link--active" href="inscricoes.html">Inscrições</a>
+        <a class="system-nav__link" href="../dashboard/">Dashboard</a>
+        <a class="system-nav__link" href="../cadastros/">Cadastros</a>
+        <a class="system-nav__link system-nav__link--active" href="../inscricoes/">Inscrições</a>
       </nav>
 
       <section class="panel system-sidebar__panel">
@@ -32,7 +32,7 @@
         </p>
         <div class="system-sidebar__actions">
           <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstração</button>
-          <a class="button button--secondary" href="cadastro.html">Abrir cadastros</a>
+          <a class="button button--secondary" href="../cadastros/">Abrir cadastros</a>
         </div>
       </section>
     </aside>
@@ -48,8 +48,8 @@
         </div>
 
         <div class="app-header__actions">
-          <a class="button button--primary" href="cadastro.html">Cadastrar evento ou categoria</a>
-          <a class="button button--secondary" href="index.html">Voltar ao dashboard</a>
+          <a class="button button--primary" href="../cadastros/">Cadastrar evento ou categoria</a>
+          <a class="button button--secondary" href="../dashboard/">Voltar ao dashboard</a>
         </div>
       </header>
 
@@ -120,7 +120,7 @@
 
                 <div class="form-actions">
                   <button class="button button--primary" type="submit">Confirmar inscrição</button>
-                  <a class="button button--ghost" href="index.html">Voltar ao dashboard</a>
+                  <a class="button button--ghost" href="../dashboard/">Voltar ao dashboard</a>
                 </div>
               </fieldset>
             </form>
@@ -137,6 +137,6 @@
 
   <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="app.js"></script>
+  <script src="../../assets/scripts/app.js"></script>
 </body>
 </html>

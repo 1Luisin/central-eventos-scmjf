@@ -1,5 +1,11 @@
 const STORAGE_KEY = "scmjf-central-eventos-v1";
 const PAGE_TRANSITION_DURATION = 300;
+const APP_PAGES_ROOT = new URL("../", window.location.href);
+const PAGE_ROUTES = {
+  dashboard: new URL("dashboard/", APP_PAGES_ROOT).href,
+  cadastros: new URL("cadastros/", APP_PAGES_ROOT).href,
+  inscricoes: new URL("inscricoes/", APP_PAGES_ROOT).href,
+};
 
 const statsGrid = document.querySelector("#statsGrid");
 const eventsList = document.querySelector("#eventsList");
@@ -37,6 +43,23 @@ state.selectedEnrollment = getRequestedEnrollmentSelection();
 
 bindEvents();
 render();
+
+function buildPageHref(pageName, options = {}) {
+  const { searchParams = {}, hash = "" } = options;
+  const url = new URL(PAGE_ROUTES[pageName]);
+
+  Object.entries(searchParams).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, String(value));
+    }
+  });
+
+  if (hash) {
+    url.hash = hash;
+  }
+
+  return url.href;
+}
 
 function bindEvents() {
   initializePageTransitions();
@@ -467,10 +490,13 @@ function renderEventsDashboard() {
             </div>
 
             <div class="event-card__actions">
-              <a class="button button--primary" href="cadastro.html?eventId=${eventItem.id}#categorias">
+              <a class="button button--primary" href="${buildPageHref("cadastros", {
+                searchParams: { eventId: eventItem.id },
+                hash: "categorias",
+              })}">
                 Gerenciar categorias
               </a>
-              <a class="button button--secondary" href="inscricoes.html">Abrir inscrições</a>
+              <a class="button button--secondary" href="${PAGE_ROUTES.inscricoes}">Abrir inscrições</a>
             </div>
           </div>
         </article>
@@ -509,7 +535,9 @@ function renderDashboardCategoryCard(eventItem, category) {
       </div>
 
       <div class="category-card__actions">
-        <a class="button button--ghost" href="inscricoes.html?eventId=${eventItem.id}&categoryId=${category.id}">
+        <a class="button button--ghost" href="${buildPageHref("inscricoes", {
+          searchParams: { eventId: eventItem.id, categoryId: category.id },
+        })}">
           Ir para inscrição
         </a>
       </div>
@@ -597,10 +625,13 @@ function renderManagementSummary(selectedEventId) {
           </div>
 
           <div class="summary-card__actions">
-            <a class="${buttonClass}" href="cadastro.html?eventId=${eventItem.id}#categorias">
+            <a class="${buttonClass}" href="${buildPageHref("cadastros", {
+              searchParams: { eventId: eventItem.id },
+              hash: "categorias",
+            })}">
               ${eventItem.id === selectedEventId ? "Evento selecionado" : "Usar neste cadastro"}
             </a>
-            <a class="button button--secondary" href="inscricoes.html">Abrir inscrições</a>
+            <a class="button button--secondary" href="${PAGE_ROUTES.inscricoes}">Abrir inscrições</a>
           </div>
         </article>
       `;
