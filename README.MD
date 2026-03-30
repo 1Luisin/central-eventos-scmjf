@@ -101,4 +101,4 @@ O projeto agora também possui um módulo backend em `backend/` com:
 
 - Os dados ainda ficam salvos apenas no navegador onde a aplicação foi utilizada.
 - A interface web já está separada da API, o que facilita a evolução para um cenário multiusuário.
-- Neste ambiente atual não há `java` nem `mvn` instalados, então a validação do backend foi feita por revisão estática da estrutura e do código gerado.
+-
