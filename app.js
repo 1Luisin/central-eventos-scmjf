@@ -2,9 +2,7 @@ const STORAGE_KEY = "scmjf-central-eventos-v1";
 
 const statsGrid = document.querySelector("#statsGrid");
 const eventsList = document.querySelector("#eventsList");
-const registrationList = document.querySelector("#registrationList");
 const emptyState = document.querySelector("#emptyState");
-const registrationEmptyState = document.querySelector("#registrationEmptyState");
 const loadDemoButton = document.querySelector("#loadDemoButton");
 const currentYear = document.querySelector("#currentYear");
 
@@ -18,16 +16,23 @@ const categorySubmitButton = categoryRegistrationForm
   ? categoryRegistrationForm.querySelector('button[type="submit"]')
   : null;
 
-const enrollmentModal = document.querySelector("#enrollmentModal");
+const registrationList = document.querySelector("#registrationList");
+const registrationEmptyState = document.querySelector("#registrationEmptyState");
 const enrollmentForm = document.querySelector("#enrollmentForm");
-const modalSubtitle = document.querySelector("#modalSubtitle");
-const closeModalButton = document.querySelector("#closeModalButton");
-const cancelModalButton = document.querySelector("#cancelModalButton");
+const enrollmentFieldset = document.querySelector("#enrollmentFieldset");
+const enrollmentSelectionTitle = document.querySelector("#enrollmentSelectionTitle");
+const enrollmentSelectionMeta = document.querySelector("#enrollmentSelectionMeta");
+const enrollmentSelectionTags = document.querySelector("#enrollmentSelectionTags");
+const enrollmentStatusNote = document.querySelector("#enrollmentStatusNote");
+
 const toastStack = document.querySelector("#toastStack");
 
 const state = {
   events: loadEvents().sort(sortEventsByStart),
+  selectedEnrollment: null,
 };
+
+state.selectedEnrollment = getRequestedEnrollmentSelection();
 
 bindEvents();
 render();
@@ -53,31 +58,13 @@ function bindEvents() {
     registrationList.addEventListener("click", handleRegistrationActions);
   }
 
-  if (loadDemoButton) {
-    loadDemoButton.addEventListener("click", handleLoadDemo);
-  }
-
   if (enrollmentForm) {
     enrollmentForm.addEventListener("submit", handleEnrollmentSubmit);
   }
 
-  if (closeModalButton) {
-    closeModalButton.addEventListener("click", closeEnrollmentModal);
+  if (loadDemoButton) {
+    loadDemoButton.addEventListener("click", handleLoadDemo);
   }
-
-  if (cancelModalButton) {
-    cancelModalButton.addEventListener("click", closeEnrollmentModal);
-  }
-
-  if (enrollmentModal) {
-    enrollmentModal.addEventListener("click", handleModalBackdropClick);
-  }
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && enrollmentModal && !enrollmentModal.hidden) {
-      closeEnrollmentModal();
-    }
-  });
 }
 
 function handleEventSubmit(event) {
@@ -160,19 +147,17 @@ function handleCategoryRegistrationSubmit(event) {
 
 function handleCategoryEventChange() {
   syncCategorySelection(categoryEventSelect.value);
-  render();
+  renderManagementPage();
 }
 
 function handleRegistrationActions(event) {
-  const actionButton = event.target.closest("[data-open-enrollment]");
+  const actionButton = event.target.closest("[data-select-enrollment]");
 
   if (!actionButton) {
     return;
   }
 
-  const eventId = actionButton.dataset.eventId;
-  const categoryId = actionButton.dataset.categoryId;
-  openEnrollmentModal(eventId, categoryId);
+  selectEnrollmentCategory(actionButton.dataset.eventId, actionButton.dataset.categoryId, true);
 }
 
 function handleEnrollmentSubmit(event) {
@@ -190,8 +175,7 @@ function handleEnrollmentSubmit(event) {
 
   if (isCategoryFull(found.category)) {
     showToast("As vagas desta categoria ja foram preenchidas.", "warning");
-    closeEnrollmentModal();
-    render();
+    renderRegistrationPage();
     return;
   }
 
@@ -217,8 +201,8 @@ function handleEnrollmentSubmit(event) {
   ];
 
   persist();
+  clearEnrollmentFormFields();
   render();
-  closeEnrollmentModal();
   showToast("Inscricao realizada com sucesso.");
 }
 
@@ -288,6 +272,11 @@ function handleLoadDemo() {
   state.events = [demoEvent, ...state.events].sort(sortEventsByStart);
   persist();
 
+  if (registrationList && !isValidEnrollmentSelection(state.selectedEnrollment)) {
+    state.selectedEnrollment = { eventId: "demo-event", categoryId: "demo-cat-1" };
+    updateEnrollmentUrl("demo-event", "demo-cat-1");
+  }
+
   if (categoryEventSelect && !getRequestedManagementEventId()) {
     syncCategorySelection(demoEvent.id);
   }
@@ -296,51 +285,11 @@ function handleLoadDemo() {
   showToast("Demonstracao inserida para facilitar a validacao do layout.");
 }
 
-function openEnrollmentModal(eventId, categoryId) {
-  if (!enrollmentModal || !enrollmentForm || !modalSubtitle) {
-    return;
-  }
-
-  const found = findCategory(eventId, categoryId);
-
-  if (!found) {
-    showToast("Nao foi possivel abrir a categoria escolhida.", "error");
-    return;
-  }
-
-  enrollmentForm.reset();
-  enrollmentForm.elements.eventId.value = eventId;
-  enrollmentForm.elements.categoryId.value = categoryId;
-
-  const remainingSeats = Math.max(found.category.capacity - found.category.subscriptions.length, 0);
-  modalSubtitle.textContent =
-    `${found.event.name} | ${found.category.name} | ${remainingSeats} vaga(s) restante(s)`;
-
-  enrollmentModal.hidden = false;
-  document.body.classList.add("modal-open");
-  enrollmentForm.elements.matricula.focus();
-}
-
-function closeEnrollmentModal() {
-  if (!enrollmentModal) {
-    return;
-  }
-
-  enrollmentModal.hidden = true;
-  document.body.classList.remove("modal-open");
-}
-
-function handleModalBackdropClick(event) {
-  if (event.target instanceof HTMLElement && event.target.dataset.closeModal === "true") {
-    closeEnrollmentModal();
-  }
-}
-
 function render() {
   renderStats();
   renderEventsDashboard();
-  renderRegistrationCards();
   renderManagementPage();
+  renderRegistrationPage();
 }
 
 function renderStats() {
@@ -400,7 +349,7 @@ function renderEventsDashboard() {
     .map((eventItem) => {
       const categoriesMarkup =
         eventItem.categories.length > 0
-          ? eventItem.categories.map((category) => renderAdminCategoryCard(category)).join("")
+          ? eventItem.categories.map((category) => renderDashboardCategoryCard(eventItem, category)).join("")
           : `<div class="empty-card">Nenhuma categoria cadastrada ainda para este evento.</div>`;
 
       return `
@@ -429,8 +378,9 @@ function renderEventsDashboard() {
 
             <div class="event-card__actions">
               <a class="button button--primary" href="cadastro.html?eventId=${eventItem.id}#categorias">
-                Cadastrar categoria neste evento
+                Gerenciar categorias
               </a>
+              <a class="button button--secondary" href="inscricoes.html">Abrir inscricoes</a>
             </div>
           </div>
         </article>
@@ -439,7 +389,7 @@ function renderEventsDashboard() {
     .join("");
 }
 
-function renderAdminCategoryCard(category) {
+function renderDashboardCategoryCard(eventItem, category) {
   const occupancy = getOccupancy(category);
   const remaining = Math.max(category.capacity - category.subscriptions.length, 0);
   const subscriptionList =
@@ -487,102 +437,11 @@ function renderAdminCategoryCard(category) {
       <div class="subscription-list">
         ${subscriptionList}
       </div>
-    </article>
-  `;
-}
 
-function renderRegistrationCards() {
-  if (!registrationList || !registrationEmptyState) {
-    return;
-  }
-
-  const eventsWithCategories = state.events.filter((eventItem) => eventItem.categories.length > 0);
-
-  if (eventsWithCategories.length === 0) {
-    registrationList.innerHTML = "";
-    registrationEmptyState.hidden = false;
-    return;
-  }
-
-  registrationEmptyState.hidden = true;
-  registrationList.innerHTML = eventsWithCategories
-    .map((eventItem) => {
-      const categoriesMarkup = eventItem.categories.map((category) => renderPublicCategoryCard(eventItem, category)).join("");
-
-      return `
-        <article class="registration-card">
-          <div class="registration-card__header">
-            <div>
-              <span class="card-badge">Inscricoes abertas</span>
-              <h3>${escapeHtml(eventItem.name)}</h3>
-              <p class="registration-card__meta">
-                ${escapeHtml(formatDateTime(eventItem.start))} ate ${escapeHtml(formatDateTime(eventItem.end))}
-              </p>
-            </div>
-
-            <span class="metric-pill">${eventItem.categories.length} opcao(oes)</span>
-          </div>
-
-          <div class="registration-card__detail-list">
-            <div class="detail-chip">Setor responsavel: <strong>${escapeHtml(eventItem.sector)}</strong></div>
-            <div class="detail-chip">Responsavel: <strong>${escapeHtml(eventItem.managerId)}</strong></div>
-          </div>
-
-          <div class="registration-card__body">
-            <div class="category-stack">
-              ${categoriesMarkup}
-            </div>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function renderPublicCategoryCard(eventItem, category) {
-  const remaining = Math.max(category.capacity - category.subscriptions.length, 0);
-  const full = remaining === 0;
-
-  return `
-    <article class="category-card category-card--public">
-      <div class="category-card__head">
-        <div>
-          <h4>${escapeHtml(category.name)}</h4>
-          <div class="tag-group">
-            <span class="tag">${category.subscriptions.length}/${category.capacity} ocupadas</span>
-            <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
-              ${category.allowExternal ? "Aceita inscricoes externas" : "Inscricao interna"}
-            </span>
-          </div>
-        </div>
-
-        <span class="status-pill ${full ? "" : "status-pill--success"}">
-          ${full ? "Lotado" : `${remaining} vaga(s)`}
-        </span>
-      </div>
-
-      <p class="category-card__description">${escapeHtml(category.description)}</p>
-
-      <div class="progress" aria-hidden="true">
-        <div class="progress__bar" style="width: ${getOccupancy(category)}%"></div>
-      </div>
-
-      <div class="public-category-actions">
-        <div class="tag-group">
-          <span class="tag">Evento: ${escapeHtml(eventItem.name)}</span>
-          <span class="tag">Inicio ${escapeHtml(formatShortDate(eventItem.start))}</span>
-        </div>
-
-        <button
-          class="button ${full ? "button--ghost" : "button--primary"}"
-          type="button"
-          data-open-enrollment="true"
-          data-event-id="${eventItem.id}"
-          data-category-id="${category.id}"
-          ${full ? "disabled" : ""}
-        >
-          ${full ? "Sem vagas" : "Inscrever-se"}
-        </button>
+      <div class="category-card__actions">
+        <a class="button button--ghost" href="inscricoes.html?eventId=${eventItem.id}&categoryId=${category.id}">
+          Ir para inscricao
+        </a>
       </div>
     </article>
   `;
@@ -663,12 +522,174 @@ function renderManagementSummary(selectedEventId) {
             <a class="${buttonClass}" href="cadastro.html?eventId=${eventItem.id}#categorias">
               ${eventItem.id === selectedEventId ? "Evento selecionado" : "Usar neste cadastro"}
             </a>
-            <a class="button button--secondary" href="index.html#eventos">Ver no painel</a>
+            <a class="button button--secondary" href="inscricoes.html">Abrir inscricoes</a>
           </div>
         </article>
       `;
     })
     .join("");
+}
+
+function renderRegistrationPage() {
+  if (!registrationList || !registrationEmptyState) {
+    return;
+  }
+
+  const eventsWithCategories = state.events.filter((eventItem) => eventItem.categories.length > 0);
+
+  if (eventsWithCategories.length === 0) {
+    registrationList.innerHTML = "";
+    registrationEmptyState.hidden = false;
+    state.selectedEnrollment = null;
+    renderEnrollmentWorkspace();
+    return;
+  }
+
+  registrationEmptyState.hidden = true;
+
+  if (!isValidEnrollmentSelection(state.selectedEnrollment)) {
+    const firstCategory = getFirstCategorySelection();
+
+    if (firstCategory) {
+      state.selectedEnrollment = firstCategory;
+      updateEnrollmentUrl(firstCategory.eventId, firstCategory.categoryId);
+    }
+  }
+
+  registrationList.innerHTML = eventsWithCategories
+    .map((eventItem) => {
+      const categoriesMarkup = eventItem.categories.map((category) => renderRegistrationCategoryCard(eventItem, category)).join("");
+
+      return `
+        <article class="registration-card">
+          <div class="registration-card__header">
+            <div>
+              <span class="card-badge">Inscricoes abertas</span>
+              <h3>${escapeHtml(eventItem.name)}</h3>
+              <p class="registration-card__meta">
+                ${escapeHtml(formatDateTime(eventItem.start))} ate ${escapeHtml(formatDateTime(eventItem.end))}
+              </p>
+            </div>
+
+            <span class="metric-pill">${eventItem.categories.length} opcao(oes)</span>
+          </div>
+
+          <div class="registration-card__detail-list">
+            <div class="detail-chip">Setor responsavel: <strong>${escapeHtml(eventItem.sector)}</strong></div>
+            <div class="detail-chip">Responsavel: <strong>${escapeHtml(eventItem.managerId)}</strong></div>
+          </div>
+
+          <div class="registration-card__body">
+            <div class="category-stack">
+              ${categoriesMarkup}
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  renderEnrollmentWorkspace();
+}
+
+function renderRegistrationCategoryCard(eventItem, category) {
+  const remaining = Math.max(category.capacity - category.subscriptions.length, 0);
+  const full = remaining === 0;
+  const selected =
+    state.selectedEnrollment &&
+    state.selectedEnrollment.eventId === eventItem.id &&
+    state.selectedEnrollment.categoryId === category.id;
+
+  return `
+    <article class="category-card category-card--public${selected ? " category-card--selected" : ""}">
+      <div class="category-card__head">
+        <div>
+          <h4>${escapeHtml(category.name)}</h4>
+          <div class="tag-group">
+            <span class="tag">${category.subscriptions.length}/${category.capacity} ocupadas</span>
+            <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
+              ${category.allowExternal ? "Aceita inscricoes externas" : "Inscricao interna"}
+            </span>
+          </div>
+        </div>
+
+        <span class="status-pill ${full ? "" : "status-pill--success"}">
+          ${full ? "Lotado" : `${remaining} vaga(s)`}
+        </span>
+      </div>
+
+      <p class="category-card__description">${escapeHtml(category.description)}</p>
+
+      <div class="progress" aria-hidden="true">
+        <div class="progress__bar" style="width: ${getOccupancy(category)}%"></div>
+      </div>
+
+      <div class="public-category-actions">
+        <div class="tag-group">
+          <span class="tag">Evento: ${escapeHtml(eventItem.name)}</span>
+          <span class="tag">Inicio ${escapeHtml(formatShortDate(eventItem.start))}</span>
+        </div>
+
+        <button
+          class="button ${selected ? "button--primary" : "button--ghost"}"
+          type="button"
+          data-select-enrollment="true"
+          data-event-id="${eventItem.id}"
+          data-category-id="${category.id}"
+        >
+          ${full ? "Ver categoria" : selected ? "Categoria selecionada" : "Selecionar categoria"}
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function renderEnrollmentWorkspace() {
+  if (
+    !enrollmentForm ||
+    !enrollmentFieldset ||
+    !enrollmentSelectionTitle ||
+    !enrollmentSelectionMeta ||
+    !enrollmentSelectionTags ||
+    !enrollmentStatusNote
+  ) {
+    return;
+  }
+
+  const found = isValidEnrollmentSelection(state.selectedEnrollment)
+    ? findCategory(state.selectedEnrollment.eventId, state.selectedEnrollment.categoryId)
+    : null;
+
+  if (!found) {
+    enrollmentForm.elements.eventId.value = "";
+    enrollmentForm.elements.categoryId.value = "";
+    enrollmentFieldset.disabled = true;
+    enrollmentSelectionTitle.textContent = "Escolha uma categoria";
+    enrollmentSelectionMeta.textContent = "Selecione uma categoria na lista ao lado para liberar o formulario de inscricao.";
+    enrollmentSelectionTags.innerHTML = "";
+    enrollmentStatusNote.textContent = "Selecione uma categoria para comecar.";
+    return;
+  }
+
+  const remaining = Math.max(found.category.capacity - found.category.subscriptions.length, 0);
+  const full = remaining === 0;
+
+  enrollmentForm.elements.eventId.value = found.event.id;
+  enrollmentForm.elements.categoryId.value = found.category.id;
+  enrollmentSelectionTitle.textContent = found.category.name;
+  enrollmentSelectionMeta.textContent =
+    `${found.event.name} | ${formatDateTime(found.event.start)} ate ${formatDateTime(found.event.end)}`;
+  enrollmentSelectionTags.innerHTML = `
+    <span class="tag">${found.category.subscriptions.length}/${found.category.capacity} ocupadas</span>
+    <span class="tag ${found.category.allowExternal ? "" : "tag--accent"}">
+      ${found.category.allowExternal ? "Aceita inscricoes externas" : "Somente publico interno"}
+    </span>
+  `;
+
+  enrollmentFieldset.disabled = full;
+  enrollmentStatusNote.textContent = full
+    ? "Esta categoria esta lotada no momento. Escolha outra categoria para realizar a inscricao."
+    : `${remaining} vaga(s) restante(s). Preencha os dados do participante para concluir a inscricao.`;
 }
 
 function getRequestedManagementEventId() {
@@ -718,6 +739,78 @@ function updateManagementUrl(eventId) {
   } catch (error) {
     console.error(error);
   }
+}
+
+function getRequestedEnrollmentSelection() {
+  const params = new URLSearchParams(window.location.search);
+  const eventId = params.get("eventId");
+  const categoryId = params.get("categoryId");
+
+  if (!eventId || !categoryId) {
+    return null;
+  }
+
+  return isValidEnrollmentPair(eventId, categoryId) ? { eventId, categoryId } : null;
+}
+
+function selectEnrollmentCategory(eventId, categoryId, resetForm) {
+  if (!isValidEnrollmentPair(eventId, categoryId)) {
+    return;
+  }
+
+  state.selectedEnrollment = { eventId, categoryId };
+  updateEnrollmentUrl(eventId, categoryId);
+
+  if (resetForm) {
+    clearEnrollmentFormFields();
+  }
+
+  renderRegistrationPage();
+}
+
+function updateEnrollmentUrl(eventId, categoryId) {
+  if (!registrationList) {
+    return;
+  }
+
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set("eventId", eventId);
+    url.searchParams.set("categoryId", categoryId);
+    history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function isValidEnrollmentPair(eventId, categoryId) {
+  return Boolean(findCategory(eventId, categoryId));
+}
+
+function isValidEnrollmentSelection(selection) {
+  return Boolean(selection && isValidEnrollmentPair(selection.eventId, selection.categoryId));
+}
+
+function getFirstCategorySelection() {
+  for (const eventItem of state.events) {
+    if (eventItem.categories.length > 0) {
+      return { eventId: eventItem.id, categoryId: eventItem.categories[0].id };
+    }
+  }
+
+  return null;
+}
+
+function clearEnrollmentFormFields() {
+  if (!enrollmentForm) {
+    return;
+  }
+
+  const eventId = enrollmentForm.elements.eventId.value;
+  const categoryId = enrollmentForm.elements.categoryId.value;
+  enrollmentForm.reset();
+  enrollmentForm.elements.eventId.value = eventId;
+  enrollmentForm.elements.categoryId.value = categoryId;
 }
 
 function focusCategoryNameField() {

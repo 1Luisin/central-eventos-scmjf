@@ -5,182 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta
     name="description"
-    content="Painel principal da central de eventos da Santa Casa de Misericordia."
+    content="Dashboard da central de eventos da Santa Casa de Misericordia."
   >
-  <title>Painel de Eventos | Santa Casa de Misericordia</title>
+  <title>Dashboard | Central de Eventos</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="page-shell">
-    <header class="hero" id="top">
-      <nav class="topbar" aria-label="Navegacao principal">
-        <div class="brand">
-          <span class="brand__eyebrow">Hospital Santa Casa de Misericordia</span>
-          <strong class="brand__title">Central de Eventos</strong>
-        </div>
+  <div class="system-shell">
+    <aside class="system-sidebar">
+      <div class="system-sidebar__brand">
+        <span class="brand__eyebrow">Hospital Santa Casa de Misericordia</span>
+        <strong class="brand__title">Central de Eventos</strong>
+      </div>
 
-        <div class="topbar__actions">
-          <a class="ghost-link" href="#painel">Painel</a>
-          <a class="ghost-link" href="#eventos">Eventos</a>
-          <a class="ghost-link" href="#inscricoes">Inscricoes</a>
-          <a class="ghost-link" href="cadastro.html">Cadastros</a>
-          <button class="ghost-button" id="loadDemoButton" type="button">Inserir demonstracao</button>
-        </div>
+      <nav class="system-nav" aria-label="Menu principal">
+        <a class="system-nav__link system-nav__link--active" href="index.html">Dashboard</a>
+        <a class="system-nav__link" href="cadastro.html">Cadastros</a>
+        <a class="system-nav__link" href="inscricoes.html">Inscricoes</a>
       </nav>
 
-      <div class="hero__content">
-        <div class="hero__copy">
-          <p class="eyebrow">Painel institucional de eventos</p>
-          <h1>Consulte os eventos da Santa Casa e gerencie os cadastros em uma tela separada.</h1>
-          <p class="hero__description">
-            O painel principal fica focado em visualizacao, acompanhamento das categorias e inscricoes.
-            O cadastro de eventos e categorias acontece em outro HTML para deixar a navegacao mais organizada.
-          </p>
+      <section class="panel system-sidebar__panel">
+        <p class="eyebrow">Ambiente local</p>
+        <h2>Sistema ativo</h2>
+        <p>
+          O dashboard concentra a visao geral da central. Use os atalhos abaixo para popular o sistema
+          e validar o fluxo completo.
+        </p>
+        <div class="system-sidebar__actions">
+          <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstracao</button>
+          <a class="button button--secondary" href="cadastro.html">Abrir cadastros</a>
+        </div>
+      </section>
+    </aside>
 
-          <div class="hero__actions">
-            <a class="button button--primary" href="cadastro.html">Abrir tela de cadastro</a>
-            <a class="button button--secondary" href="#inscricoes">Ir para inscricoes</a>
-          </div>
+    <div class="system-main">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Dashboard</p>
+          <h1>Painel de eventos</h1>
+          <p class="app-header__description">
+            Visualize os eventos da Santa Casa, acompanhe as categorias abertas e acesse rapidamente as telas
+            de cadastro e inscricoes.
+          </p>
         </div>
 
-        <aside class="hero__panel panel">
-          <div class="hero__panel-header">
-            <p class="eyebrow">Panorama rapido</p>
-            <h2>Indicadores da central</h2>
+        <div class="app-header__actions">
+          <a class="button button--primary" href="cadastro.html">Novo evento ou categoria</a>
+          <a class="button button--secondary" href="inscricoes.html">Tela de inscricoes</a>
+        </div>
+      </header>
+
+      <main class="system-content">
+        <section class="panel section-panel">
+          <div class="section-panel__header">
+            <div>
+              <p class="eyebrow">Visao geral</p>
+              <h2>Indicadores da central</h2>
+            </div>
+            <p class="section__description">
+              Todos os numeros abaixo sao atualizados automaticamente conforme eventos, categorias e inscricoes sao cadastrados.
+            </p>
           </div>
 
           <div class="stats-grid" id="statsGrid"></div>
+        </section>
 
-          <p class="hero__panel-note">
-            As informacoes ficam salvas no navegador atual, mantendo o painel e a tela de cadastro sincronizados.
-          </p>
-        </aside>
-      </div>
-    </header>
-
-    <main class="main-content">
-      <section class="section" id="painel">
-        <div class="section__header">
-          <div>
-            <p class="eyebrow">Administracao</p>
-            <h2>Acesso rapido aos cadastros</h2>
-          </div>
-          <p class="section__description">
-            Use a pagina de cadastro para registrar novos eventos ou incluir categorias nos eventos ja existentes.
-          </p>
-        </div>
-
-        <div class="action-grid">
-          <article class="panel action-card">
-            <span class="card-badge">Novo evento</span>
-            <h3>Registrar um novo evento</h3>
-            <p>
-              Abra a tela de cadastro, preencha os dados institucionais do evento e depois volte ao painel
-              principal para acompanhar o card criado.
-            </p>
-            <div class="action-card__actions">
-              <a class="button button--primary" href="cadastro.html#evento">Cadastrar evento</a>
+        <section class="panel section-panel">
+          <div class="section-panel__header">
+            <div>
+              <p class="eyebrow">Atalhos do sistema</p>
+              <h2>Operacoes principais</h2>
             </div>
-          </article>
+          </div>
 
-          <article class="panel action-card">
-            <span class="card-badge">Nova categoria</span>
-            <h3>Vincular categoria a um evento</h3>
-            <p>
-              Na tela de cadastro, selecione um evento ja existente e adicione quantas categorias forem necessarias.
-            </p>
-            <div class="action-card__actions">
-              <a class="button button--secondary" href="cadastro.html#categorias">Cadastrar categoria</a>
+          <div class="quick-grid">
+            <article class="quick-card">
+              <span class="card-badge">Administracao</span>
+              <h3>Cadastrar evento</h3>
+              <p>Abra a tela administrativa para registrar um novo evento e iniciar sua estrutura de categorias.</p>
+              <a class="button button--primary" href="cadastro.html#evento">Ir para evento</a>
+            </article>
+
+            <article class="quick-card">
+              <span class="card-badge">Administracao</span>
+              <h3>Cadastrar categoria</h3>
+              <p>Selecione um evento existente na tela de cadastros e vincule quantas categorias forem necessarias.</p>
+              <a class="button button--secondary" href="cadastro.html#categorias">Ir para categoria</a>
+            </article>
+
+            <article class="quick-card">
+              <span class="card-badge">Participantes</span>
+              <h3>Registrar inscricao</h3>
+              <p>Acesse a tela de inscricoes para escolher a categoria, preencher os dados do participante e confirmar a vaga.</p>
+              <a class="button button--ghost" href="inscricoes.html">Abrir inscricoes</a>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel section-panel">
+          <div class="section-panel__header">
+            <div>
+              <p class="eyebrow">Eventos cadastrados</p>
+              <h2>Painel de cards</h2>
             </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="eventos">
-        <div class="section__header">
-          <div>
-            <p class="eyebrow">Eventos cadastrados</p>
-            <h2>Cards com categorias integradas</h2>
+            <p class="section__description">
+              Cada card resume o evento, exibe as categorias relacionadas e oferece acesso rapido para administracao e inscricoes.
+            </p>
           </div>
-          <p class="section__description">
-            Cada card mostra os dados do evento, as categorias vinculadas e um atalho para continuar o cadastro em outra tela.
-          </p>
-        </div>
 
-        <div class="event-grid" id="eventsList"></div>
+          <div class="event-grid" id="eventsList"></div>
 
-        <div class="empty-state" id="emptyState" hidden>
-          <div class="empty-state__badge">Sem eventos ainda</div>
-          <h3>Crie o primeiro evento na tela de cadastro.</h3>
-          <p>Depois de salvar um evento na tela de cadastro, ele aparecera automaticamente neste painel.</p>
-        </div>
-      </section>
-
-      <section class="section" id="inscricoes">
-        <div class="section__header">
-          <div>
-            <p class="eyebrow">Portal do participante</p>
-            <h2>Inscricoes por categoria</h2>
+          <div class="empty-state" id="emptyState" hidden>
+            <div class="empty-state__badge">Sem eventos ainda</div>
+            <h3>Cadastre o primeiro evento para iniciar o sistema.</h3>
+            <p>Assim que um evento for salvo na tela de cadastros, ele aparecera automaticamente neste dashboard.</p>
           </div>
-          <p class="section__description">
-            O participante escolhe a categoria desejada, verifica as vagas disponiveis e conclui a inscricao em poucos passos.
-          </p>
-        </div>
+        </section>
+      </main>
 
-        <div class="registration-grid" id="registrationList"></div>
-
-        <div class="empty-state" id="registrationEmptyState" hidden>
-          <div class="empty-state__badge">Aguardando categorias</div>
-          <h3>As inscricoes serao liberadas quando houver categorias cadastradas.</h3>
-          <p>Use a tela de cadastro para adicionar categorias a um evento e liberar este painel.</p>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <p>Central de Eventos SCMJF</p>
-      <span>Santa Casa de Misericordia | <span id="currentYear"></span></span>
-    </footer>
-  </div>
-
-  <div class="modal" id="enrollmentModal" hidden>
-    <div class="modal__backdrop" data-close-modal="true"></div>
-
-    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <button class="modal__close" id="closeModalButton" type="button" aria-label="Fechar formulario">
-        Fechar
-      </button>
-
-      <div class="modal__header">
-        <p class="eyebrow">Nova inscricao</p>
-        <h2 id="modalTitle">Inscricao em categoria</h2>
-        <p id="modalSubtitle"></p>
-      </div>
-
-      <form class="modal__form" id="enrollmentForm">
-        <input type="hidden" name="eventId">
-        <input type="hidden" name="categoryId">
-
-        <label class="field">
-          <span>MATRICULA</span>
-          <input type="text" name="matricula" placeholder="Informe a matricula" required>
-        </label>
-
-        <label class="field">
-          <span>SETOR</span>
-          <input type="text" name="sector" placeholder="Informe o setor" required>
-        </label>
-
-        <label class="field field--full">
-          <span>CONTATO</span>
-          <input type="text" name="contact" placeholder="Telefone, ramal ou e-mail" required>
-        </label>
-
-        <div class="form-actions">
-          <button class="button button--primary" type="submit">Confirmar inscricao</button>
-          <button class="button button--ghost" id="cancelModalButton" type="button">Cancelar</button>
-        </div>
-      </form>
+      <footer class="footer">
+        <p>Central de Eventos SCMJF</p>
+        <span>Santa Casa de Misericordia | <span id="currentYear"></span></span>
+      </footer>
     </div>
   </div>
 

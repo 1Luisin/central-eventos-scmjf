@@ -13,17 +13,18 @@ Aplicacao web estatica para a Santa Casa de Misericordia, criada para registrar 
 
 ## Como usar
 
-1. Abra o arquivo `index.html` no navegador para acessar o painel principal.
-2. Use o link para `cadastro.html` quando precisar registrar um novo evento ou uma nova categoria.
-3. Volte ao painel principal para acompanhar os cards e liberar inscricoes por categoria.
-4. Na area de inscricoes, escolha a categoria desejada e conclua a inscricao.
+1. Abra o arquivo `index.html` no navegador para acessar o dashboard do sistema.
+2. Use `cadastro.html` para registrar novos eventos e categorias.
+3. Use `inscricoes.html` para selecionar uma categoria e concluir a inscricao do participante.
+4. Volte ao dashboard sempre que quiser acompanhar a visao geral dos eventos e indicadores.
 
 ## Estrutura
 
-- `index.html`: painel principal com cards de eventos, categorias e inscricoes.
-- `cadastro.html`: tela separada para cadastrar eventos e categorias.
+- `index.html`: dashboard do sistema com indicadores, atalhos e cards dos eventos.
+- `cadastro.html`: tela administrativa para cadastrar eventos e categorias.
+- `inscricoes.html`: tela dedicada para selecionar categorias e registrar inscricoes.
 - `styles.css`: identidade visual, responsividade e animacoes.
-- `app.js`: regras de negocio, renderizacao, persistencia e interacoes compartilhadas entre as duas paginas.
+- `app.js`: regras de negocio, renderizacao, persistencia e interacoes compartilhadas entre as tres telas.
 
 ## Observacoes
 
