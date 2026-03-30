@@ -38,6 +38,19 @@ Aplicação web da Santa Casa de Misericórdia criada para registrar eventos, ca
 │   │       └── index.html
 │   ├── services/
 │   └── shared/
+├── backend/
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/br/org/santacasa/centraleventos/api/
+│       │   ├── controller/
+│       │   ├── dto/
+│       │   ├── entity/
+│       │   ├── exception/
+│       │   ├── repository/
+│       │   ├── service/
+│       │   └── CentralEventosApiApplication.java
+│       └── resources/
+│           └── application.properties
 ├── index.html
 └── README.MD
 ```
@@ -50,8 +63,42 @@ Aplicação web da Santa Casa de Misericórdia criada para registrar eventos, ca
 - `app/services/`: reservado para integrações futuras com API, autenticação e camada de dados.
 - `app/shared/`: reservado para utilitários, componentes reutilizáveis e contratos comuns.
 - `index.html` na raiz: funciona como porta de entrada estável do projeto e redireciona para o dashboard.
+- `backend/`: módulo Maven separado com API REST Spring Boot para Oracle.
+
+## API backend
+
+O projeto agora também possui um módulo backend em `backend/` com:
+
+- Java 17
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- Bean Validation
+- Oracle Database via `ojdbc11`
+- Maven
+
+### Endpoints principais
+
+- `POST /eventos`
+- `GET /eventos`
+- `GET /eventos/{id}`
+- `POST /categorias`
+- `GET /categorias/evento/{eventoId}`
+- `POST /inscricoes`
+- `DELETE /inscricoes/{id}`
+- `GET /inscricoes/evento/{eventoId}`
+
+### Regras implementadas no backend
+
+- Bloqueio de inscrição em evento inativo.
+- Bloqueio de inscrição em categoria inativa.
+- Bloqueio de categoria lotada por contagem real na tabela `INSCRICAO`.
+- Bloqueio de duplicidade por matrícula + categoria.
+- Geração de log em `LOG_EVENTOS` para criação de evento, criação de categoria, nova inscrição e cancelamento.
+- Uso de `@SequenceGenerator` para sequences Oracle existentes, sem geração de DDL.
 
 ## Observações
 
 - Os dados ainda ficam salvos apenas no navegador onde a aplicação foi utilizada.
-- Para uso em produção multiusuário, o próximo passo ideal é ligar essa interface a uma API e banco de dados.
+- A interface web já está separada da API, o que facilita a evolução para um cenário multiusuário.
+- Neste ambiente atual não há `java` nem `mvn` instalados, então a validação do backend foi feita por revisão estática da estrutura e do código gerado.
