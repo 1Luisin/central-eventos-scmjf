@@ -1,5 +1,5 @@
 const STORAGE_KEY = "scmjf-central-eventos-v1";
-const PAGE_TRANSITION_DURATION = 360;
+const PAGE_TRANSITION_DURATION = 300;
 
 const statsGrid = document.querySelector("#statsGrid");
 const eventsList = document.querySelector("#eventsList");
