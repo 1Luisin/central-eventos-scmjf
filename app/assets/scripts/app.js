@@ -538,7 +538,7 @@ function renderDashboardCategoryCard(eventItem, category) {
         <a class="button button--ghost" href="${buildPageHref("inscricoes", {
           searchParams: { eventId: eventItem.id, categoryId: category.id },
         })}">
-          Ir para inscrição
+          Inscrever-se
         </a>
       </div>
     </article>

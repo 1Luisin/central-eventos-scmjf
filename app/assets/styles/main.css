@@ -1283,3 +1283,7 @@ body.page-transitioning .system-shell {
     padding-right: 18px;
   }
 }
+
+#desc-categoria{
+  resize: none;
+}

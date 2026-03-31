@@ -19,22 +19,21 @@
       </div>
 
       <nav class="system-nav" aria-label="Menu principal">
-        <a class="system-nav__link system-nav__link--active" href="../dashboard/">Dashboard</a>
+        <a class="system-nav__link system-nav__link--active" href="../dashboard/">Todos os Eventos</a>
         <a class="system-nav__link" href="../cadastros/">Cadastros</a>
         <a class="system-nav__link" href="../inscricoes/">Inscrições</a>
       </nav>
 
-      <section class="panel system-sidebar__panel">
-        <p class="eyebrow">Ambiente local</p>
+      <!--<section class="panel system-sidebar__panel">
+        <p class="eyebrow">Painel principal</p>
         <h2>Sistema ativo</h2>
         <p>
-          O dashboard concentra a visão geral da central. Use os atalhos abaixo para popular o sistema
-          e validar o fluxo completo.
+         
         </p>
         <div class="system-sidebar__actions">
           <button class="button button--primary" id="loadDemoButton" type="button">Inserir demonstração</button>
           <a class="button button--secondary" href="../cadastros/">Abrir cadastros</a>
-        </div>
+        </div>-->
       </section>
     </aside>
 
@@ -60,19 +59,18 @@
           <div class="section-panel__header">
             <div>
               <p class="eyebrow">Eventos cadastrados</p>
-              <h2>Painel de cards</h2>
+              <h2>Eventos e Categorias</h2>
             </div>
-            <p class="section__description">
+          <!--<p class="section__description">
               Cada card resume o evento, exibe as categorias relacionadas e oferece acesso rápido para administração e inscrições.
-            </p>
+            </p>-->
           </div>
 
           <div class="event-grid" id="eventsList"></div>
 
           <div class="empty-state" id="emptyState" hidden>
             <div class="empty-state__badge">Sem eventos ainda</div>
-            <h3>Cadastre o primeiro evento para iniciar o sistema.</h3>
-            <p>Assim que um evento for salvo na tela de cadastros, ele aparecerá automaticamente neste dashboard.</p>
+            <h3>Assim que um evento estiver disponível, ele aparecerá automaticamente neste dashboard.</h3>
           </div>
         </section>
       </main>
