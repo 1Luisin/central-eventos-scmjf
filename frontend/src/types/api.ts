@@ -1,0 +1,128 @@
+export type ApiErrorResponse = {
+  timestamp: string;
+  status: number;
+  error: string;
+  message: string;
+  path: string;
+  details: string[];
+};
+
+export type EventoResponse = {
+  id: number;
+  nomeEvento: string;
+  dataHoraInicio: string;
+  dataHoraFim: string;
+  nomeResponsavel: string;
+  nomeSetor: string;
+  numeroContato: string;
+  ativo: string;
+  descricao: string | null;
+};
+
+export type CategoriaResponse = {
+  id: number;
+  eventoId: number;
+  nomeCategoria: string;
+  externo: string;
+  descricao: string | null;
+  ativo: string;
+  limiteInscricoes: number;
+  inscricoesRealizadas: number;
+  vagasDisponiveis: number;
+};
+
+export type InscricaoResponse = {
+  id: number;
+  eventoId: number;
+  categoriaId: number;
+  numeroContato: string;
+  dataHoraRegistro: string;
+  nomeSetor: string;
+  nomeUsuario: string;
+  matricula: string;
+};
+
+export type EventoCreatePayload = {
+  nomeEvento: string;
+  dataHoraInicio: string;
+  dataHoraFim: string;
+  nomeResponsavel: string;
+  nomeSetor: string;
+  numeroContato: string;
+  ativo: "S" | "N";
+  descricao?: string;
+};
+
+export type CategoriaCreatePayload = {
+  eventoId: number;
+  nomeCategoria: string;
+  externo: "S" | "N";
+  descricao?: string;
+  ativo: "S" | "N";
+  limiteInscricoes: number;
+};
+
+export type InscricaoCreatePayload = {
+  eventoId: number;
+  categoriaId: number;
+  numeroContato: string;
+  nomeSetor: string;
+  nomeUsuario: string;
+  matricula: string;
+};
+
+export type CategoriaStatus =
+  | "disponivel"
+  | "lotada"
+  | "evento-inativo"
+  | "categoria-inativa";
+
+export type CategoriaViewModel = CategoriaResponse & {
+  eventoNome: string;
+  eventoAtivo: string;
+  eventoInicio: string;
+  eventoFim: string;
+  status: CategoriaStatus;
+  statusLabel: string;
+  statusDescription: string;
+  permiteInscricao: boolean;
+  ocupacaoPercentual: number;
+};
+
+export type EventoDashboardItem = EventoResponse & {
+  categorias: CategoriaViewModel[];
+  totalCategorias: number;
+  totalVagas: number;
+  totalInscricoes: number;
+  temInscricoesAbertas: boolean;
+};
+
+export type CategoriaAdminItem = CategoriaViewModel & {
+  inscricoes: InscricaoResponse[];
+};
+
+export type EventoAdminItem = EventoResponse & {
+  categorias: CategoriaAdminItem[];
+  totalCategorias: number;
+  totalVagas: number;
+  totalInscricoes: number;
+};
+
+export type DashboardData = {
+  eventos: EventoDashboardItem[];
+  atualizadoEm: string;
+  erroInicial?: string;
+};
+
+export type AdminData = {
+  eventos: EventoAdminItem[];
+  atualizadoEm: string;
+  erroInicial?: string;
+};
+
+export type EnrollmentData = {
+  eventos: EventoDashboardItem[];
+  categorias: CategoriaViewModel[];
+  atualizadoEm: string;
+  erroInicial?: string;
+};
