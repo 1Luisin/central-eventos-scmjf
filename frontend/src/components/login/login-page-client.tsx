@@ -25,6 +25,7 @@ type LoginPageClientProps = {
   initialIdentifier?: string;
   initialFeedback?: string;
   initialFeedbackTone?: FeedbackTone;
+  initialRedirectPath?: string;
 };
 
 const FOOTER_LINKS = [
@@ -37,7 +38,8 @@ export function LoginPageClient({
   initialAccessMode = "interno",
   initialIdentifier = "",
   initialFeedback = "",
-  initialFeedbackTone = "error"
+  initialFeedbackTone = "error",
+  initialRedirectPath = ""
 }: LoginPageClientProps) {
   const router = useRouter();
   const [accessMode, setAccessMode] = useState<AccessMode>(initialAccessMode);
@@ -82,7 +84,7 @@ export function LoginPageClient({
         });
 
         startTransition(() => {
-          router.push("/dashboard");
+          router.push(resolvePostLoginRoute(initialRedirectPath));
         });
       } catch (error) {
         setSubmitting(false);
@@ -123,7 +125,7 @@ export function LoginPageClient({
       });
 
       startTransition(() => {
-        router.push("/dashboard");
+        router.push(resolvePostLoginRoute(initialRedirectPath));
       });
     } catch (error) {
       setSubmitting(false);
@@ -238,7 +240,10 @@ export function LoginPageClient({
             {accessMode === "externo" ? (
               <div className={styles.registerBox}>
                 <span>Primeiro acesso como participante externo?</span>
-                <Link className={styles.registerLink} href="/cadastro-externo">
+                <Link
+                  className={styles.registerLink}
+                  href={buildExternalRegistrationHref(initialRedirectPath)}
+                >
                   Cadastrar usuário externo
                 </Link>
               </div>
@@ -269,4 +274,19 @@ export function LoginPageClient({
       </div>
     </main>
   );
+}
+
+function resolvePostLoginRoute(redirectPath: string): string {
+  if (!redirectPath.startsWith("/") || redirectPath.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return redirectPath;
+}
+
+function buildExternalRegistrationHref(redirectPath: string): string {
+  const normalizedRedirect = resolvePostLoginRoute(redirectPath);
+  return normalizedRedirect === "/dashboard"
+    ? "/cadastro-externo"
+    : `/cadastro-externo?redirect=${encodeURIComponent(normalizedRedirect)}`;
 }

@@ -5,6 +5,7 @@ type LoginPageProps = {
     accessMode?: string;
     identifier?: string;
     registered?: string;
+    redirect?: string;
   }>;
 };
 
@@ -25,6 +26,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       }
       initialFeedbackTone={resolvedSearchParams?.registered === "1" ? "success" : "error"}
       initialIdentifier={resolvedSearchParams?.identifier ?? ""}
+      initialRedirectPath={resolvedSearchParams?.redirect ?? ""}
     />
   );
 }

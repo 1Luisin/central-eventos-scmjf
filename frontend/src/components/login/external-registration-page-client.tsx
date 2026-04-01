@@ -34,7 +34,7 @@ const INITIAL_FORM: FormState = {
   aceiteLgpd: false
 };
 
-export function ExternalRegistrationPageClient() {
+export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { initialRedirectPath?: string }) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [feedback, setFeedback] = useState("");
@@ -79,7 +79,7 @@ export function ExternalRegistrationPageClient() {
       });
 
       startTransition(() => {
-        router.push(`/login?accessMode=externo&registered=1&identifier=${encodeURIComponent(createdUser.email)}`);
+        router.push(buildLoginReturnHref(createdUser.email, initialRedirectPath));
       });
     } catch (error) {
       setSubmitting(false);
@@ -256,7 +256,7 @@ export function ExternalRegistrationPageClient() {
             </p>
 
             <div className={styles.actions}>
-              <Link className={styles.secondaryAction} href="/login?accessMode=externo">
+              <Link className={styles.secondaryAction} href={buildBackToLoginHref(initialRedirectPath)}>
                 Voltar ao login
               </Link>
               <button className={styles.submit} disabled={submitting} type="submit">
@@ -268,4 +268,26 @@ export function ExternalRegistrationPageClient() {
       </div>
     </main>
   );
+}
+
+function buildLoginReturnHref(email: string, redirectPath: string): string {
+  const params = new URLSearchParams({
+    accessMode: "externo",
+    registered: "1",
+    identifier: email
+  });
+
+  if (redirectPath.startsWith("/") && !redirectPath.startsWith("//")) {
+    params.set("redirect", redirectPath);
+  }
+
+  return `/login?${params.toString()}`;
+}
+
+function buildBackToLoginHref(redirectPath: string): string {
+  if (!redirectPath.startsWith("/") || redirectPath.startsWith("//")) {
+    return "/login?accessMode=externo";
+  }
+
+  return `/login?accessMode=externo&redirect=${encodeURIComponent(redirectPath)}`;
 }
