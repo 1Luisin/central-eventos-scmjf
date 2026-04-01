@@ -10,10 +10,20 @@ import {
   normalizeText,
   toTitleCaseFlag
 } from "@/lib/formatters";
-import type { EnrollmentData, InscricaoCreatePayload } from "@/types/api";
+import type {
+  EnrollmentData,
+  InscricaoCreatePayload,
+  InscricaoResponse
+} from "@/types/api";
 
 type EnrollmentPageClientProps = {
   initialData: EnrollmentData;
+};
+
+type EnrollmentSuccessState = {
+  inscricao: InscricaoResponse;
+  categoriaNome: string;
+  eventoNome: string;
 };
 
 export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps) {
@@ -24,7 +34,9 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
   const [data, setData] = useState(initialData);
   const [selectedCategoryId, setSelectedCategoryId] = useState(queryCategoryId || "");
   const [search, setSearch] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(initialData.erroInicial ?? null);
+  const [pageFeedback, setPageFeedback] = useState<string | null>(initialData.erroInicial ?? null);
+  const [formFeedback, setFormFeedback] = useState<string | null>(null);
+  const [successNotice, setSuccessNotice] = useState<EnrollmentSuccessState | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const deferredSearch = useDeferredValue(search);
@@ -79,7 +91,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
       setRefreshing(true);
       const payload = await requestJson<EnrollmentData>("/api/portal/enrollment");
       setData(payload);
-      setFeedback(payload.erroInicial ?? null);
+      setPageFeedback(payload.erroInicial ?? null);
 
       if (selectedCategoryId && payload.categorias.some((categoria) => String(categoria.id) === selectedCategoryId)) {
         return;
@@ -88,7 +100,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
       const fallbackCategory = payload.categorias.find((categoria) => categoria.permiteInscricao) ?? payload.categorias[0];
       setSelectedCategoryId(String(fallbackCategory?.id ?? ""));
     } catch (error) {
-      setFeedback(getRequestErrorMessage(error));
+      setPageFeedback(getRequestErrorMessage(error));
     } finally {
       setRefreshing(false);
     }
@@ -98,12 +110,14 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     event.preventDefault();
 
     if (!selectedCategory) {
-      setFeedback("Selecione uma categoria para continuar.");
+      setFormFeedback("Selecione uma categoria para continuar.");
+      setSuccessNotice(null);
       return;
     }
 
     if (!selectedCategory.permiteInscricao) {
-      setFeedback(selectedCategory.statusDescription);
+      setFormFeedback(selectedCategory.statusDescription);
+      setSuccessNotice(null);
       return;
     }
 
@@ -121,9 +135,10 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
 
     try {
       setSubmitting(true);
-      setFeedback(null);
+      setFormFeedback(null);
+      setSuccessNotice(null);
 
-      await requestJson("/api/inscricoes", {
+      const created = await requestJson<InscricaoResponse>("/api/inscricoes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -133,13 +148,24 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
       });
 
       form.reset();
-      setFeedback(`Inscrição realizada com sucesso na categoria "${selectedCategory.nomeCategoria}".`);
       await refreshData();
+      setSuccessNotice({
+        inscricao: created,
+        categoriaNome: selectedCategory.nomeCategoria,
+        eventoNome: selectedCategory.eventoNome
+      });
     } catch (error) {
-      setFeedback(getRequestErrorMessage(error));
+      setFormFeedback(getRequestErrorMessage(error));
+      setSuccessNotice(null);
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleCategorySelect(categoryId: string) {
+    setSelectedCategoryId(categoryId);
+    setFormFeedback(null);
+    setSuccessNotice(null);
   }
 
   return (
@@ -173,7 +199,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
             A coluna ao lado mostra o formulário de inscrição da categoria atualmente selecionada.
           </p>
 
-          {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
+          {pageFeedback ? <div className="feedback feedback--warning">{pageFeedback}</div> : null}
 
           <div className="section-meta">
             <span>{data.categorias.length} categoria(s) carregada(s)</span>
@@ -224,7 +250,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                         : "category-card category-card--selectable"
                     }
                     type="button"
-                    onClick={() => setSelectedCategoryId(String(categoria.id))}
+                    onClick={() => handleCategorySelect(String(categoria.id))}
                   >
                     <div className="category-card__top">
                       <div>
@@ -303,6 +329,49 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
 
               <p className="category-card__footnote">{selectedCategory.statusDescription}</p>
             </div>
+
+            {successNotice ? (
+              <div className="confirmation-card">
+                <div className="confirmation-card__header">
+                  <div>
+                    <span className="eyebrow">Inscrição confirmada</span>
+                    <h3>Vaga reservada com sucesso</h3>
+                  </div>
+                  <span className="badge badge--success">Inscrito</span>
+                </div>
+
+                <p>
+                  A inscrição foi registrada na categoria <strong>{successNotice.categoriaNome}</strong>, do evento{" "}
+                  <strong>{successNotice.eventoNome}</strong>.
+                </p>
+
+                <div className="confirmation-card__grid">
+                  <div className="confirmation-card__item">
+                    <span>Participante</span>
+                    <strong>{successNotice.inscricao.nomeUsuario}</strong>
+                  </div>
+                  <div className="confirmation-card__item">
+                    <span>Matrícula</span>
+                    <strong>{successNotice.inscricao.matricula}</strong>
+                  </div>
+                  <div className="confirmation-card__item">
+                    <span>Setor</span>
+                    <strong>{successNotice.inscricao.nomeSetor}</strong>
+                  </div>
+                  <div className="confirmation-card__item">
+                    <span>Contato</span>
+                    <strong>{successNotice.inscricao.numeroContato}</strong>
+                  </div>
+                </div>
+
+                <div className="confirmation-card__meta">
+                  <span>Registro realizado em {formatDateTime(successNotice.inscricao.dataHoraRegistro)}</span>
+                  <span>As vagas da categoria já foram atualizadas no painel ao lado.</span>
+                </div>
+              </div>
+            ) : null}
+
+            {formFeedback ? <div className="feedback feedback--warning">{formFeedback}</div> : null}
 
             <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
               <label className="field field--full">
