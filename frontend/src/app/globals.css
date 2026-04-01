@@ -516,8 +516,7 @@ textarea {
 }
 
 .date-time-picker__popper {
-  z-index: 30;
-  width: max-content;
+  z-index: 200 !important;
 }
 
 .date-time-picker__calendar {
@@ -529,16 +528,6 @@ textarea {
   font-family: "Trebuchet MS", "Segoe UI", sans-serif !important;
   color: var(--text) !important;
   overflow: hidden !important;
-}
-
-.date-time-picker__calendar.react-datepicker {
-  display: flex !important;
-  width: max-content !important;
-}
-
-.date-time-picker__calendar .react-datepicker__month-container {
-  float: none;
-  padding-right: 8px;
 }
 
 .date-time-picker__calendar .react-datepicker__header,
@@ -591,6 +580,7 @@ textarea {
 .date-time-picker__calendar .react-datepicker__time-container {
   width: 96px;
   border-left: 1px solid rgba(145, 70, 81, 0.12);
+  float: right;
 }
 
 .date-time-picker__calendar .react-datepicker__header--time {
@@ -607,7 +597,9 @@ textarea {
 }
 
 .date-time-picker__calendar .react-datepicker__time-list {
+  height: 232px !important;
   padding: 6px 0 !important;
+  overflow-y: auto !important;
 }
 
 .date-time-picker__calendar .react-datepicker__time-list-item {
@@ -615,6 +607,11 @@ textarea {
   align-items: center;
   justify-content: center;
   height: 34px !important;
+}
+
+#date-time-picker-portal {
+  position: relative;
+  z-index: 200;
 }
 
 .date-time-picker__calendar .react-datepicker__triangle {

@@ -70,6 +70,7 @@ export function DateTimePickerField({
           placeholderText={placeholder}
           popperPlacement="bottom-start"
           popperClassName="date-time-picker__popper"
+          portalId="date-time-picker-portal"
           selected={value}
           showPopperArrow={false}
           showTimeSelect
