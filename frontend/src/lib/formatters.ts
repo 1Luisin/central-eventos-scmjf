@@ -1,4 +1,5 @@
 import type { CategoriaResponse, CategoriaStatus, CategoriaViewModel, EventoResponse } from "@/types/api";
+import { format } from "date-fns";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
   dateStyle: "short",
@@ -42,6 +43,14 @@ export function toApiDateTime(value: string): string {
   }
 
   return value.length === 16 ? `${value}:00` : value;
+}
+
+export function toApiDateTimeFromDate(value: Date | null): string {
+  if (!value) {
+    return "";
+  }
+
+  return format(value, "yyyy-MM-dd'T'HH:mm:ss");
 }
 
 export function trimOrUndefined(value: FormDataEntryValue | null): string | undefined {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { DateTimePickerField } from "@/components/forms/date-time-picker-field";
 import { getRequestErrorMessage, requestJson, requestVoid } from "@/lib/api/client";
 import {
   formatBooleanFlag,
@@ -10,7 +11,7 @@ import {
   formatDateTime,
   formatFractionLabel,
   normalizeText,
-  toApiDateTime,
+  toApiDateTimeFromDate,
   toTitleCaseFlag,
   trimOrUndefined
 } from "@/lib/formatters";
@@ -38,6 +39,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [cancelingEnrollmentId, setCancelingEnrollmentId] = useState<number | null>(null);
+  const [eventStartDate, setEventStartDate] = useState<Date | null>(null);
+  const [eventEndDate, setEventEndDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (requestedEventId && data.eventos.some((evento) => String(evento.id) === requestedEventId)) {
@@ -78,8 +81,13 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const dataHoraInicio = toApiDateTime(normalizeText(formData.get("dataHoraInicio")));
-    const dataHoraFim = toApiDateTime(normalizeText(formData.get("dataHoraFim")));
+    const dataHoraInicio = toApiDateTimeFromDate(eventStartDate);
+    const dataHoraFim = toApiDateTimeFromDate(eventEndDate);
+
+    if (!dataHoraInicio || !dataHoraFim) {
+      setEventMessage("Informe a data/hora de início e de fim do evento.");
+      return;
+    }
 
     if (new Date(dataHoraFim).getTime() <= new Date(dataHoraInicio).getTime()) {
       setEventMessage("Data/hora final deve ser maior que a inicial.");
@@ -109,6 +117,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       });
 
       form.reset();
+      setEventStartDate(null);
+      setEventEndDate(null);
       setSelectedEventId(String(created.id));
       setEventMessage(`Evento "${created.nomeEvento}" cadastrado com sucesso.`);
       await refreshData(created.id);
@@ -235,15 +245,24 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               <input name="nomeEvento" type="text" placeholder="Ex.: Jornada de Enfermagem" required />
             </label>
 
-            <label className="field">
-              <span>DATA/HORA INÍCIO</span>
-              <input name="dataHoraInicio" type="datetime-local" required />
-            </label>
+            <DateTimePickerField
+              label="DATA/HORA INÍCIO"
+              onChange={(nextValue) => {
+                setEventStartDate(nextValue);
 
-            <label className="field">
-              <span>DATA/HORA FIM</span>
-              <input name="dataHoraFim" type="datetime-local" required />
-            </label>
+                if (eventEndDate && nextValue && eventEndDate.getTime() < nextValue.getTime()) {
+                  setEventEndDate(nextValue);
+                }
+              }}
+              value={eventStartDate}
+            />
+
+            <DateTimePickerField
+              label="DATA/HORA FIM"
+              minDate={eventStartDate ?? undefined}
+              onChange={setEventEndDate}
+              value={eventEndDate}
+            />
 
             <label className="field">
               <span>NOME DO RESPONSÁVEL</span>
