@@ -6,8 +6,6 @@ export type ExternalUserRecord = {
   dsSenhaHash: string;
   nrTelefone: string;
   dtNascimento: string;
-  nmInstituicao: string;
-  nmCargo: string;
   flAtivo: "S" | "N";
   flAceiteLgpd: "S" | "N";
   dtCadastro: string;
@@ -22,8 +20,6 @@ export type ExternalUserRegistrationInput = {
   dsSenha: string;
   nrTelefone: string;
   dtNascimento: string;
-  nmInstituicao: string;
-  nmCargo: string;
   flAceiteLgpd: boolean;
 };
 
@@ -207,8 +203,6 @@ export async function registerExternalUser(input: ExternalUserRegistrationInput)
     dsSenhaHash: hashPassword(password),
     nrTelefone: normalizePhone(input.nrTelefone),
     dtNascimento: input.dtNascimento,
-    nmInstituicao: normalizeText(input.nmInstituicao),
-    nmCargo: normalizeText(input.nmCargo),
     flAtivo: "S",
     flAceiteLgpd: "S",
     dtCadastro: timestamp,

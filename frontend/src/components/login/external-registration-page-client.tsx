@@ -19,8 +19,6 @@ type FormState = {
   confirmarSenha: string;
   nrTelefone: string;
   dtNascimento: string;
-  nmInstituicao: string;
-  nmCargo: string;
   flAceiteLgpd: boolean;
 };
 
@@ -32,8 +30,6 @@ const INITIAL_FORM: FormState = {
   confirmarSenha: "",
   nrTelefone: "",
   dtNascimento: "",
-  nmInstituicao: "",
-  nmCargo: "",
   flAceiteLgpd: false
 };
 
@@ -69,8 +65,6 @@ export function ExternalRegistrationPageClient() {
         dsSenha: form.dsSenha,
         nrTelefone: form.nrTelefone,
         dtNascimento: form.dtNascimento,
-        nmInstituicao: form.nmInstituicao,
-        nmCargo: form.nmCargo,
         flAceiteLgpd: form.flAceiteLgpd
       });
 
@@ -115,7 +109,6 @@ export function ExternalRegistrationPageClient() {
             <span className={styles.heroEyebrow}>Campos preenchidos pelo participante</span>
             <ul className={styles.heroList}>
               <li>Nome completo, CPF, e-mail, telefone e data de nascimento.</li>
-              <li>Instituição de origem e cargo ou função.</li>
               <li>Senha de acesso e aceite LGPD para tratamento dos dados.</li>
             </ul>
           </div>
@@ -205,30 +198,6 @@ export function ExternalRegistrationPageClient() {
                   type="date"
                   value={form.dtNascimento}
                   onChange={(event) => updateField("dtNascimento", event.target.value)}
-                />
-              </label>
-
-              <label className={styles.field}>
-                <span>Instituição</span>
-                <input
-                  autoComplete="organization"
-                  placeholder="Ex.: Faculdade, hospital, empresa ou órgão"
-                  required
-                  type="text"
-                  value={form.nmInstituicao}
-                  onChange={(event) => updateField("nmInstituicao", event.target.value)}
-                />
-              </label>
-
-              <label className={styles.field}>
-                <span>Cargo ou função</span>
-                <input
-                  autoComplete="organization-title"
-                  placeholder="Ex.: Enfermeira, acadêmico, fisioterapeuta"
-                  required
-                  type="text"
-                  value={form.nmCargo}
-                  onChange={(event) => updateField("nmCargo", event.target.value)}
                 />
               </label>
 
