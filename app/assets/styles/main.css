@@ -813,7 +813,7 @@ body.page-transitioning .system-shell {
 .summary-card .event-title,
 .registration-card .event-title {
   font-family: var(--font-event-title);
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: -0.04em;
   line-height: 1.02;
 }
