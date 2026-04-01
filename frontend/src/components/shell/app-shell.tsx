@@ -4,6 +4,7 @@ import Image from "next/image";
 import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
 import { AppNavigation } from "@/components/shell/app-navigation";
 import { LogoutButton } from "@/components/shell/logout-button";
+import { getAuthenticatedUserGreetingName } from "@/lib/auth/server-session";
 
 type AppShellProps = {
   activeRoute: "dashboard" | "cadastros" | "inscricoes";
@@ -16,7 +17,7 @@ type AppShellProps = {
   children: ReactNode;
 };
 
-export function AppShell({
+export async function AppShell({
   activeRoute,
   eyebrow,
   title,
@@ -26,6 +27,8 @@ export function AppShell({
   sidebarDescription,
   children
 }: AppShellProps) {
+  const greetingName = await getAuthenticatedUserGreetingName();
+
   return (
     <>
       <header className="topbar">
@@ -41,7 +44,10 @@ export function AppShell({
             </div>
           </div>
 
-          <LogoutButton />
+          <div className="topbar__actions">
+            {greetingName ? <span className="topbar__greeting">Olá, {greetingName}!</span> : null}
+            <LogoutButton />
+          </div>
         </div>
       </header>
 

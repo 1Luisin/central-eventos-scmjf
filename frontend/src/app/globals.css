@@ -356,6 +356,19 @@ textarea {
   line-height: 1.05;
 }
 
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.topbar__greeting {
+  color: var(--text-soft);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .topbar__logout {
   min-width: 120px;
   white-space: nowrap;
@@ -1149,9 +1162,15 @@ textarea {
   }
 
   .topbar__inner,
-  .topbar__brand {
+  .topbar__brand,
+  .topbar__actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .topbar__greeting {
+    text-align: center;
+    white-space: normal;
   }
 
   .topbar__logout {
