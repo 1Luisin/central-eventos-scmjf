@@ -470,7 +470,7 @@ function renderEventsDashboard() {
           <div class="event-card__header">
             <div>
               <span class="card-badge">Evento institucional</span>
-              <h3>${escapeHtml(eventItem.name)}</h3>
+              <h3 class="event-title">${escapeHtml(eventItem.name)}</h3>
               <p class="event-card__meta">
                 ${escapeHtml(formatDateTime(eventItem.start))} até ${escapeHtml(formatDateTime(eventItem.end))}
               </p>
@@ -611,7 +611,7 @@ function renderManagementSummary(selectedEventId) {
           <div class="summary-card__head">
             <div>
               <span class="card-badge">Evento disponível</span>
-              <h3>${escapeHtml(eventItem.name)}</h3>
+              <h3 class="event-title">${escapeHtml(eventItem.name)}</h3>
               <p class="summary-card__meta">
                 ${escapeHtml(formatDateTime(eventItem.start))} até ${escapeHtml(formatDateTime(eventItem.end))}
               </p>
@@ -728,7 +728,7 @@ function renderRegistrationPage() {
           <div class="registration-card__header">
             <div>
               <span class="card-badge">Inscrições abertas</span>
-              <h3>${escapeHtml(eventItem.name)}</h3>
+              <h3 class="event-title">${escapeHtml(eventItem.name)}</h3>
               <p class="registration-card__meta">
                 ${escapeHtml(formatDateTime(eventItem.start))} até ${escapeHtml(formatDateTime(eventItem.end))}
               </p>

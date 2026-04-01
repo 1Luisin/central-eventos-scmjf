@@ -12,6 +12,7 @@
   --accent-soft: #f2deda;
   --warning: #c7a07c;
   --success-soft: #f0e0dc;
+  --font-event-title: "Aptos", "Segoe UI Variable Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --shadow-lg: 0 26px 70px rgba(96, 45, 53, 0.16);
   --shadow-md: 0 18px 42px rgba(96, 45, 53, 0.12);
   --radius-xl: 32px;
@@ -806,6 +807,15 @@ body.page-transitioning .system-shell {
 .registration-card__header h3 {
   margin-top: 8px;
   font-size: 2rem;
+}
+
+.event-card .event-title,
+.summary-card .event-title,
+.registration-card .event-title {
+  font-family: var(--font-event-title);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
 }
 
 .card-badge,

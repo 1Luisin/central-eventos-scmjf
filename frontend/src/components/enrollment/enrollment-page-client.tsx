@@ -221,7 +221,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
               <div className="section-heading">
                 <div>
                   <span className="eyebrow">Evento #{evento.id}</span>
-                  <h2>{evento.nomeEvento}</h2>
+                  <h2 className="event-title">{evento.nomeEvento}</h2>
                 </div>
 
                 <span className={evento.ativo === "S" ? "badge badge--success" : "badge badge--danger"}>

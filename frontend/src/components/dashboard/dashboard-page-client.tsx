@@ -111,7 +111,7 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
               <div className="event-card__header">
                 <div>
                   <span className="eyebrow">Evento #{evento.id}</span>
-                  <h3>{evento.nomeEvento}</h3>
+                  <h3 className="event-title">{evento.nomeEvento}</h3>
                 </div>
 
                 <div className="badge-row">

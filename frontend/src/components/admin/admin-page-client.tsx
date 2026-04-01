@@ -392,7 +392,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               <div className="event-card__header">
                 <div>
                   <span className="eyebrow">Evento #{evento.id}</span>
-                  <h2>{evento.nomeEvento}</h2>
+                  <h2 className="event-title">{evento.nomeEvento}</h2>
                 </div>
 
                 <div className="badge-row">

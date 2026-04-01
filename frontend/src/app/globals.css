@@ -16,6 +16,7 @@
   --success: #8b5a3d;
   --success-soft: rgba(139, 90, 61, 0.12);
   --neutral-soft: rgba(133, 104, 94, 0.12);
+  --font-event-title: "Aptos", "Segoe UI Variable Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --shadow-lg: 0 28px 80px rgba(97, 47, 54, 0.14);
   --shadow-md: 0 18px 42px rgba(97, 47, 54, 0.1);
   --radius-xl: 32px;
@@ -421,6 +422,15 @@ textarea {
   margin-top: 0;
   line-height: 1.1;
   font-size: clamp(1.5rem, 2vw, 2rem);
+}
+
+.event-card .event-title,
+.event-admin-card .event-title,
+.section-heading .event-title {
+  font-family: var(--font-event-title);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
 }
 
 .meta-grid {
