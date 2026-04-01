@@ -222,6 +222,23 @@ textarea {
   line-height: 1.65;
 }
 
+.sidebar-note__content {
+  display: grid;
+  gap: 12px;
+}
+
+.sidebar-note__list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-soft);
+}
+
+.sidebar-note__list li {
+  line-height: 1.55;
+}
+
 .nav-card {
   display: grid;
   gap: 10px;

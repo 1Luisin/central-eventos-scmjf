@@ -8,7 +8,7 @@ type AppShellProps = {
   description: string;
   sidebarEyebrow: string;
   sidebarTitle: string;
-  sidebarDescription: string;
+  sidebarDescription: ReactNode;
   children: ReactNode;
 };
 
@@ -51,7 +51,13 @@ export function AppShell({
         <div className="sidebar-note">
           <span className="eyebrow">{sidebarEyebrow}</span>
           <h2>{sidebarTitle}</h2>
-          {sidebarDescription ? <p>{sidebarDescription}</p> : null}
+          {sidebarDescription ? (
+            typeof sidebarDescription === "string" ? (
+              <p>{sidebarDescription}</p>
+            ) : (
+              <div className="sidebar-note__content">{sidebarDescription}</div>
+            )
+          ) : null}
         </div>
       </aside>
 
