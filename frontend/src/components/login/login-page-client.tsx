@@ -101,14 +101,18 @@ export function LoginPageClient() {
 
           <div className={styles.segment} aria-label="Tipo de acesso">
             <button
-              className={accessMode === "interno" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton}
+              className={
+                accessMode === "interno" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton
+              }
               type="button"
               onClick={() => setAccessMode("interno")}
             >
               Interno
             </button>
             <button
-              className={accessMode === "externo" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton}
+              className={
+                accessMode === "externo" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton
+              }
               type="button"
               onClick={() => setAccessMode("externo")}
             >
