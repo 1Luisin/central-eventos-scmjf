@@ -18,10 +18,16 @@ public class UsuarioInternoRepository {
 
     public UsuarioInternoRepository(
             NamedParameterJdbcTemplate jdbcTemplate,
-            @Value("${app.auth.interno.mv-schema:DBAMV}") String mvSchema
+            @Value("${app.auth.interno.usuario-schema:DBASGU}") String usuarioSchema,
+            @Value("${app.auth.interno.prestador-schema:DBAMV}") String prestadorSchema,
+            @Value("${app.auth.interno.senha-function-schema:DBASGU}") String senhaFunctionSchema,
+            @Value("${app.auth.interno.papel-function-schema:DBAMV}") String papelFunctionSchema
     ) {
         this.jdbcTemplate = jdbcTemplate;
-        String schema = normalizarSchema(mvSchema);
+        String usuariosOwner = normalizarSchema(usuarioSchema);
+        String prestadorOwner = normalizarSchema(prestadorSchema);
+        String senhaFunctionOwner = normalizarSchema(senhaFunctionSchema);
+        String papelFunctionOwner = normalizarSchema(papelFunctionSchema);
         this.loginSql = """
                 SELECT
                     u.sn_ativo AS ativo,
@@ -34,7 +40,7 @@ public class UsuarioInternoRepository {
                 FROM %s.USUARIOS u
                 LEFT JOIN %s.PRESTADOR p ON p.cd_prestador = u.cd_prestador
                 WHERE UPPER(u.cd_usuario) = :matricula
-                """.formatted(schema, schema, schema, schema);
+                """.formatted(senhaFunctionOwner, papelFunctionOwner, usuariosOwner, prestadorOwner);
     }
 
     public Optional<UsuarioInternoAutenticacaoRow> buscarParaAutenticacao(String matricula, String senha, String papeis) {
