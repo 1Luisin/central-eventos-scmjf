@@ -14,6 +14,8 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
 
     boolean existsByCategoria_IdAndMatriculaIgnoreCase(Long categoriaId, String matricula);
 
+    boolean existsByCategoria_IdAndUsuarioExterno_Id(Long categoriaId, Long usuarioExternoId);
+
     long countByCategoria_Id(Long categoriaId);
 
     @Query("""
@@ -21,6 +23,7 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
             from Inscricao i
             join fetch i.evento
             join fetch i.categoria
+            left join fetch i.usuarioExterno
             where i.id = :inscricaoId
             """)
     Optional<Inscricao> findDetalhadaById(@Param("inscricaoId") Long inscricaoId);

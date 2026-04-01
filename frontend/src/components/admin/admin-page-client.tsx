@@ -177,8 +177,13 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     }
   }
 
-  async function handleCancelEnrollment(inscricaoId: number, matricula: string, eventoId: number) {
-    const confirmed = window.confirm(`Deseja cancelar a inscrição da matrícula ${matricula}?`);
+  async function handleCancelEnrollment(
+    inscricaoId: number,
+    participantLabel: string,
+    userLog: string,
+    eventoId: number
+  ) {
+    const confirmed = window.confirm(`Deseja cancelar a inscrição de ${participantLabel}?`);
 
     if (!confirmed) {
       return;
@@ -191,7 +196,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       await requestVoid(`/api/inscricoes/${inscricaoId}`, {
         method: "DELETE",
         headers: {
-          "X-Usuario-Log": matricula
+          "X-Usuario-Log": userLog
         }
       });
 
@@ -508,9 +513,15 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                               <li className="participant-item" key={inscricao.id}>
                                 <div>
                                   <strong>{inscricao.nomeUsuario}</strong>
-                                  <span>Matrícula {inscricao.matricula}</span>
                                   <span>
-                                    {inscricao.nomeSetor} • {inscricao.numeroContato}
+                                    {inscricao.tipoParticipante === "EXTERNO"
+                                      ? "Participante externo"
+                                      : `Matrícula ${inscricao.matricula}`}
+                                  </span>
+                                  <span>
+                                    {inscricao.tipoParticipante === "EXTERNO"
+                                      ? `CPF ${inscricao.matricula} • ${inscricao.numeroContato}`
+                                      : `${inscricao.nomeSetor} • ${inscricao.numeroContato}`}
                                   </span>
                                   <span>Registrado em {formatDateTime(inscricao.dataHoraRegistro)}</span>
                                 </div>
@@ -519,7 +530,16 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                                   className="button button--danger"
                                   type="button"
                                   onClick={() =>
-                                    handleCancelEnrollment(inscricao.id, inscricao.matricula, evento.id)
+                                    handleCancelEnrollment(
+                                      inscricao.id,
+                                      inscricao.tipoParticipante === "EXTERNO"
+                                        ? inscricao.nomeUsuario
+                                        : `matrícula ${inscricao.matricula}`,
+                                      inscricao.tipoParticipante === "EXTERNO"
+                                        ? inscricao.nomeUsuario
+                                        : inscricao.matricula,
+                                      evento.id
+                                    )
                                   }
                                   disabled={cancelingEnrollmentId === inscricao.id}
                                 >

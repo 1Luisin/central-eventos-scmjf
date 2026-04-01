@@ -35,6 +35,8 @@ export type InscricaoResponse = {
   id: number;
   eventoId: number;
   categoriaId: number;
+  idUsuarioExterno: number | null;
+  tipoParticipante: "INTERNO" | "EXTERNO";
   numeroContato: string;
   dataHoraRegistro: string;
   nomeSetor: string;
@@ -66,9 +68,39 @@ export type InscricaoCreatePayload = {
   eventoId: number;
   categoriaId: number;
   numeroContato: string;
-  nomeSetor: string;
-  nomeUsuario: string;
-  matricula: string;
+  nomeSetor?: string;
+  nomeUsuario?: string;
+  matricula?: string;
+  idUsuarioExterno?: number;
+};
+
+export type ExternalUserResponse = {
+  idUsuarioExterno: number;
+  nomeCompleto: string;
+  cpf: string;
+  email: string;
+  numeroTelefone: string | null;
+  dataNascimento: string | null;
+  ativo: "S" | "N";
+  aceiteLgpd: "S" | "N";
+  dataCadastro: string;
+  dataUltimaAtualizacao: string | null;
+  dataUltimoAcesso: string | null;
+};
+
+export type ExternalUserRegisterPayload = {
+  nomeCompleto: string;
+  cpf: string;
+  email: string;
+  senha: string;
+  numeroTelefone?: string;
+  dataNascimento?: string;
+  aceiteLgpd: boolean;
+};
+
+export type ExternalUserLoginPayload = {
+  email: string;
+  senha: string;
 };
 
 export type CategoriaStatus =

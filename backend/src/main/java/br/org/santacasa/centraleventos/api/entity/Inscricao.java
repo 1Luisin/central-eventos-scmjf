@@ -35,6 +35,10 @@ public class Inscricao {
     @JoinColumn(name = "CD_CATEGORIA", nullable = false)
     private Categoria categoria;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_USUARIO_EXTERNO")
+    private UsuarioExterno usuarioExterno;
+
     @Column(name = "NR_CONTATO", nullable = false, length = 30)
     private String nrContato;
 
@@ -72,6 +76,14 @@ public class Inscricao {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public UsuarioExterno getUsuarioExterno() {
+        return usuarioExterno;
+    }
+
+    public void setUsuarioExterno(UsuarioExterno usuarioExterno) {
+        this.usuarioExterno = usuarioExterno;
     }
 
     public String getNrContato() {

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
+import { LogoutButton } from "@/components/shell/logout-button";
 
 type AppShellProps = {
   activeRoute: "dashboard" | "cadastros" | "inscricoes";
@@ -37,13 +38,7 @@ export function AppShell({
         <div className="topbar__inner">
           <div className="topbar__brand">
             <div className="topbar__logo-wrap" aria-hidden="true">
-              <Image
-                src={logoSantaCasa}
-                alt=""
-                className="topbar__logo"
-                sizes="160px"
-                priority
-              />
+              <Image src={logoSantaCasa} alt="" className="topbar__logo" sizes="160px" priority />
             </div>
 
             <div className="topbar__copy">
@@ -52,9 +47,7 @@ export function AppShell({
             </div>
           </div>
 
-          <Link className="button button--secondary topbar__logout" href="/login">
-            Logoff
-          </Link>
+          <LogoutButton />
         </div>
       </header>
 

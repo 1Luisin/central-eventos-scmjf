@@ -8,29 +8,30 @@ import { startTransition, useState } from "react";
 import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
-import { registerExternalUser } from "@/lib/external-users";
+import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import type { ExternalUserRegisterPayload, ExternalUserResponse } from "@/types/api";
 import styles from "./external-registration-page-client.module.css";
 
 type FormState = {
-  nmCompleto: string;
-  nrCpf: string;
-  dsEmail: string;
-  dsSenha: string;
+  nomeCompleto: string;
+  cpf: string;
+  email: string;
+  senha: string;
   confirmarSenha: string;
-  nrTelefone: string;
-  dtNascimento: string;
-  flAceiteLgpd: boolean;
+  numeroTelefone: string;
+  dataNascimento: string;
+  aceiteLgpd: boolean;
 };
 
 const INITIAL_FORM: FormState = {
-  nmCompleto: "",
-  nrCpf: "",
-  dsEmail: "",
-  dsSenha: "",
+  nomeCompleto: "",
+  cpf: "",
+  email: "",
+  senha: "",
   confirmarSenha: "",
-  nrTelefone: "",
-  dtNascimento: "",
-  flAceiteLgpd: false
+  numeroTelefone: "",
+  dataNascimento: "",
+  aceiteLgpd: false
 };
 
 export function ExternalRegistrationPageClient() {
@@ -49,31 +50,40 @@ export function ExternalRegistrationPageClient() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (form.dsSenha !== form.confirmarSenha) {
+    if (form.senha !== form.confirmarSenha) {
       setFeedback("A confirmação de senha precisa ser igual à senha informada.");
       return;
     }
+
+    const payload: ExternalUserRegisterPayload = {
+      nomeCompleto: form.nomeCompleto.trim(),
+      cpf: form.cpf.trim(),
+      email: form.email.trim(),
+      senha: form.senha.trim(),
+      numeroTelefone: form.numeroTelefone.trim() || undefined,
+      dataNascimento: form.dataNascimento || undefined,
+      aceiteLgpd: form.aceiteLgpd
+    };
 
     try {
       setSubmitting(true);
       setFeedback("");
 
-      const createdUser = await registerExternalUser({
-        nmCompleto: form.nmCompleto,
-        nrCpf: form.nrCpf,
-        dsEmail: form.dsEmail,
-        dsSenha: form.dsSenha,
-        nrTelefone: form.nrTelefone,
-        dtNascimento: form.dtNascimento,
-        flAceiteLgpd: form.flAceiteLgpd
+      const createdUser = await requestJson<ExternalUserResponse>("/api/usuarios-externos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Usuario-Log": payload.email
+        },
+        body: JSON.stringify(payload)
       });
 
       startTransition(() => {
-        router.push(`/login?accessMode=externo&registered=1&identifier=${encodeURIComponent(createdUser.dsEmail)}`);
+        router.push(`/login?accessMode=externo&registered=1&identifier=${encodeURIComponent(createdUser.email)}`);
       });
     } catch (error) {
       setSubmitting(false);
-      setFeedback(error instanceof Error ? error.message : "Não foi possível concluir o cadastro externo.");
+      setFeedback(getRequestErrorMessage(error));
     }
   }
 
@@ -119,7 +129,7 @@ export function ExternalRegistrationPageClient() {
               <li>ID do usuário externo.</li>
               <li>Status ativo do cadastro.</li>
               <li>Datas de cadastro, atualização e último acesso.</li>
-              <li>Armazenamento da senha em hash nesta etapa de homologação local.</li>
+              <li>Hash seguro da senha gerado e armazenado pela API.</li>
             </ul>
           </div>
         </section>
@@ -133,7 +143,7 @@ export function ExternalRegistrationPageClient() {
             <div>
               <span className={styles.eyebrow}>Registro</span>
               <h2>Cadastre seu acesso externo</h2>
-              <p>Os dados abaixo serão usados para identificação, contato e autenticação do participante externo.</p>
+              <p>Os dados abaixo serão enviados para a API da Central de Eventos e gravados no Oracle.</p>
             </div>
           </div>
 
@@ -146,8 +156,8 @@ export function ExternalRegistrationPageClient() {
                   placeholder="Ex.: Maria Eduarda de Souza"
                   required
                   type="text"
-                  value={form.nmCompleto}
-                  onChange={(event) => updateField("nmCompleto", event.target.value)}
+                  value={form.nomeCompleto}
+                  onChange={(event) => updateField("nomeCompleto", event.target.value)}
                 />
               </label>
 
@@ -160,8 +170,8 @@ export function ExternalRegistrationPageClient() {
                   placeholder="000.000.000-00"
                   required
                   type="text"
-                  value={form.nrCpf}
-                  onChange={(event) => updateField("nrCpf", event.target.value)}
+                  value={form.cpf}
+                  onChange={(event) => updateField("cpf", event.target.value)}
                 />
               </label>
 
@@ -169,11 +179,11 @@ export function ExternalRegistrationPageClient() {
                 <span>E-mail</span>
                 <input
                   autoComplete="email"
-                  placeholder="nome@instituicao.com.br"
+                  placeholder="nome@email.com"
                   required
                   type="email"
-                  value={form.dsEmail}
-                  onChange={(event) => updateField("dsEmail", event.target.value)}
+                  value={form.email}
+                  onChange={(event) => updateField("email", event.target.value)}
                 />
               </label>
 
@@ -183,10 +193,9 @@ export function ExternalRegistrationPageClient() {
                   autoComplete="tel"
                   inputMode="tel"
                   placeholder="(32) 99999-9999"
-                  required
                   type="tel"
-                  value={form.nrTelefone}
-                  onChange={(event) => updateField("nrTelefone", event.target.value)}
+                  value={form.numeroTelefone}
+                  onChange={(event) => updateField("numeroTelefone", event.target.value)}
                 />
               </label>
 
@@ -194,10 +203,9 @@ export function ExternalRegistrationPageClient() {
                 <span>Data de nascimento</span>
                 <input
                   autoComplete="bday"
-                  required
                   type="date"
-                  value={form.dtNascimento}
-                  onChange={(event) => updateField("dtNascimento", event.target.value)}
+                  value={form.dataNascimento}
+                  onChange={(event) => updateField("dataNascimento", event.target.value)}
                 />
               </label>
 
@@ -208,8 +216,8 @@ export function ExternalRegistrationPageClient() {
                   placeholder="Defina uma senha"
                   required
                   type="password"
-                  value={form.dsSenha}
-                  onChange={(event) => updateField("dsSenha", event.target.value)}
+                  value={form.senha}
+                  onChange={(event) => updateField("senha", event.target.value)}
                 />
               </label>
 
@@ -227,10 +235,10 @@ export function ExternalRegistrationPageClient() {
 
               <label className={`${styles.checkbox} ${styles.fieldFull}`}>
                 <input
-                  checked={form.flAceiteLgpd}
+                  checked={form.aceiteLgpd}
                   required
                   type="checkbox"
-                  onChange={(event) => updateField("flAceiteLgpd", event.target.checked)}
+                  onChange={(event) => updateField("aceiteLgpd", event.target.checked)}
                 />
                 <span>
                   Declaro que li e aceito o tratamento dos meus dados pessoais para cadastro e acesso ao sistema.
@@ -240,8 +248,7 @@ export function ExternalRegistrationPageClient() {
 
             <div className={styles.systemNote}>
               <strong>Observação importante:</strong> os campos <code>FL_ATIVO</code>, <code>DT_CADASTRO</code>,{" "}
-              <code>DT_ULTIMA_ATUALIZACAO</code> e <code>DT_ULTIMO_ACESSO</code> são controlados automaticamente pelo
-              sistema nesta etapa.
+              <code>DT_ULTIMA_ATUALIZACAO</code> e <code>DT_ULTIMO_ACESSO</code> são controlados pela API.
             </div>
 
             <p className={styles.feedback} aria-live="polite">

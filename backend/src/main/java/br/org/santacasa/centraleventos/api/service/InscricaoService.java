@@ -5,6 +5,7 @@ import br.org.santacasa.centraleventos.api.dto.InscricaoResponse;
 import br.org.santacasa.centraleventos.api.entity.Categoria;
 import br.org.santacasa.centraleventos.api.entity.Evento;
 import br.org.santacasa.centraleventos.api.entity.Inscricao;
+import br.org.santacasa.centraleventos.api.entity.UsuarioExterno;
 import br.org.santacasa.centraleventos.api.exception.BusinessRuleException;
 import br.org.santacasa.centraleventos.api.exception.ResourceNotFoundException;
 import br.org.santacasa.centraleventos.api.repository.CategoriaRepository;
@@ -18,21 +19,26 @@ import java.util.List;
 @Service
 public class InscricaoService {
 
+    private static final String SETOR_PUBLICO_EXTERNO = "Público externo";
+
     private final InscricaoRepository inscricaoRepository;
     private final CategoriaRepository categoriaRepository;
     private final EventoService eventoService;
     private final LogEventoService logEventoService;
+    private final UsuarioExternoService usuarioExternoService;
 
     public InscricaoService(
             InscricaoRepository inscricaoRepository,
             CategoriaRepository categoriaRepository,
             EventoService eventoService,
-            LogEventoService logEventoService
+            LogEventoService logEventoService,
+            UsuarioExternoService usuarioExternoService
     ) {
         this.inscricaoRepository = inscricaoRepository;
         this.categoriaRepository = categoriaRepository;
         this.eventoService = eventoService;
         this.logEventoService = logEventoService;
+        this.usuarioExternoService = usuarioExternoService;
     }
 
     @Transactional
@@ -43,23 +49,42 @@ public class InscricaoService {
 
         validarVinculoEventoCategoria(evento, categoria);
         validarAtivacao(evento, categoria);
-        validarDuplicidade(request.categoriaId(), request.matricula());
         validarLimiteDeVagas(categoria);
 
         Inscricao inscricao = new Inscricao();
         inscricao.setEvento(evento);
         inscricao.setCategoria(categoria);
-        inscricao.setNrContato(request.numeroContato().trim());
         inscricao.setDhRegistro(LocalDateTime.now());
-        inscricao.setNmSetor(request.nomeSetor().trim());
-        inscricao.setNmUsuario(request.nomeUsuario().trim());
-        inscricao.setMatricula(request.matricula().trim());
+
+        String identificadorParticipante;
+
+        if (request.idUsuarioExterno() != null) {
+            UsuarioExterno usuarioExterno = usuarioExternoService.buscarEntidadePorId(request.idUsuarioExterno());
+            validarInscricaoExterna(categoria, usuarioExterno);
+            validarDuplicidadeExterna(request.categoriaId(), usuarioExterno.getId());
+
+            inscricao.setUsuarioExterno(usuarioExterno);
+            inscricao.setNrContato(normalizarContatoExterno(request.numeroContato(), usuarioExterno));
+            inscricao.setNmSetor(normalizarOpcional(request.nomeSetor(), SETOR_PUBLICO_EXTERNO));
+            inscricao.setNmUsuario(usuarioExterno.getNmCompleto());
+            inscricao.setMatricula(usuarioExterno.getNrCpf());
+            identificadorParticipante = usuarioExterno.getDsEmail();
+        } else {
+            validarCamposInscricaoInterna(request);
+            validarDuplicidadeInterna(request.categoriaId(), request.matricula());
+
+            inscricao.setNrContato(request.numeroContato().trim());
+            inscricao.setNmSetor(request.nomeSetor().trim());
+            inscricao.setNmUsuario(request.nomeUsuario().trim());
+            inscricao.setMatricula(request.matricula().trim());
+            identificadorParticipante = inscricao.getMatricula();
+        }
 
         Inscricao salva = inscricaoRepository.save(inscricao);
 
         logEventoService.registrarAcao(
                 "Criou a inscrição " + salva.getId() + " no evento " + evento.getId() + " e categoria " + categoria.getId(),
-                logEventoService.normalizarUsuarioLog(usuarioLog, salva.getMatricula())
+                logEventoService.normalizarUsuarioLog(usuarioLog, identificadorParticipante)
         );
 
         return toResponse(salva);
@@ -72,10 +97,14 @@ public class InscricaoService {
 
         inscricaoRepository.delete(inscricao);
 
+        String identificadorParticipante = inscricao.getUsuarioExterno() != null
+                ? inscricao.getUsuarioExterno().getDsEmail()
+                : inscricao.getMatricula();
+
         logEventoService.registrarAcao(
                 "Cancelou a inscrição " + inscricao.getId() + " do evento " + inscricao.getEvento().getId()
                         + " e categoria " + inscricao.getCategoria().getId(),
-                logEventoService.normalizarUsuarioLog(usuarioLog, inscricao.getMatricula())
+                logEventoService.normalizarUsuarioLog(usuarioLog, identificadorParticipante)
         );
     }
 
@@ -104,9 +133,39 @@ public class InscricaoService {
         }
     }
 
-    private void validarDuplicidade(Long categoriaId, String matricula) {
+    private void validarInscricaoExterna(Categoria categoria, UsuarioExterno usuarioExterno) {
+        if (isInativo(usuarioExterno.getFlAtivo())) {
+            throw new BusinessRuleException("Cadastro externo inativo");
+        }
+        if (!"S".equalsIgnoreCase(categoria.getSnExterno())) {
+            throw new BusinessRuleException("Categoria não permite inscrições externas");
+        }
+    }
+
+    private void validarCamposInscricaoInterna(InscricaoCreateRequest request) {
+        if (request.numeroContato() == null || request.numeroContato().isBlank()) {
+            throw new BusinessRuleException("Contato é obrigatório");
+        }
+        if (request.nomeSetor() == null || request.nomeSetor().isBlank()) {
+            throw new BusinessRuleException("Setor é obrigatório");
+        }
+        if (request.nomeUsuario() == null || request.nomeUsuario().isBlank()) {
+            throw new BusinessRuleException("Nome do usuário é obrigatório");
+        }
+        if (request.matricula() == null || request.matricula().isBlank()) {
+            throw new BusinessRuleException("Matrícula é obrigatória");
+        }
+    }
+
+    private void validarDuplicidadeInterna(Long categoriaId, String matricula) {
         if (inscricaoRepository.existsByCategoria_IdAndMatriculaIgnoreCase(categoriaId, matricula.trim())) {
             throw new BusinessRuleException("Usuário já inscrito");
+        }
+    }
+
+    private void validarDuplicidadeExterna(Long categoriaId, Long usuarioExternoId) {
+        if (inscricaoRepository.existsByCategoria_IdAndUsuarioExterno_Id(categoriaId, usuarioExternoId)) {
+            throw new BusinessRuleException("Usuário externo já inscrito");
         }
     }
 
@@ -115,6 +174,23 @@ public class InscricaoService {
         if (inscricoesRealizadas >= categoria.getNrInscricoes()) {
             throw new BusinessRuleException("Categoria lotada");
         }
+    }
+
+    private String normalizarContatoExterno(String numeroContato, UsuarioExterno usuarioExterno) {
+        if (numeroContato != null && !numeroContato.isBlank()) {
+            return numeroContato.trim();
+        }
+        if (usuarioExterno.getNrTelefone() != null && !usuarioExterno.getNrTelefone().isBlank()) {
+            return usuarioExterno.getNrTelefone().trim();
+        }
+        throw new BusinessRuleException("Contato é obrigatório");
+    }
+
+    private String normalizarOpcional(String valor, String fallback) {
+        if (valor != null && !valor.isBlank()) {
+            return valor.trim();
+        }
+        return fallback;
     }
 
     private boolean isInativo(String flag) {
@@ -126,6 +202,8 @@ public class InscricaoService {
                 inscricao.getId(),
                 inscricao.getEvento().getId(),
                 inscricao.getCategoria().getId(),
+                inscricao.getUsuarioExterno() != null ? inscricao.getUsuarioExterno().getId() : null,
+                inscricao.getUsuarioExterno() != null ? "EXTERNO" : "INTERNO",
                 inscricao.getNrContato(),
                 inscricao.getDhRegistro(),
                 inscricao.getNmSetor(),

@@ -6,6 +6,8 @@ public record InscricaoResponse(
         Long id,
         Long eventoId,
         Long categoriaId,
+        Long idUsuarioExterno,
+        String tipoParticipante,
         String numeroContato,
         LocalDateTime dataHoraRegistro,
         String nomeSetor,

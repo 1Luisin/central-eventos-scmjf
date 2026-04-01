@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useDeferredValue, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { readLoginSession, type LoginSession } from "@/lib/auth/session";
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
 import {
   formatBooleanFlag,
@@ -12,11 +13,7 @@ import {
   normalizeText,
   toTitleCaseFlag
 } from "@/lib/formatters";
-import type {
-  EnrollmentData,
-  InscricaoCreatePayload,
-  InscricaoResponse
-} from "@/types/api";
+import type { EnrollmentData, InscricaoCreatePayload, InscricaoResponse } from "@/types/api";
 
 type EnrollmentPageClientProps = {
   initialData: EnrollmentData;
@@ -34,6 +31,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
   const queryEventId = searchParams.get("eventoId");
 
   const [data, setData] = useState(initialData);
+  const [loginSession, setLoginSession] = useState<LoginSession | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState(queryCategoryId || "");
   const [search, setSearch] = useState("");
   const [pageFeedback, setPageFeedback] = useState<string | null>(initialData.erroInicial ?? null);
@@ -42,6 +40,10 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const deferredSearch = useDeferredValue(search);
+
+  useEffect(() => {
+    setLoginSession(readLoginSession());
+  }, []);
 
   useEffect(() => {
     if (queryCategoryId && data.categorias.some((categoria) => String(categoria.id) === queryCategoryId)) {
@@ -63,6 +65,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     }
   }, [data.categorias, queryCategoryId, queryEventId, selectedCategoryId]);
 
+  const externalUser = loginSession?.accessMode === "externo" ? loginSession.externalUser ?? null : null;
   const normalizedSearch = deferredSearch.trim().toLowerCase();
   const visibleEvents = data.eventos
     .map((evento) => ({
@@ -72,12 +75,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
           return true;
         }
 
-        const haystack = [
-          evento.nomeEvento,
-          categoria.nomeCategoria,
-          categoria.descricao ?? "",
-          categoria.statusLabel
-        ]
+        const haystack = [evento.nomeEvento, categoria.nomeCategoria, categoria.descricao ?? "", categoria.statusLabel]
           .join(" ")
           .toLowerCase();
 
@@ -87,6 +85,20 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     .filter((evento) => evento.categorias.length > 0);
 
   const selectedCategory = data.categorias.find((categoria) => String(categoria.id) === selectedCategoryId) ?? null;
+  const categoriaPermiteExterno = selectedCategory?.externo === "S";
+  const canCurrentUserEnroll =
+    (selectedCategory?.permiteInscricao ?? false) &&
+    (!externalUser || categoriaPermiteExterno);
+  const selectedCategoryStatusLabel = selectedCategory
+    ? externalUser && !categoriaPermiteExterno
+      ? "Somente público interno"
+      : selectedCategory.statusLabel
+    : "";
+  const selectedCategoryStatusDescription = selectedCategory
+    ? externalUser && !categoriaPermiteExterno
+      ? "Esta categoria aceita apenas participantes internos. Faça a inscrição em uma categoria com acesso externo liberado."
+      : selectedCategory.statusDescription
+    : "";
 
   async function refreshData() {
     try {
@@ -123,17 +135,31 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
       return;
     }
 
+    if (externalUser && selectedCategory.externo !== "S") {
+      setFormFeedback("Esta categoria aceita apenas participantes internos.");
+      setSuccessNotice(null);
+      return;
+    }
+
     const form = event.currentTarget;
     const formData = new FormData(form);
 
-    const payload: InscricaoCreatePayload = {
-      eventoId: selectedCategory.eventoId,
-      categoriaId: selectedCategory.id,
-      numeroContato: normalizeText(formData.get("numeroContato")),
-      nomeSetor: normalizeText(formData.get("nomeSetor")),
-      nomeUsuario: normalizeText(formData.get("nomeUsuario")),
-      matricula: normalizeText(formData.get("matricula"))
-    };
+    const payload: InscricaoCreatePayload = externalUser
+      ? {
+          eventoId: selectedCategory.eventoId,
+          categoriaId: selectedCategory.id,
+          idUsuarioExterno: externalUser.idUsuarioExterno,
+          numeroContato: normalizeText(formData.get("numeroContato")),
+          nomeSetor: "Público externo"
+        }
+      : {
+          eventoId: selectedCategory.eventoId,
+          categoriaId: selectedCategory.id,
+          numeroContato: normalizeText(formData.get("numeroContato")),
+          nomeSetor: normalizeText(formData.get("nomeSetor")),
+          nomeUsuario: normalizeText(formData.get("nomeUsuario")),
+          matricula: normalizeText(formData.get("matricula"))
+        };
 
     try {
       setSubmitting(true);
@@ -144,7 +170,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Usuario-Log": payload.matricula
+          "X-Usuario-Log": externalUser?.email ?? payload.matricula ?? payload.nomeUsuario ?? "PARTICIPANTE"
         },
         body: JSON.stringify(payload)
       });
@@ -279,7 +305,12 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                       </div>
                       <div className="occupancy__legend">
                         <span>
-                          {formatFractionLabel(categoria.inscricoesRealizadas, categoria.limiteInscricoes, "inscrição", "inscrições")}
+                          {formatFractionLabel(
+                            categoria.inscricoesRealizadas,
+                            categoria.limiteInscricoes,
+                            "inscrição",
+                            "inscrições"
+                          )}
                         </span>
                         <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                       </div>
@@ -309,28 +340,35 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
               <p>{selectedCategory.descricao || "Categoria sem descrição complementar."}</p>
 
               <div className="badge-row">
-                <span className={selectedCategory.permiteInscricao ? "badge badge--success" : "badge badge--danger"}>
-                  {selectedCategory.statusLabel}
+                <span className={canCurrentUserEnroll ? "badge badge--success" : "badge badge--danger"}>
+                  {selectedCategoryStatusLabel}
                 </span>
                 <span className="badge badge--ghost">
-                  {formatBooleanFlag(
-                    selectedCategory.externo,
-                    "Inscrição externa permitida",
-                    "Somente público interno"
-                  )}
+                  {formatBooleanFlag(selectedCategory.externo, "Inscrição externa permitida", "Somente público interno")}
                 </span>
               </div>
 
               <div className="selection-card__meta">
                 <span>
-                  Período: {formatDateTime(selectedCategory.eventoInicio)} até{" "}
-                  {formatDateTime(selectedCategory.eventoFim)}
+                  Período: {formatDateTime(selectedCategory.eventoInicio)} até {formatDateTime(selectedCategory.eventoFim)}
                 </span>
                 <span>{formatCountLabel(selectedCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}</span>
               </div>
 
-              <p className="category-card__footnote">{selectedCategory.statusDescription}</p>
+              <p className="category-card__footnote">{selectedCategoryStatusDescription}</p>
             </div>
+
+            {externalUser ? (
+              <div className="selection-card">
+                <span className="badge badge--ghost">Acesso autenticado</span>
+                <h3>{externalUser.nomeCompleto}</h3>
+                <div className="selection-card__meta">
+                  <span>E-mail: {externalUser.email}</span>
+                  <span>CPF: {externalUser.cpf}</span>
+                  <span>Perfil: participante externo</span>
+                </div>
+              </div>
+            ) : null}
 
             {successNotice ? (
               <div className="confirmation-card">
@@ -353,11 +391,11 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                     <strong>{successNotice.inscricao.nomeUsuario}</strong>
                   </div>
                   <div className="confirmation-card__item">
-                    <span>Matrícula</span>
+                    <span>{successNotice.inscricao.tipoParticipante === "EXTERNO" ? "CPF" : "Matrícula"}</span>
                     <strong>{successNotice.inscricao.matricula}</strong>
                   </div>
                   <div className="confirmation-card__item">
-                    <span>Setor</span>
+                    <span>{successNotice.inscricao.tipoParticipante === "EXTERNO" ? "Origem" : "Setor"}</span>
                     <strong>{successNotice.inscricao.nomeSetor}</strong>
                   </div>
                   <div className="confirmation-card__item">
@@ -376,32 +414,60 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
             {formFeedback ? <div className="feedback feedback--warning">{formFeedback}</div> : null}
 
             <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
-              <label className="field field--full">
-                <span>NOME DO PARTICIPANTE</span>
-                <input name="nomeUsuario" type="text" placeholder="Ex.: João Pereira" required />
-              </label>
+              {externalUser ? (
+                <>
+                  <label className="field field--full">
+                    <span>NOME DO PARTICIPANTE</span>
+                    <input type="text" value={externalUser.nomeCompleto} disabled />
+                  </label>
 
-              <label className="field">
-                <span>MATRÍCULA</span>
-                <input name="matricula" type="text" placeholder="Informe a matrícula" required />
-              </label>
+                  <label className="field">
+                    <span>CPF</span>
+                    <input type="text" value={externalUser.cpf} disabled />
+                  </label>
 
-              <label className="field">
-                <span>SETOR</span>
-                <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-              </label>
+                  <label className="field">
+                    <span>ORIGEM DO ACESSO</span>
+                    <input type="text" value="Público externo" disabled />
+                  </label>
 
-              <label className="field field--full">
-                <span>CONTATO</span>
-                <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
-              </label>
+                  <label className="field field--full">
+                    <span>CONTATO</span>
+                    <input
+                      name="numeroContato"
+                      type="text"
+                      placeholder="Telefone, celular ou e-mail alternativo"
+                      defaultValue={externalUser.numeroTelefone ?? ""}
+                      required
+                    />
+                  </label>
+                </>
+              ) : (
+                <>
+                  <label className="field field--full">
+                    <span>NOME DO PARTICIPANTE</span>
+                    <input name="nomeUsuario" type="text" placeholder="Ex.: João Pereira" required />
+                  </label>
+
+                  <label className="field">
+                    <span>MATRÍCULA</span>
+                    <input name="matricula" type="text" placeholder="Informe a matrícula" required />
+                  </label>
+
+                  <label className="field">
+                    <span>SETOR</span>
+                    <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
+                  </label>
+
+                  <label className="field field--full">
+                    <span>CONTATO</span>
+                    <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
+                  </label>
+                </>
+              )}
 
               <div className="form-actions field field--full">
-                <button
-                  className="button button--primary"
-                  type="submit"
-                  disabled={submitting || !selectedCategory.permiteInscricao}
-                >
+                <button className="button button--primary" type="submit" disabled={submitting || !canCurrentUserEnroll}>
                   {submitting ? "Confirmando..." : "Confirmar inscrição"}
                 </button>
               </div>
@@ -416,4 +482,3 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     </div>
   );
 }
-

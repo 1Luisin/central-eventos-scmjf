@@ -8,10 +8,11 @@ import { startTransition, useState } from "react";
 import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
-import { authenticateExternalUser } from "@/lib/external-users";
+import { saveLoginSession, type AccessMode } from "@/lib/auth/session";
+import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import type { ExternalUserLoginPayload, ExternalUserResponse } from "@/types/api";
 import styles from "./login-page-client.module.css";
 
-type AccessMode = "interno" | "externo";
 type FeedbackTone = "error" | "success";
 
 type LoginPageClientProps = {
@@ -54,16 +55,11 @@ export function LoginPageClient({
       setSubmitting(true);
       setFeedback("");
 
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(
-          "central-eventos-login",
-          JSON.stringify({
-            accessMode,
-            identifier: identifier.trim(),
-            loggedAt: new Date().toISOString()
-          })
-        );
-      }
+      saveLoginSession({
+        accessMode,
+        identifier: identifier.trim(),
+        loggedAt: new Date().toISOString()
+      });
 
       startTransition(() => {
         router.push("/dashboard");
@@ -71,8 +67,13 @@ export function LoginPageClient({
       return;
     }
 
-    if (!identifier.trim() || !password.trim()) {
-      setFeedback("Informe CPF, e-mail ou nome completo e a senha cadastrada.");
+    const payload: ExternalUserLoginPayload = {
+      email: identifier.trim(),
+      senha: password.trim()
+    };
+
+    if (!payload.email || !payload.senha) {
+      setFeedback("Informe o e-mail cadastrado e a senha de acesso.");
       setFeedbackTone("error");
       return;
     }
@@ -81,30 +82,27 @@ export function LoginPageClient({
       setSubmitting(true);
       setFeedback("");
 
-      const externalUser = await authenticateExternalUser({
-        identificacao: identifier,
-        senha: password
+      const externalUser = await requestJson<ExternalUserResponse>("/api/usuarios-externos/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
 
-      if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(
-          "central-eventos-login",
-          JSON.stringify({
-            accessMode,
-            identifier: externalUser.dsEmail,
-            externalUserId: externalUser.idUsuarioExterno,
-            nomeCompleto: externalUser.nmCompleto,
-            loggedAt: new Date().toISOString()
-          })
-        );
-      }
+      saveLoginSession({
+        accessMode,
+        identifier: externalUser.email,
+        externalUser,
+        loggedAt: new Date().toISOString()
+      });
 
       startTransition(() => {
         router.push("/dashboard");
       });
     } catch (error) {
       setSubmitting(false);
-      setFeedback(error instanceof Error ? error.message : "Não foi possível acessar com o cadastro externo.");
+      setFeedback(getRequestErrorMessage(error));
       setFeedbackTone("error");
     }
   }
@@ -144,8 +142,8 @@ export function LoginPageClient({
 
           <ul className={styles.heroList}>
             <li>Escolha o perfil de acesso como público interno ou externo.</li>
-            <li>Usuários externos agora podem criar o próprio cadastro nesta tela de homologação.</li>
-            <li>O acesso interno continua simplificado enquanto a autenticação final não é integrada.</li>
+            <li>Usuários externos agora podem criar o próprio cadastro e entrar com e-mail e senha.</li>
+            <li>O acesso interno continua simplificado enquanto a autenticação MV não é integrada.</li>
           </ul>
         </section>
 
@@ -185,11 +183,11 @@ export function LoginPageClient({
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <label className={styles.field}>
-              <span>{accessMode === "interno" ? "Login" : "Identificação"}</span>
+              <span>{accessMode === "interno" ? "Login" : "E-mail"}</span>
               <input
                 autoComplete={accessMode === "interno" ? "username" : "email"}
-                type="text"
-                placeholder={accessMode === "interno" ? "Matrícula" : "CPF, e-mail ou nome completo"}
+                type={accessMode === "interno" ? "text" : "email"}
+                placeholder={accessMode === "interno" ? "Matrícula" : "nome@instituicao.com.br"}
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
               />
@@ -209,7 +207,7 @@ export function LoginPageClient({
             <p className={styles.helper}>
               {accessMode === "interno"
                 ? "O acesso interno segue em modo estático para homologação da interface."
-                : "No acesso externo, o login usa os dados cadastrados localmente nesta estação."}
+                : "No acesso externo, o login já usa a API e valida e-mail, senha e status do cadastro."}
             </p>
 
             {accessMode === "externo" ? (

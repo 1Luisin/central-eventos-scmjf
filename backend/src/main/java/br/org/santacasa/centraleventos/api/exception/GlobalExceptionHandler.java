@@ -2,6 +2,7 @@ package br.org.santacasa.centraleventos.api.exception;
 
 import br.org.santacasa.centraleventos.api.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -46,6 +47,21 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAuthenticationFailure(
+            AuthenticationFailedException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                buildResponse(
+                        HttpStatus.UNAUTHORIZED,
+                        exception.getMessage(),
+                        request.getRequestURI(),
+                        List.of()
+                )
+        );
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException exception,
@@ -63,6 +79,34 @@ public class GlobalExceptionHandler {
                         "Dados da requisição inválidos",
                         request.getRequestURI(),
                         details
+                )
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception,
+            HttpServletRequest request
+    ) {
+        String message = "Violação de integridade dos dados";
+        String exceptionMessage = exception.getMostSpecificCause() != null
+                ? exception.getMostSpecificCause().getMessage()
+                : exception.getMessage();
+
+        if (exceptionMessage != null) {
+            if (exceptionMessage.contains("UK_USUARIOS_EXTERNOS_CPF")) {
+                message = "Já existe um usuário externo cadastrado com este CPF";
+            } else if (exceptionMessage.contains("UK_USUARIOS_EXTERNOS_EMAIL")) {
+                message = "Já existe um usuário externo cadastrado com este e-mail";
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                buildResponse(
+                        HttpStatus.CONFLICT,
+                        message,
+                        request.getRequestURI(),
+                        List.of()
                 )
         );
     }
