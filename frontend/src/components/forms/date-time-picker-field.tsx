@@ -68,6 +68,7 @@ export function DateTimePickerField({
             onChange(nextValue instanceof Date ? nextValue : null);
           }}
           placeholderText={placeholder}
+          popperPlacement="bottom-start"
           popperClassName="date-time-picker__popper"
           selected={value}
           showPopperArrow={false}
