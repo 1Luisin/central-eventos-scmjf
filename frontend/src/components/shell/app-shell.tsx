@@ -32,40 +32,9 @@ export function AppShell({
   children
 }: AppShellProps) {
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-card">
-          <span className="eyebrow">Hospital Santa Casa de Misericórdia</span>
-          <strong>Central de Eventos</strong>
-        </div>
-
-        <nav className="nav-card" aria-label="Menu principal">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              className={item.key === activeRoute ? "nav-link nav-link--active" : "nav-link"}
-              href={item.href}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="sidebar-note">
-          <span className="eyebrow">{sidebarEyebrow}</span>
-          <h2>{sidebarTitle}</h2>
-          {sidebarDescription ? (
-            typeof sidebarDescription === "string" ? (
-              <p>{sidebarDescription}</p>
-            ) : (
-              <div className="sidebar-note__content">{sidebarDescription}</div>
-            )
-          ) : null}
-        </div>
-      </aside>
-
-      <div className="main-panel">
-        <header className="topbar">
+    <>
+      <header className="topbar">
+        <div className="topbar__inner">
           <div className="topbar__brand">
             <div className="topbar__logo-wrap" aria-hidden="true">
               <Image
@@ -86,18 +55,53 @@ export function AppShell({
           <Link className="button button--secondary topbar__logout" href="/login">
             Logoff
           </Link>
-        </header>
+        </div>
+      </header>
 
-        <header className="page-hero">
-          <div>
-            <span className="eyebrow">{eyebrow}</span>
-            <h1>{title}</h1>
-            <p>{description}</p>
+      <div className="app-shell">
+        <aside className="sidebar">
+          <div className="brand-card">
+            <span className="eyebrow">Hospital Santa Casa de Misericórdia</span>
+            <strong>Central de Eventos</strong>
           </div>
-        </header>
 
-        <main className="page-content">{children}</main>
+          <nav className="nav-card" aria-label="Menu principal">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                className={item.key === activeRoute ? "nav-link nav-link--active" : "nav-link"}
+                href={item.href}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="sidebar-note">
+            <span className="eyebrow">{sidebarEyebrow}</span>
+            <h2>{sidebarTitle}</h2>
+            {sidebarDescription ? (
+              typeof sidebarDescription === "string" ? (
+                <p>{sidebarDescription}</p>
+              ) : (
+                <div className="sidebar-note__content">{sidebarDescription}</div>
+              )
+            ) : null}
+          </div>
+        </aside>
+
+        <div className="main-panel">
+          <header className="page-hero">
+            <div>
+              <span className="eyebrow">{eyebrow}</span>
+              <h1>{title}</h1>
+              <p>{description}</p>
+            </div>
+          </header>
+
+          <main className="page-content">{children}</main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

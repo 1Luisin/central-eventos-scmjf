@@ -23,6 +23,7 @@
   --radius-lg: 24px;
   --radius-md: 18px;
   --radius-sm: 14px;
+  --topbar-offset: 112px;
 }
 
 * {
@@ -150,12 +151,12 @@ textarea {
   gap: 24px;
   width: min(calc(100% - 32px), 1480px);
   margin: 0 auto;
-  padding: 18px 0 32px;
+  padding: 24px 0 32px;
 }
 
 .sidebar {
   position: sticky;
-  top: 18px;
+  top: calc(var(--topbar-offset) + 18px);
   align-self: start;
   display: flex;
   flex-direction: column;
@@ -293,18 +294,29 @@ textarea {
 }
 
 .topbar {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  width: 100%;
+  padding-top: 10px;
+  background: linear-gradient(180deg, rgba(246, 239, 236, 0.96), rgba(246, 239, 236, 0.72));
+  backdrop-filter: blur(16px);
+}
+
+.topbar__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
+  width: min(calc(100% - 32px), 1480px);
+  margin: 0 auto;
   padding: 18px 22px;
   border: 1px solid rgba(255, 255, 255, 0.48);
-  border-radius: 24px;
+  border-radius: 0 0 24px 24px;
   background:
     linear-gradient(180deg, rgba(255, 251, 249, 0.92), rgba(250, 242, 239, 0.82)),
     rgba(255, 255, 255, 0.32);
   box-shadow: var(--shadow-md);
-  backdrop-filter: blur(16px);
 }
 
 .topbar__brand {
@@ -996,7 +1008,7 @@ textarea {
 
 .sticky-panel {
   position: sticky;
-  top: 18px;
+  top: calc(var(--topbar-offset) + 18px);
   align-self: start;
 }
 
@@ -1106,6 +1118,10 @@ textarea {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --topbar-offset: 176px;
+  }
+
   .two-column,
   .form-grid,
   .meta-grid {
@@ -1135,7 +1151,7 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .topbar,
+  .topbar__inner,
   .topbar__brand {
     flex-direction: column;
     align-items: stretch;
