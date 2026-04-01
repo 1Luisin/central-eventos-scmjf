@@ -1,15 +1,25 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useState } from "react";
 
 import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
+import { authenticateExternalUser } from "@/lib/external-users";
 import styles from "./login-page-client.module.css";
 
 type AccessMode = "interno" | "externo";
+type FeedbackTone = "error" | "success";
+
+type LoginPageClientProps = {
+  initialAccessMode?: AccessMode;
+  initialIdentifier?: string;
+  initialFeedback?: string;
+  initialFeedbackTone?: FeedbackTone;
+};
 
 const FOOTER_LINKS = [
   { href: "http://172.18.0.17/xampp/index.php", label: "Portal TI" },
@@ -17,39 +27,92 @@ const FOOTER_LINKS = [
   { href: "https://intranet.santacasajf.org.br", label: "Intranet" }
 ] as const;
 
-export function LoginPageClient() {
+export function LoginPageClient({
+  initialAccessMode = "interno",
+  initialIdentifier = "",
+  initialFeedback = "",
+  initialFeedbackTone = "error"
+}: LoginPageClientProps) {
   const router = useRouter();
-  const [accessMode, setAccessMode] = useState<AccessMode>("interno");
-  const [identifier, setIdentifier] = useState("");
+  const [accessMode, setAccessMode] = useState<AccessMode>(initialAccessMode);
+  const [identifier, setIdentifier] = useState(initialIdentifier);
   const [password, setPassword] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState(initialFeedback);
+  const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>(initialFeedbackTone);
   const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!identifier.trim() && !password.trim()) {
-      setFeedback("Digite ao menos um dado para acessar esta versão estática.");
+    if (accessMode === "interno") {
+      if (!identifier.trim() && !password.trim()) {
+        setFeedback("Digite ao menos um dado para acessar esta versão estática.");
+        setFeedbackTone("error");
+        return;
+      }
+
+      setSubmitting(true);
+      setFeedback("");
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(
+          "central-eventos-login",
+          JSON.stringify({
+            accessMode,
+            identifier: identifier.trim(),
+            loggedAt: new Date().toISOString()
+          })
+        );
+      }
+
+      startTransition(() => {
+        router.push("/dashboard");
+      });
       return;
     }
 
-    setSubmitting(true);
-    setFeedback("");
-
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(
-        "central-eventos-login",
-        JSON.stringify({
-          accessMode,
-          identifier: identifier.trim(),
-          loggedAt: new Date().toISOString()
-        })
-      );
+    if (!identifier.trim() || !password.trim()) {
+      setFeedback("Informe CPF, e-mail ou nome completo e a senha cadastrada.");
+      setFeedbackTone("error");
+      return;
     }
 
-    startTransition(() => {
-      router.push("/dashboard");
-    });
+    try {
+      setSubmitting(true);
+      setFeedback("");
+
+      const externalUser = await authenticateExternalUser({
+        identificacao: identifier,
+        senha: password
+      });
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem(
+          "central-eventos-login",
+          JSON.stringify({
+            accessMode,
+            identifier: externalUser.dsEmail,
+            externalUserId: externalUser.idUsuarioExterno,
+            nomeCompleto: externalUser.nmCompleto,
+            loggedAt: new Date().toISOString()
+          })
+        );
+      }
+
+      startTransition(() => {
+        router.push("/dashboard");
+      });
+    } catch (error) {
+      setSubmitting(false);
+      setFeedback(error instanceof Error ? error.message : "Não foi possível acessar com o cadastro externo.");
+      setFeedbackTone("error");
+    }
+  }
+
+  function handleModeChange(mode: AccessMode) {
+    setAccessMode(mode);
+    setFeedback("");
+    setFeedbackTone("error");
   }
 
   return (
@@ -80,9 +143,9 @@ export function LoginPageClient() {
           </p>
 
           <ul className={styles.heroList}>
-            <li>Entrada simplificada para validação da interface e do fluxo principal.</li>
             <li>Escolha o perfil de acesso como público interno ou externo.</li>
-            <li>Qualquer informação digitada libera o acesso nesta etapa estática.</li>
+            <li>Usuários externos agora podem criar o próprio cadastro nesta tela de homologação.</li>
+            <li>O acesso interno continua simplificado enquanto a autenticação final não é integrada.</li>
           </ul>
         </section>
 
@@ -105,7 +168,7 @@ export function LoginPageClient() {
                 accessMode === "interno" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton
               }
               type="button"
-              onClick={() => setAccessMode("interno")}
+              onClick={() => handleModeChange("interno")}
             >
               Interno
             </button>
@@ -114,7 +177,7 @@ export function LoginPageClient() {
                 accessMode === "externo" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton
               }
               type="button"
-              onClick={() => setAccessMode("externo")}
+              onClick={() => handleModeChange("externo")}
             >
               Externo
             </button>
@@ -124,8 +187,9 @@ export function LoginPageClient() {
             <label className={styles.field}>
               <span>{accessMode === "interno" ? "Login" : "Identificação"}</span>
               <input
+                autoComplete={accessMode === "interno" ? "username" : "email"}
                 type="text"
-                placeholder={accessMode === "interno" ? "Matrícula" : "Documento, e-mail ou nome"}
+                placeholder={accessMode === "interno" ? "Matrícula" : "CPF, e-mail ou nome completo"}
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
               />
@@ -134,23 +198,40 @@ export function LoginPageClient() {
             <label className={styles.field}>
               <span>Senha</span>
               <input
+                autoComplete="current-password"
                 type="password"
-                placeholder="Digite qualquer conteúdo"
+                placeholder={accessMode === "interno" ? "Digite qualquer conteúdo" : "Senha cadastrada"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />
             </label>
 
             <p className={styles.helper}>
-              Esta página está em modo estático para homologação. Ainda não há validação real de credenciais.
+              {accessMode === "interno"
+                ? "O acesso interno segue em modo estático para homologação da interface."
+                : "No acesso externo, o login usa os dados cadastrados localmente nesta estação."}
             </p>
 
-            <p className={styles.feedback} aria-live="polite">
+            {accessMode === "externo" ? (
+              <div className={styles.registerBox}>
+                <span>Primeiro acesso como participante externo?</span>
+                <Link className={styles.registerLink} href="/cadastro-externo">
+                  Cadastrar usuário externo
+                </Link>
+              </div>
+            ) : null}
+
+            <p
+              className={
+                feedbackTone === "success" ? `${styles.feedback} ${styles.feedbackSuccess}` : styles.feedback
+              }
+              aria-live="polite"
+            >
               {feedback}
             </p>
 
             <button className={styles.submit} disabled={submitting} type="submit">
-              {submitting ? "Acessando..." : "Entrar"}
+              {submitting ? (accessMode === "interno" ? "Acessando..." : "Validando acesso...") : "Entrar"}
             </button>
           </form>
 
