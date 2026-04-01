@@ -5,7 +5,7 @@ import type { ApiErrorResponse } from "@/types/api";
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
 export class BackendUnavailableError extends Error {
-  constructor(message = "A API backend não está disponível no momento.") {
+  constructor(message = "Não foi possível carregar as informações agora. Atualize a página ou tente novamente em instantes.") {
     super(message);
     this.name = "BackendUnavailableError";
   }
