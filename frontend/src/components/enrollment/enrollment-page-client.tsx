@@ -66,6 +66,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
   }, [data.categorias, queryCategoryId, queryEventId, selectedCategoryId]);
 
   const externalUser = loginSession?.accessMode === "externo" ? loginSession.externalUser ?? null : null;
+  const internalUser = loginSession?.accessMode === "interno" ? loginSession.internalUser ?? null : null;
   const normalizedSearch = deferredSearch.trim().toLowerCase();
   const visibleEvents = data.eventos
     .map((evento) => ({
@@ -86,9 +87,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
 
   const selectedCategory = data.categorias.find((categoria) => String(categoria.id) === selectedCategoryId) ?? null;
   const categoriaPermiteExterno = selectedCategory?.externo === "S";
-  const canCurrentUserEnroll =
-    (selectedCategory?.permiteInscricao ?? false) &&
-    (!externalUser || categoriaPermiteExterno);
+  const canCurrentUserEnroll = (selectedCategory?.permiteInscricao ?? false) && (!externalUser || categoriaPermiteExterno);
   const selectedCategoryStatusLabel = selectedCategory
     ? externalUser && !categoriaPermiteExterno
       ? "Somente público interno"
@@ -152,14 +151,23 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
           numeroContato: normalizeText(formData.get("numeroContato")),
           nomeSetor: "Público externo"
         }
-      : {
-          eventoId: selectedCategory.eventoId,
-          categoriaId: selectedCategory.id,
-          numeroContato: normalizeText(formData.get("numeroContato")),
-          nomeSetor: normalizeText(formData.get("nomeSetor")),
-          nomeUsuario: normalizeText(formData.get("nomeUsuario")),
-          matricula: normalizeText(formData.get("matricula"))
-        };
+      : internalUser
+        ? {
+            eventoId: selectedCategory.eventoId,
+            categoriaId: selectedCategory.id,
+            numeroContato: normalizeText(formData.get("numeroContato")),
+            nomeSetor: normalizeText(formData.get("nomeSetor")),
+            nomeUsuario: internalUser.nomeUsuario,
+            matricula: internalUser.matricula
+          }
+        : {
+            eventoId: selectedCategory.eventoId,
+            categoriaId: selectedCategory.id,
+            numeroContato: normalizeText(formData.get("numeroContato")),
+            nomeSetor: normalizeText(formData.get("nomeSetor")),
+            nomeUsuario: normalizeText(formData.get("nomeUsuario")),
+            matricula: normalizeText(formData.get("matricula"))
+          };
 
     try {
       setSubmitting(true);
@@ -170,7 +178,8 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Usuario-Log": externalUser?.email ?? payload.matricula ?? payload.nomeUsuario ?? "PARTICIPANTE"
+          "X-Usuario-Log":
+            externalUser?.email ?? internalUser?.matricula ?? payload.matricula ?? payload.nomeUsuario ?? "PARTICIPANTE"
         },
         body: JSON.stringify(payload)
       });
@@ -368,6 +377,18 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                   <span>Perfil: participante externo</span>
                 </div>
               </div>
+            ) : internalUser ? (
+              <div className="selection-card">
+                <span className="badge badge--ghost">Acesso autenticado</span>
+                <h3>{internalUser.nomeUsuario}</h3>
+                <div className="selection-card__meta">
+                  <span>Matrícula: {internalUser.matricula}</span>
+                  <span>E-mail: {internalUser.email || "Não informado"}</span>
+                  <span>
+                    Perfil: {internalUser.tipoUsuario === "ADMINISTRADOR" ? "administrador" : "usuário interno"}
+                  </span>
+                </div>
+              </div>
             ) : null}
 
             {successNotice ? (
@@ -440,6 +461,37 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                       defaultValue={externalUser.numeroTelefone ?? ""}
                       required
                     />
+                  </label>
+                </>
+              ) : internalUser ? (
+                <>
+                  <label className="field field--full">
+                    <span>NOME DO PARTICIPANTE</span>
+                    <input type="text" value={internalUser.nomeUsuario} disabled />
+                  </label>
+
+                  <label className="field">
+                    <span>MATRÍCULA</span>
+                    <input type="text" value={internalUser.matricula} disabled />
+                  </label>
+
+                  <label className="field">
+                    <span>TIPO DE ACESSO</span>
+                    <input
+                      type="text"
+                      value={internalUser.tipoUsuario === "ADMINISTRADOR" ? "Administrador" : "Usuário interno"}
+                      disabled
+                    />
+                  </label>
+
+                  <label className="field">
+                    <span>SETOR</span>
+                    <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
+                  </label>
+
+                  <label className="field field--full">
+                    <span>CONTATO</span>
+                    <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
                   </label>
                 </>
               ) : (

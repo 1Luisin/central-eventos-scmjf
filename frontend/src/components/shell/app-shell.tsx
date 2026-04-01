@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
+import { AppNavigation } from "@/components/shell/app-navigation";
 import { LogoutButton } from "@/components/shell/logout-button";
 
 type AppShellProps = {
@@ -15,12 +15,6 @@ type AppShellProps = {
   sidebarDescription: ReactNode;
   children: ReactNode;
 };
-
-const navigation = [
-  { href: "/dashboard", key: "dashboard", label: "Todos os Eventos" },
-  { href: "/cadastros", key: "cadastros", label: "Cadastros" },
-  { href: "/inscricoes", key: "inscricoes", label: "Inscrições" }
-] as const;
 
 export function AppShell({
   activeRoute,
@@ -58,17 +52,7 @@ export function AppShell({
             <strong>Central de Eventos</strong>
           </div>
 
-          <nav className="nav-card" aria-label="Menu principal">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                className={item.key === activeRoute ? "nav-link nav-link--active" : "nav-link"}
-                href={item.href}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <AppNavigation activeRoute={activeRoute} />
 
           <div className="sidebar-note">
             <span className="eyebrow">{sidebarEyebrow}</span>

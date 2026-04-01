@@ -1,5 +1,6 @@
-import { AppShell } from "@/components/shell/app-shell";
+import { AdminAccessGate } from "@/components/access/admin-access-gate";
 import { AdminPageClient } from "@/components/admin/admin-page-client";
+import { AppShell } from "@/components/shell/app-shell";
 import { getAdminData } from "@/lib/api/portal";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,9 @@ export default async function CadastrosPage() {
       sidebarTitle="Cadastros centrais"
       sidebarDescription="Gerencie eventos e adicione categorias. Depois do cadastro, todas as informações necessárias aparecerão nesta página."
     >
-      <AdminPageClient initialData={data} />
+      <AdminAccessGate>
+        <AdminPageClient initialData={data} />
+      </AdminAccessGate>
     </AppShell>
   );
 }

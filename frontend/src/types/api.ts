@@ -103,6 +103,24 @@ export type ExternalUserLoginPayload = {
   senha: string;
 };
 
+export type InternalUserRole = "COMUM" | "ADMINISTRADOR";
+
+export type InternalUserResponse = {
+  matricula: string;
+  nomeUsuario: string;
+  email: string | null;
+  ativo: "S" | "N";
+  situacao: string;
+  codigoPapel: string;
+  tipoUsuario: InternalUserRole;
+  prestador: number | null;
+};
+
+export type InternalUserLoginPayload = {
+  matricula: string;
+  senha: string;
+};
+
 export type CategoriaStatus =
   | "disponivel"
   | "lotada"

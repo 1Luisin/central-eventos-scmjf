@@ -1,4 +1,4 @@
-import type { ExternalUserResponse } from "@/types/api";
+import type { ExternalUserResponse, InternalUserResponse } from "@/types/api";
 
 export type AccessMode = "interno" | "externo";
 
@@ -7,6 +7,7 @@ export type LoginSession = {
   identifier: string;
   loggedAt: string;
   externalUser?: ExternalUserResponse | null;
+  internalUser?: InternalUserResponse | null;
 };
 
 const STORAGE_KEY = "central-eventos-login";
@@ -43,4 +44,8 @@ export function clearLoginSession() {
   }
 
   window.sessionStorage.removeItem(STORAGE_KEY);
+}
+
+export function isAdminSession(session: LoginSession | null): boolean {
+  return session?.accessMode === "interno" && session.internalUser?.tipoUsuario === "ADMINISTRADOR";
 }

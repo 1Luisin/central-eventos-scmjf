@@ -10,7 +10,12 @@ import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
 import { saveLoginSession, type AccessMode } from "@/lib/auth/session";
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
-import type { ExternalUserLoginPayload, ExternalUserResponse } from "@/types/api";
+import type {
+  ExternalUserLoginPayload,
+  ExternalUserResponse,
+  InternalUserLoginPayload,
+  InternalUserResponse
+} from "@/types/api";
 import styles from "./login-page-client.module.css";
 
 type FeedbackTone = "error" | "success";
@@ -46,24 +51,44 @@ export function LoginPageClient({
     event.preventDefault();
 
     if (accessMode === "interno") {
-      if (!identifier.trim() && !password.trim()) {
-        setFeedback("Digite ao menos um dado para acessar esta versão estática.");
+      const payload: InternalUserLoginPayload = {
+        matricula: identifier.trim().toUpperCase(),
+        senha: password.trim()
+      };
+
+      if (!payload.matricula || !payload.senha) {
+        setFeedback("Informe a matrícula e a senha do MV para continuar.");
         setFeedbackTone("error");
         return;
       }
 
-      setSubmitting(true);
-      setFeedback("");
+      try {
+        setSubmitting(true);
+        setFeedback("");
 
-      saveLoginSession({
-        accessMode,
-        identifier: identifier.trim(),
-        loggedAt: new Date().toISOString()
-      });
+        const internalUser = await requestJson<InternalUserResponse>("/api/usuarios-internos/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
 
-      startTransition(() => {
-        router.push("/dashboard");
-      });
+        saveLoginSession({
+          accessMode,
+          identifier: internalUser.matricula,
+          internalUser,
+          loggedAt: new Date().toISOString()
+        });
+
+        startTransition(() => {
+          router.push("/dashboard");
+        });
+      } catch (error) {
+        setSubmitting(false);
+        setFeedback(getRequestErrorMessage(error));
+        setFeedbackTone("error");
+      }
       return;
     }
 
@@ -142,8 +167,8 @@ export function LoginPageClient({
 
           <ul className={styles.heroList}>
             <li>Escolha o perfil de acesso como público interno ou externo.</li>
-            <li>Usuários externos agora podem criar o próprio cadastro e entrar com e-mail e senha.</li>
-            <li>O acesso interno continua simplificado enquanto a autenticação MV não é integrada.</li>
+            <li>Usuários externos podem criar o próprio cadastro e entrar com e-mail e senha.</li>
+            <li>Usuários internos entram com matrícula e senha do MV, com o papel validado automaticamente.</li>
           </ul>
         </section>
 
@@ -183,11 +208,11 @@ export function LoginPageClient({
 
           <form className={styles.form} onSubmit={handleSubmit}>
             <label className={styles.field}>
-              <span>{accessMode === "interno" ? "Login" : "E-mail"}</span>
+              <span>{accessMode === "interno" ? "Matrícula" : "E-mail"}</span>
               <input
                 autoComplete={accessMode === "interno" ? "username" : "email"}
                 type={accessMode === "interno" ? "text" : "email"}
-                placeholder={accessMode === "interno" ? "Matrícula" : "nome@instituicao.com.br"}
+                placeholder={accessMode === "interno" ? "Digite a matrícula do MV" : "nome@instituicao.com.br"}
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
               />
@@ -198,7 +223,7 @@ export function LoginPageClient({
               <input
                 autoComplete="current-password"
                 type="password"
-                placeholder={accessMode === "interno" ? "Digite qualquer conteúdo" : "Senha cadastrada"}
+                placeholder={accessMode === "interno" ? "Senha do MV" : "Senha cadastrada"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />
@@ -206,7 +231,7 @@ export function LoginPageClient({
 
             <p className={styles.helper}>
               {accessMode === "interno"
-                ? "O acesso interno segue em modo estático para homologação da interface."
+                ? "O acesso interno valida matrícula, senha e papel do MV. Se você não tiver os papéis corretos, entre em contato com a TI."
                 : "No acesso externo, o login já usa a API e valida e-mail, senha e status do cadastro."}
             </p>
 
@@ -229,7 +254,7 @@ export function LoginPageClient({
             </p>
 
             <button className={styles.submit} disabled={submitting} type="submit">
-              {submitting ? (accessMode === "interno" ? "Acessando..." : "Validando acesso...") : "Entrar"}
+              {submitting ? "Validando acesso..." : "Entrar"}
             </button>
           </form>
 

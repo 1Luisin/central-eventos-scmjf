@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import { isAdminSession, readLoginSession, type LoginSession } from "@/lib/auth/session";
 import {
   formatBooleanFlag,
   formatCountLabel,
@@ -19,11 +20,17 @@ type DashboardPageClientProps = {
 
 export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
   const [data, setData] = useState(initialData);
+  const [loginSession, setLoginSession] = useState<LoginSession | null>(null);
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(initialData.erroInicial ?? null);
   const deferredSearch = useDeferredValue(search);
 
+  useEffect(() => {
+    setLoginSession(readLoginSession());
+  }, []);
+
+  const canManageEvents = isAdminSession(loginSession);
   const normalizedSearch = deferredSearch.trim().toLowerCase();
   const filteredEvents = data.eventos.filter((evento) => {
     if (!normalizedSearch) {
@@ -87,7 +94,8 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
         </div>
 
         <p className="section-copy">
-          Cada card resume o evento, exibe as categorias relacionadas e oferece acesso rápido para administração e inscrições.
+          Cada card resume o evento, exibe as categorias relacionadas e oferece acesso rápido para inscrições e, quando
+          liberado, para a gestão administrativa.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
@@ -151,7 +159,9 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalInscricoes, "inscrição registrada", "inscrições registradas")}</span>
-                <span>{formatCountLabel(evento.totalVagas, "vaga distribuída nas categorias", "vagas distribuídas nas categorias")}</span>
+                <span>
+                  {formatCountLabel(evento.totalVagas, "vaga distribuída nas categorias", "vagas distribuídas nas categorias")}
+                </span>
               </div>
 
               {evento.categorias.length === 0 ? (
@@ -182,14 +192,16 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
 
                       <div className="occupancy">
                         <div className="occupancy__track">
-                          <div
-                            className="occupancy__value"
-                            style={{ width: `${categoria.ocupacaoPercentual}%` }}
-                          />
+                          <div className="occupancy__value" style={{ width: `${categoria.ocupacaoPercentual}%` }} />
                         </div>
                         <div className="occupancy__legend">
                           <span>
-                            {formatFractionLabel(categoria.inscricoesRealizadas, categoria.limiteInscricoes, "inscrição", "inscrições")}
+                            {formatFractionLabel(
+                              categoria.inscricoesRealizadas,
+                              categoria.limiteInscricoes,
+                              "inscrição",
+                              "inscrições"
+                            )}
                           </span>
                           <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                         </div>
@@ -204,9 +216,11 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
                         >
                           {categoria.permiteInscricao ? "Ir para inscrição" : "Ver bloqueio"}
                         </Link>
-                        <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
-                          Abrir gestão
-                        </Link>
+                        {canManageEvents ? (
+                          <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
+                            Abrir gestão
+                          </Link>
+                        ) : null}
                       </div>
                     </section>
                   ))}
