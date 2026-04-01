@@ -10,12 +10,12 @@ export default async function InscricoesPage() {
   return (
     <AppShell
       activeRoute="inscricoes"
-      eyebrow="Portal do participante"
-      title="Inscrições por categoria"
-      description="Selecione uma categoria, confira as vagas reais retornadas pela API e conclua a inscrição com validação das regras de negócio."
-      sidebarEyebrow="Fluxo de participação"
-      sidebarTitle="Tela de inscrições"
-      sidebarDescription="Categorias inativas, eventos inativos e turmas lotadas aparecem bloqueados automaticamente."
+      eyebrow="Inscrições"
+      title="Tela de inscrição"
+      description="Escolha uma categoria aberta, confira as vagas disponíveis e registre a sua inscrição."
+      sidebarEyebrow="Portal do participante"
+      sidebarTitle="Inscrições por categoria"
+      sidebarDescription="Selecione uma categoria na lista principal, preencha os dados do participante e confirme a inscrição nesta mesma tela."
     >
       <EnrollmentPageClient initialData={data} />
     </AppShell>

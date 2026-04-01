@@ -10,12 +10,12 @@ export default async function CadastrosPage() {
   return (
     <AppShell
       activeRoute="cadastros"
-      eyebrow="Área administrativa"
-      title="Cadastros de eventos e categorias"
-      description="Cadastre novos eventos, adicione categorias vinculadas e acompanhe nesta mesma tela os participantes já inscritos."
-      sidebarEyebrow="Gestão institucional"
+      eyebrow="Cadastros"
+      title="Eventos e categorias"
+      description="Registre os eventos da Santa Casa, selecione um evento existente e adicione quantas categorias forem necessárias."
+      sidebarEyebrow="Área administrativa"
       sidebarTitle="Cadastros centrais"
-      sidebarDescription="Os formulários abaixo seguem os contratos e as regras de negócio da API Oracle, incluindo status ativo, vagas e auditoria."
+      sidebarDescription="Gerencie eventos e adicione categorias. Depois do cadastro, todas as informações necessárias aparecerão nessa página."
     >
       <AdminPageClient initialData={data} />
     </AppShell>

@@ -59,8 +59,8 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
       <section className="panel">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Agenda institucional</span>
-            <h2>Eventos e categorias disponíveis</h2>
+            <span className="eyebrow">Eventos cadastrados</span>
+            <h2>Eventos e Categorias</h2>
           </div>
 
           <div className="toolbar">
@@ -81,8 +81,7 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
         </div>
 
         <p className="section-copy">
-          Cards alimentados pela API Java, com as categorias do mesmo evento e o status real de vagas retornado
-          pelo banco Oracle.
+          Cada card resume o evento, exibe as categorias relacionadas e oferece acesso rápido para administração e inscrições.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}

@@ -13,7 +13,7 @@ type AppShellProps = {
 };
 
 const navigation = [
-  { href: "/dashboard", key: "dashboard", label: "Eventos" },
+  { href: "/dashboard", key: "dashboard", label: "Todos os Eventos" },
   { href: "/cadastros", key: "cadastros", label: "Cadastros" },
   { href: "/inscricoes", key: "inscricoes", label: "Inscrições" }
 ] as const;
@@ -32,9 +32,8 @@ export function AppShell({
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand-card">
-          <span className="eyebrow">{sidebarEyebrow}</span>
-          <strong>{sidebarTitle}</strong>
-          <p>{sidebarDescription}</p>
+          <span className="eyebrow">Hospital Santa Casa de Misericórdia</span>
+          <strong>Central de Eventos</strong>
         </div>
 
         <nav className="nav-card" aria-label="Menu principal">
@@ -50,12 +49,9 @@ export function AppShell({
         </nav>
 
         <div className="sidebar-note">
-          <span className="eyebrow">Ambiente web</span>
-          <h2>Frontend oficial</h2>
-          <p>
-            Esta aplicação usa rotas internas do Next.js para conversar com a API Java e evitar problemas
-            de CORS no servidor.
-          </p>
+          <span className="eyebrow">{sidebarEyebrow}</span>
+          <h2>{sidebarTitle}</h2>
+          {sidebarDescription ? <p>{sidebarDescription}</p> : null}
         </div>
       </aside>
 

@@ -149,7 +149,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
           <div className="section-heading">
             <div>
               <span className="eyebrow">Categorias abertas</span>
-              <h2>Escolha onde deseja se inscrever</h2>
+              <h2>Selecione uma categoria</h2>
             </div>
 
             <div className="toolbar">
@@ -170,8 +170,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
           </div>
 
           <p className="section-copy">
-            O bloqueio de inscrição respeita automaticamente o que a API devolver para evento inativo, categoria
-            inativa e categoria lotada.
+            A coluna ao lado mostra o formulário de inscrição da categoria atualmente selecionada.
           </p>
 
           {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
@@ -268,14 +267,15 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
       <aside className="panel sticky-panel">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Categoria selecionada</span>
-            <h2>Concluir inscrição</h2>
+            <span className="eyebrow">Formulário de inscrição</span>
+            <h2>Categoria selecionada</h2>
           </div>
         </div>
 
         {selectedCategory ? (
           <>
             <div className="selection-card">
+              <span className="badge badge--ghost">Seleção atual</span>
               <span className="badge badge--ghost">{selectedCategory.eventoNome}</span>
               <h3>{selectedCategory.nomeCategoria}</h3>
               <p>{selectedCategory.descricao || "Categoria sem descrição complementar."}</p>

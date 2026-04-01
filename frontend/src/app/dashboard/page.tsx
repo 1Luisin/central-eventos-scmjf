@@ -10,12 +10,12 @@ export default async function DashboardPage() {
   return (
     <AppShell
       activeRoute="dashboard"
-      eyebrow="Painel principal"
-      title="Eventos da Santa Casa"
-      description="Visualize os eventos da agenda institucional, acompanhe as categorias abertas e encaminhe o participante para a inscrição correta."
-      sidebarEyebrow="Hospital Santa Casa de Misericórdia"
-      sidebarTitle="Central de Eventos"
-      sidebarDescription="Acompanhe o calendário oficial do hospital, com categorias e vagas atualizadas diretamente pela API."
+      eyebrow="Dashboard"
+      title="Painel de eventos"
+      description="Visualize os eventos da Santa Casa, acompanhe as categorias abertas e acesse rapidamente as telas de cadastro e inscrições."
+      sidebarEyebrow="Painel principal"
+      sidebarTitle="Eventos"
+      sidebarDescription=""
     >
       <DashboardPageClient initialData={data} />
     </AppShell>

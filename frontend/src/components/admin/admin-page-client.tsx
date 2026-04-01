@@ -197,8 +197,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       <section className="panel">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Cadastro administrativo</span>
-            <h2>Eventos, categorias e participantes</h2>
+            <span className="eyebrow">Panorama</span>
+            <h2>Meus eventos</h2>
           </div>
 
           <button className="button button--secondary" type="button" onClick={() => refreshData()} disabled={refreshing}>
@@ -207,8 +207,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
         </div>
 
         <p className="section-copy">
-          O frontend envia os mesmos contratos exigidos pela API, incluindo sinalização de ativo, vagas, público
-          externo e cancelamento administrativo das inscrições.
+          Selecione um evento para cadastrar novas categorias e acompanhe abaixo as categorias e os inscritos de cada uma.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
@@ -366,6 +365,19 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       </section>
 
       <section className="stack-lg">
+        <article className="panel">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Base disponível</span>
+              <h2>Meus Eventos Cadastrados</h2>
+            </div>
+          </div>
+
+          <p className="section-copy">
+            Selecione um evento para cadastrar novas categorias e acompanhe abaixo as categorias e os inscritos de cada uma.
+          </p>
+        </article>
+
         {data.eventos.length === 0 ? (
           <section className="panel empty-panel">
             <span className="empty-panel__badge">Base vazia</span>
