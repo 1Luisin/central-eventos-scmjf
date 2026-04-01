@@ -19,6 +19,23 @@ export function formatBooleanFlag(flag: string, positive: string, negative: stri
   return flag?.toUpperCase() === "S" ? positive : negative;
 }
 
+export function getPluralLabel(count: number, singular: string, plural: string): string {
+  return Math.abs(count) === 1 ? singular : plural;
+}
+
+export function formatCountLabel(count: number, singular: string, plural: string): string {
+  return `${count} ${getPluralLabel(count, singular, plural)}`;
+}
+
+export function formatFractionLabel(
+  current: number,
+  total: number,
+  singular: string,
+  plural: string
+): string {
+  return `${current}/${total} ${getPluralLabel(current, singular, plural)}`;
+}
+
 export function toApiDateTime(value: string): string {
   if (!value) {
     return value;

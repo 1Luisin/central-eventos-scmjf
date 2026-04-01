@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useDeferredValue, useState } from "react";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
-import { formatBooleanFlag, formatDateTime, toTitleCaseFlag } from "@/lib/formatters";
+import {
+  formatBooleanFlag,
+  formatCountLabel,
+  formatDateTime,
+  formatFractionLabel,
+  toTitleCaseFlag
+} from "@/lib/formatters";
 import type { DashboardData } from "@/types/api";
 
 type DashboardPageClientProps = {
@@ -87,7 +93,7 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">
-          <span>{filteredEvents.length} evento(s) listado(s)</span>
+          <span>{formatCountLabel(filteredEvents.length, "evento listado", "eventos listados")}</span>
           <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
         </div>
       </section>
@@ -112,7 +118,9 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
                   <span className={evento.ativo === "S" ? "badge badge--success" : "badge badge--danger"}>
                     {toTitleCaseFlag(evento.ativo, "Evento ativo", "Evento inativo")}
                   </span>
-                  <span className="badge badge--ghost">{evento.totalCategorias} categoria(s)</span>
+                  <span className="badge badge--ghost">
+                    {formatCountLabel(evento.totalCategorias, "categoria", "categorias")}
+                  </span>
                 </div>
               </div>
 
@@ -142,8 +150,8 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
               </p>
 
               <div className="summary-strip">
-                <span>{evento.totalInscricoes} inscrição(ões) registradas</span>
-                <span>{evento.totalVagas} vaga(s) distribuídas nas categorias</span>
+                <span>{formatCountLabel(evento.totalInscricoes, "inscrição registrada", "inscrições registradas")}</span>
+                <span>{formatCountLabel(evento.totalVagas, "vaga distribuída nas categorias", "vagas distribuídas nas categorias")}</span>
               </div>
 
               {evento.categorias.length === 0 ? (
@@ -181,9 +189,9 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
                         </div>
                         <div className="occupancy__legend">
                           <span>
-                            {categoria.inscricoesRealizadas}/{categoria.limiteInscricoes} inscrições
+                            {formatFractionLabel(categoria.inscricoesRealizadas, categoria.limiteInscricoes, "inscrição", "inscrições")}
                           </span>
-                          <strong>{categoria.vagasDisponiveis} vaga(s) restantes</strong>
+                          <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                         </div>
                       </div>
 

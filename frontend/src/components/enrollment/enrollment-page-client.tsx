@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useDeferredValue, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
 import {
   formatBooleanFlag,
+  formatCountLabel,
   formatDateTime,
+  formatFractionLabel,
   normalizeText,
   toTitleCaseFlag
 } from "@/lib/formatters";
@@ -202,7 +204,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
           {pageFeedback ? <div className="feedback feedback--warning">{pageFeedback}</div> : null}
 
           <div className="section-meta">
-            <span>{data.categorias.length} categoria(s) carregada(s)</span>
+            <span>{formatCountLabel(data.categorias.length, "categoria carregada", "categorias carregadas")}</span>
             <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
           </div>
         </article>
@@ -277,9 +279,9 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                       </div>
                       <div className="occupancy__legend">
                         <span>
-                          {categoria.inscricoesRealizadas}/{categoria.limiteInscricoes} inscrições
+                          {formatFractionLabel(categoria.inscricoesRealizadas, categoria.limiteInscricoes, "inscrição", "inscrições")}
                         </span>
-                        <strong>{categoria.vagasDisponiveis} vaga(s) restantes</strong>
+                        <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                       </div>
                     </div>
                   </button>
@@ -324,7 +326,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                   Período: {formatDateTime(selectedCategory.eventoInicio)} até{" "}
                   {formatDateTime(selectedCategory.eventoFim)}
                 </span>
-                <span>{selectedCategory.vagasDisponiveis} vaga(s) disponíveis</span>
+                <span>{formatCountLabel(selectedCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}</span>
               </div>
 
               <p className="category-card__footnote">{selectedCategory.statusDescription}</p>
@@ -414,3 +416,4 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-const STORAGE_KEY = "scmjf-central-eventos-v1";
+﻿const STORAGE_KEY = "scmjf-central-eventos-v1";
 const PAGE_TRANSITION_DURATION = 300;
 const APP_PAGES_ROOT = new URL("../", window.location.href);
 const PAGE_ROUTES = {
@@ -476,7 +476,7 @@ function renderEventsDashboard() {
               </p>
             </div>
 
-            <div class="metric-pill">${eventItem.categories.length} categoria(s)</div>
+            <div class="metric-pill">${formatCountLabel(eventItem.categories.length, "categoria", "categorias")}</div>
           </div>
 
           <div class="event-card__detail-list">
@@ -515,7 +515,7 @@ function renderDashboardCategoryCard(eventItem, category) {
         <div>
           <h4>${escapeHtml(category.name)}</h4>
           <div class="tag-group">
-            <span class="tag">${category.subscriptions.length}/${category.capacity} inscrições</span>
+            <span class="tag">${formatFractionLabel(category.subscriptions.length, category.capacity, "inscrição", "inscrições")}</span>
             <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
               ${category.allowExternal ? "Inscrição externa permitida" : "Somente público interno"}
             </span>
@@ -524,7 +524,7 @@ function renderDashboardCategoryCard(eventItem, category) {
         </div>
 
         <span class="status-pill ${remaining > 0 ? "status-pill--success" : ""}">
-          ${remaining} vaga(s) restante(s)
+          ${formatCountLabel(remaining, "vaga restante", "vagas restantes")}
         </span>
       </div>
 
@@ -617,7 +617,7 @@ function renderManagementSummary(selectedEventId) {
               </p>
             </div>
 
-            <span class="metric-pill">${eventItem.categories.length} categoria(s)</span>
+            <span class="metric-pill">${formatCountLabel(eventItem.categories.length, "categoria", "categorias")}</span>
           </div>
 
           <div class="summary-card__body">
@@ -665,7 +665,7 @@ function renderAdministrativeCategoryCard(category) {
         <div>
           <h4>${escapeHtml(category.name)}</h4>
           <div class="tag-group">
-            <span class="tag">${category.subscriptions.length}/${category.capacity} inscrições</span>
+            <span class="tag">${formatFractionLabel(category.subscriptions.length, category.capacity, "inscrição", "inscrições")}</span>
             <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
               ${category.allowExternal ? "Inscrição externa permitida" : "Somente público interno"}
             </span>
@@ -674,7 +674,7 @@ function renderAdministrativeCategoryCard(category) {
         </div>
 
         <span class="status-pill ${remaining > 0 ? "status-pill--success" : ""}">
-          ${remaining} vaga(s) restante(s)
+          ${formatCountLabel(remaining, "vaga restante", "vagas restantes")}
         </span>
       </div>
 
@@ -734,7 +734,7 @@ function renderRegistrationPage() {
               </p>
             </div>
 
-            <span class="metric-pill">${eventItem.categories.length} opção(ões)</span>
+            <span class="metric-pill">${formatCountLabel(eventItem.categories.length, "opção", "opções")}</span>
           </div>
 
           <div class="registration-card__detail-list">
@@ -769,7 +769,7 @@ function renderRegistrationCategoryCard(eventItem, category) {
         <div>
           <h4>${escapeHtml(category.name)}</h4>
           <div class="tag-group">
-            <span class="tag">${category.subscriptions.length}/${category.capacity} ocupadas</span>
+            <span class="tag">${formatFractionLabel(category.subscriptions.length, category.capacity, "ocupada", "ocupadas")}</span>
             <span class="tag ${category.allowExternal ? "" : "tag--accent"}">
               ${category.allowExternal ? "Aceita inscrições externas" : "Inscrição interna"}
             </span>
@@ -777,7 +777,7 @@ function renderRegistrationCategoryCard(eventItem, category) {
         </div>
 
         <span class="status-pill ${full ? "" : "status-pill--success"}">
-          ${full ? "Lotado" : `${remaining} vaga(s)`}
+          ${full ? "Lotado" : formatCountLabel(remaining, "vaga", "vagas")}
         </span>
       </div>
 
@@ -843,7 +843,7 @@ function renderEnrollmentWorkspace() {
   enrollmentSelectionMeta.textContent =
     `${found.event.name} | ${formatDateTime(found.event.start)} até ${formatDateTime(found.event.end)}`;
   enrollmentSelectionTags.innerHTML = `
-    <span class="tag">${found.category.subscriptions.length}/${found.category.capacity} ocupadas</span>
+    <span class="tag">${formatFractionLabel(found.category.subscriptions.length, found.category.capacity, "ocupada", "ocupadas")}</span>
     <span class="tag ${found.category.allowExternal ? "" : "tag--accent"}">
       ${found.category.allowExternal ? "Aceita inscrições externas" : "Somente público interno"}
     </span>
@@ -852,7 +852,7 @@ function renderEnrollmentWorkspace() {
   enrollmentFieldset.disabled = full;
   enrollmentStatusNote.textContent = full
     ? "Esta categoria está lotada no momento. Escolha outra categoria para realizar a inscrição."
-    : `${remaining} vaga(s) restante(s). Preencha os dados do participante para concluir a inscrição.`;
+    : `${formatCountLabel(remaining, "vaga restante", "vagas restantes")}. Preencha os dados do participante para concluir a inscrição.`;
 }
 
 function getRequestedManagementEventId() {
@@ -1043,6 +1043,18 @@ function formatShortDate(value) {
   }).format(date);
 }
 
+function getPluralLabel(count, singular, plural) {
+  return Math.abs(count) === 1 ? singular : plural;
+}
+
+function formatCountLabel(count, singular, plural) {
+  return `${count} ${getPluralLabel(count, singular, plural)}`;
+}
+
+function formatFractionLabel(current, total, singular, plural) {
+  return `${current}/${total} ${getPluralLabel(current, singular, plural)}`;
+}
+
 function createId(prefix) {
   if (window.crypto && typeof window.crypto.randomUUID === "function") {
     return `${prefix}-${window.crypto.randomUUID()}`;
@@ -1150,3 +1162,4 @@ function showToast(message, tone = "success") {
     toast.remove();
   }, 4200);
 }
+

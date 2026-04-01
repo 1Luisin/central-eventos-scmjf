@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { getRequestErrorMessage, requestJson, requestVoid } from "@/lib/api/client";
 import {
   formatBooleanFlag,
+  formatCountLabel,
   formatDateTime,
+  formatFractionLabel,
   normalizeText,
   toApiDateTime,
   toTitleCaseFlag,
@@ -213,7 +215,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">
-          <span>{data.eventos.length} evento(s) carregado(s)</span>
+          <span>{formatCountLabel(data.eventos.length, "evento carregado", "eventos carregados")}</span>
           <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
         </div>
       </section>
@@ -397,7 +399,9 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                   <span className={evento.ativo === "S" ? "badge badge--success" : "badge badge--danger"}>
                     {toTitleCaseFlag(evento.ativo, "Evento ativo", "Evento inativo")}
                   </span>
-                  <span className="badge badge--ghost">{evento.totalCategorias} categoria(s)</span>
+                  <span className="badge badge--ghost">
+                    {formatCountLabel(evento.totalCategorias, "categoria", "categorias")}
+                  </span>
                 </div>
               </div>
 
@@ -427,8 +431,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               </p>
 
               <div className="summary-strip">
-                <span>{evento.totalInscricoes} inscrição(ões)</span>
-                <span>{evento.totalVagas} vaga(s) somadas nas categorias</span>
+                <span>{formatCountLabel(evento.totalInscricoes, "inscrição", "inscrições")}</span>
+                <span>{formatCountLabel(evento.totalVagas, "vaga somada nas categorias", "vagas somadas nas categorias")}</span>
               </div>
 
               {evento.categorias.length === 0 ? (
@@ -465,16 +469,16 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                         </div>
                         <div className="occupancy__legend">
                           <span>
-                            {categoria.inscricoesRealizadas}/{categoria.limiteInscricoes} inscrições
+                            {formatFractionLabel(categoria.inscricoesRealizadas, categoria.limiteInscricoes, "inscrição", "inscrições")}
                           </span>
-                          <strong>{categoria.vagasDisponiveis} vaga(s) restantes</strong>
+                          <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                         </div>
                       </div>
 
                       <div className="participants-block">
                         <div className="participants-block__header">
                           <h5>Participantes inscritos</h5>
-                          <span>{categoria.inscricoes.length} registro(s)</span>
+                          <span>{formatCountLabel(categoria.inscricoes.length, "registro", "registros")}</span>
                         </div>
 
                         {categoria.inscricoes.length === 0 ? (
@@ -518,3 +522,6 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     </div>
   );
 }
+
+
+
