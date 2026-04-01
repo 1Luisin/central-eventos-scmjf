@@ -298,8 +298,10 @@ textarea {
   top: 0;
   z-index: 120;
   width: 100%;
-  padding-top: 10px;
-  background: linear-gradient(180deg, rgba(246, 239, 236, 0.96), rgba(246, 239, 236, 0.72));
+  padding: 0;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid rgba(145, 70, 81, 0.12);
+  box-shadow: 0 10px 24px rgba(97, 47, 54, 0.06);
   backdrop-filter: blur(16px);
 }
 
@@ -311,12 +313,7 @@ textarea {
   width: min(calc(100% - 32px), 1480px);
   margin: 0 auto;
   padding: 18px 22px;
-  border: 1px solid rgba(255, 255, 255, 0.48);
-  border-radius: 0 0 24px 24px;
-  background:
-    linear-gradient(180deg, rgba(255, 251, 249, 0.92), rgba(250, 242, 239, 0.82)),
-    rgba(255, 255, 255, 0.32);
-  box-shadow: var(--shadow-md);
+  background: #ffffff;
 }
 
 .topbar__brand {
@@ -336,7 +333,7 @@ textarea {
   padding: 10px 14px;
   border: 1px solid rgba(145, 70, 81, 0.12);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.86);
+  background: #ffffff;
 }
 
 .topbar__logo {
