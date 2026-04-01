@@ -12,12 +12,14 @@ type RouteContext = {
 
 export const dynamic = "force-dynamic";
 
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await Promise.resolve(context.params);
+    const body = await request.text();
 
-    const response = await requestBackend(`/inscricoes/${id}`, {
-      method: "DELETE",
+    const response = await requestBackend(`/eventos/${id}`, {
+      method: "PUT",
+      body,
       headers: await buildSessionJsonHeaders({ requireInternalAdmin: true })
     });
 

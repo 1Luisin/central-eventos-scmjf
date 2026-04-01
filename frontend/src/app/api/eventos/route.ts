@@ -1,18 +1,17 @@
 import { NextRequest } from "next/server";
 
-import { buildJsonHeaders, buildProxyErrorResponse, requestBackend, toProxyResponse } from "@/lib/api/backend";
+import { buildProxyErrorResponse, buildSessionJsonHeaders, requestBackend, toProxyResponse } from "@/lib/api/backend";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
-    const userLog = request.headers.get("x-usuario-log");
 
     const response = await requestBackend("/eventos", {
       method: "POST",
       body,
-      headers: buildJsonHeaders(userLog)
+      headers: await buildSessionJsonHeaders({ requireInternalAdmin: true })
     });
 
     return toProxyResponse(response);

@@ -2,6 +2,7 @@ package br.org.santacasa.centraleventos.api.controller;
 
 import br.org.santacasa.centraleventos.api.dto.CategoriaCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.CategoriaResponse;
+import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.service.CategoriaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,9 +30,13 @@ public class CategoriaController {
     @PostMapping
     public ResponseEntity<CategoriaResponse> criarCategoria(
             @Valid @RequestBody CategoriaCreateRequest request,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog
+            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
+            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
+            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoriaService.criarCategoria(request, usuarioLog));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                categoriaService.criarCategoria(request, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario))
+        );
     }
 
     @GetMapping("/evento/{eventoId}")

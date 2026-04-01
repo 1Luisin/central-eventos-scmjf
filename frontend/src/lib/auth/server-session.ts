@@ -1,15 +1,22 @@
 import { cookies } from "next/headers";
 
-import { AUTH_COOKIE_NAME, type LoginSession } from "@/lib/auth/session";
+import type { AccessMode, LoginSession } from "@/lib/auth/session";
+import { AUTH_COOKIE_NAME } from "@/lib/auth/session";
 
 const DEFAULT_AUTHENTICATED_ROUTE = "/dashboard";
 
+export type ServerSessionUserContext = {
+  accessMode: AccessMode;
+  identifier: string;
+  displayName: string;
+  isInternalAdmin: boolean;
+};
+
 export async function hasAuthenticatedSession(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return Boolean(cookieStore.get(AUTH_COOKIE_NAME)?.value);
+  return Boolean(await getServerLoginSession());
 }
 
-export async function getAuthenticatedUserGreetingName(): Promise<string | null> {
+export async function getServerLoginSession(): Promise<LoginSession | null> {
   const cookieStore = await cookies();
   const rawSession = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
@@ -18,12 +25,48 @@ export async function getAuthenticatedUserGreetingName(): Promise<string | null>
   }
 
   try {
-    const parsedSession = JSON.parse(decodeURIComponent(rawSession)) as LoginSession;
-    const fullName = parsedSession.internalUser?.nomeUsuario ?? parsedSession.externalUser?.nomeCompleto ?? "";
-    return formatGreetingName(fullName);
+    return JSON.parse(decodeURIComponent(rawSession)) as LoginSession;
   } catch {
     return null;
   }
+}
+
+export async function getServerSessionUserContext(): Promise<ServerSessionUserContext | null> {
+  const session = await getServerLoginSession();
+
+  if (!session) {
+    return null;
+  }
+
+  if (session.accessMode === "interno" && session.internalUser) {
+    return {
+      accessMode: "interno",
+      identifier: session.internalUser.matricula,
+      displayName: session.internalUser.nomeUsuario,
+      isInternalAdmin: session.internalUser.tipoUsuario === "ADMINISTRADOR"
+    };
+  }
+
+  if (session.accessMode === "externo" && session.externalUser) {
+    return {
+      accessMode: "externo",
+      identifier: session.externalUser.email,
+      displayName: session.externalUser.nomeCompleto,
+      isInternalAdmin: false
+    };
+  }
+
+  return null;
+}
+
+export async function getAuthenticatedUserGreetingName(): Promise<string | null> {
+  const session = await getServerLoginSession();
+  const fullName = session?.internalUser?.nomeUsuario ?? session?.externalUser?.nomeCompleto ?? "";
+  return formatGreetingName(fullName);
+}
+
+export function isAdminLoginSession(session: LoginSession | null): boolean {
+  return session?.accessMode === "interno" && session.internalUser?.tipoUsuario === "ADMINISTRADOR";
 }
 
 export function resolveAuthenticatedRoute(redirectPath?: string): string {

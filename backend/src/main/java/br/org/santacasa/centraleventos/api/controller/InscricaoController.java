@@ -2,6 +2,7 @@ package br.org.santacasa.centraleventos.api.controller;
 
 import br.org.santacasa.centraleventos.api.dto.InscricaoCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.InscricaoResponse;
+import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.service.InscricaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -30,22 +31,33 @@ public class InscricaoController {
     @PostMapping
     public ResponseEntity<InscricaoResponse> criarInscricao(
             @Valid @RequestBody InscricaoCreateRequest request,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog
+            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
+            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
+            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(inscricaoService.criarInscricao(request, usuarioLog));
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                inscricaoService.criarInscricao(request, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario))
+        );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelarInscricao(
             @PathVariable Long id,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog
+            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
+            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
+            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
     ) {
-        inscricaoService.cancelarInscricao(id, usuarioLog);
+        inscricaoService.cancelarInscricao(id, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario));
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/evento/{eventoId}")
-    public List<InscricaoResponse> listarInscricoesPorEvento(@PathVariable Long eventoId) {
-        return inscricaoService.listarPorEvento(eventoId);
+    public List<InscricaoResponse> listarInscricoesPorEvento(
+            @PathVariable Long eventoId,
+            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
+            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
+            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
+    ) {
+        return inscricaoService.listarPorEvento(eventoId, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario));
     }
 }

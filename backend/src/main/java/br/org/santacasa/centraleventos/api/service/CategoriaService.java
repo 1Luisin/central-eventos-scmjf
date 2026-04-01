@@ -2,6 +2,7 @@ package br.org.santacasa.centraleventos.api.service;
 
 import br.org.santacasa.centraleventos.api.dto.CategoriaCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.CategoriaResponse;
+import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.entity.Categoria;
 import br.org.santacasa.centraleventos.api.entity.Evento;
 import br.org.santacasa.centraleventos.api.exception.ResourceNotFoundException;
@@ -33,8 +34,9 @@ public class CategoriaService {
     }
 
     @Transactional
-    public CategoriaResponse criarCategoria(CategoriaCreateRequest request, String usuarioLog) {
+    public CategoriaResponse criarCategoria(CategoriaCreateRequest request, UsuarioOperacaoContext usuario) {
         Evento evento = eventoService.buscarEntidadePorId(request.eventoId());
+        eventoService.validarPermissaoDeGestao(evento, usuario);
 
         Categoria categoria = new Categoria();
         categoria.setEvento(evento);
@@ -48,7 +50,7 @@ public class CategoriaService {
 
         logEventoService.registrarAcao(
                 "Criou a categoria " + salva.getId() + " - " + salva.getNmCategoria() + " no evento " + evento.getId(),
-                logEventoService.normalizarUsuarioLog(usuarioLog, evento.getNmResponsavel())
+                logEventoService.normalizarUsuarioLog(usuario.usuarioParaAuditoria(evento.getNmResponsavel()), evento.getNmResponsavel())
         );
 
         return toResponse(salva, 0L);

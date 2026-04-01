@@ -2,6 +2,7 @@ package br.org.santacasa.centraleventos.api.service;
 
 import br.org.santacasa.centraleventos.api.dto.InscricaoCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.InscricaoResponse;
+import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.entity.Categoria;
 import br.org.santacasa.centraleventos.api.entity.Evento;
 import br.org.santacasa.centraleventos.api.entity.Inscricao;
@@ -42,7 +43,7 @@ public class InscricaoService {
     }
 
     @Transactional
-    public InscricaoResponse criarInscricao(InscricaoCreateRequest request, String usuarioLog) {
+    public InscricaoResponse criarInscricao(InscricaoCreateRequest request, UsuarioOperacaoContext usuario) {
         Evento evento = eventoService.buscarEntidadePorId(request.eventoId());
         Categoria categoria = categoriaRepository.findByIdForUpdate(request.categoriaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
@@ -84,16 +85,17 @@ public class InscricaoService {
 
         logEventoService.registrarAcao(
                 "Criou a inscrição " + salva.getId() + " no evento " + evento.getId() + " e categoria " + categoria.getId(),
-                logEventoService.normalizarUsuarioLog(usuarioLog, identificadorParticipante)
+                logEventoService.normalizarUsuarioLog(usuario.usuarioParaAuditoria(identificadorParticipante), identificadorParticipante)
         );
 
         return toResponse(salva);
     }
 
     @Transactional
-    public void cancelarInscricao(Long inscricaoId, String usuarioLog) {
+    public void cancelarInscricao(Long inscricaoId, UsuarioOperacaoContext usuario) {
         Inscricao inscricao = inscricaoRepository.findDetalhadaById(inscricaoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inscrição não encontrada"));
+        eventoService.validarPermissaoDeGestao(inscricao.getEvento(), usuario);
 
         inscricaoRepository.delete(inscricao);
 
@@ -104,13 +106,14 @@ public class InscricaoService {
         logEventoService.registrarAcao(
                 "Cancelou a inscrição " + inscricao.getId() + " do evento " + inscricao.getEvento().getId()
                         + " e categoria " + inscricao.getCategoria().getId(),
-                logEventoService.normalizarUsuarioLog(usuarioLog, identificadorParticipante)
+                logEventoService.normalizarUsuarioLog(usuario.usuarioParaAuditoria(identificadorParticipante), identificadorParticipante)
         );
     }
 
     @Transactional(readOnly = true)
-    public List<InscricaoResponse> listarPorEvento(Long eventoId) {
-        eventoService.buscarEntidadePorId(eventoId);
+    public List<InscricaoResponse> listarPorEvento(Long eventoId, UsuarioOperacaoContext usuario) {
+        Evento evento = eventoService.buscarEntidadePorId(eventoId);
+        eventoService.validarPermissaoDeGestao(evento, usuario);
 
         return inscricaoRepository.findByEvento_IdOrderByDhRegistroDesc(eventoId)
                 .stream()

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { fetchBackendJson } from "@/lib/api/backend";
+import { buildSessionJsonHeaders, fetchBackendJson, ProxyAuthorizationError } from "@/lib/api/backend";
 import { decorateCategoria } from "@/lib/formatters";
 import type {
   AdminData,
@@ -18,12 +18,20 @@ async function listarEventos(): Promise<EventoResponse[]> {
   return fetchBackendJson<EventoResponse[]>("/eventos");
 }
 
+async function listarMeusEventos(): Promise<EventoResponse[]> {
+  return fetchBackendJson<EventoResponse[]>("/eventos/meus", {
+    headers: await buildSessionJsonHeaders({ requireInternalAdmin: true })
+  });
+}
+
 async function listarCategorias(eventoId: number): Promise<CategoriaResponse[]> {
   return fetchBackendJson<CategoriaResponse[]>(`/categorias/evento/${eventoId}`);
 }
 
 async function listarInscricoes(eventoId: number): Promise<InscricaoResponse[]> {
-  return fetchBackendJson<InscricaoResponse[]>(`/inscricoes/evento/${eventoId}`);
+  return fetchBackendJson<InscricaoResponse[]>(`/inscricoes/evento/${eventoId}`, {
+    headers: await buildSessionJsonHeaders({ requireInternalAdmin: true })
+  });
 }
 
 function sortEventos<T extends EventoResponse>(eventos: T[]): T[] {
@@ -99,7 +107,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
 export async function getAdminData(): Promise<AdminData> {
   try {
-    const eventos = sortEventos(await listarEventos());
+    const eventos = sortEventos(await listarMeusEventos());
     const itens = await Promise.all(
       eventos.map(async (evento) => {
         const [categorias, inscricoes] = await Promise.all([
@@ -119,7 +127,12 @@ export async function getAdminData(): Promise<AdminData> {
     return {
       eventos: [],
       atualizadoEm: new Date().toISOString(),
-      erroInicial: error instanceof Error ? error.message : "Não foi possível carregar a área administrativa."
+      erroInicial:
+        error instanceof ProxyAuthorizationError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Não foi possível carregar a área administrativa."
     };
   }
 }

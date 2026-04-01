@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { DateTimePickerField } from "@/components/forms/date-time-picker-field";
 import { getRequestErrorMessage, requestJson, requestVoid } from "@/lib/api/client";
+import { readLoginSession } from "@/lib/auth/session";
 import {
   formatBooleanFlag,
   formatCountLabel,
@@ -26,6 +27,15 @@ type AdminPageClientProps = {
   initialData: AdminData;
 };
 
+type EventFormState = {
+  nomeEvento: string;
+  nomeResponsavel: string;
+  nomeSetor: string;
+  numeroContato: string;
+  ativo: "S" | "N";
+  descricao: string;
+};
+
 export function AdminPageClient({ initialData }: AdminPageClientProps) {
   const searchParams = useSearchParams();
   const requestedEventId = searchParams.get("eventoId");
@@ -39,8 +49,20 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [cancelingEnrollmentId, setCancelingEnrollmentId] = useState<number | null>(null);
+  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [loggedAdminName, setLoggedAdminName] = useState("");
+  const [eventForm, setEventForm] = useState<EventFormState>(createDefaultEventForm());
   const [eventStartDate, setEventStartDate] = useState<Date | null>(null);
   const [eventEndDate, setEventEndDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const session = readLoginSession();
+    const adminName = session?.internalUser?.nomeUsuario ?? "";
+    setLoggedAdminName(adminName);
+    setEventForm((current) =>
+      current.nomeResponsavel.trim() ? current : createDefaultEventForm(adminName)
+    );
+  }, []);
 
   useEffect(() => {
     if (requestedEventId && data.eventos.some((evento) => String(evento.id) === requestedEventId)) {
@@ -52,6 +74,23 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       setSelectedEventId(String(data.eventos[0].id));
     }
   }, [data.eventos, requestedEventId, selectedEventId]);
+
+  useEffect(() => {
+    if (editingEventId === null) {
+      return;
+    }
+
+    const editingEvent = data.eventos.find((evento) => evento.id === editingEventId);
+
+    if (!editingEvent) {
+      resetEventForm(setEditingEventId, setEventForm, setEventStartDate, setEventEndDate, loggedAdminName);
+      return;
+    }
+
+    setEventForm(mapEventToForm(editingEvent));
+    setEventStartDate(new Date(editingEvent.dataHoraInicio));
+    setEventEndDate(new Date(editingEvent.dataHoraFim));
+  }, [data.eventos, editingEventId, loggedAdminName]);
 
   const selectedEvent = data.eventos.find((evento) => String(evento.id) === selectedEventId) ?? null;
 
@@ -79,8 +118,6 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     setEventMessage(null);
     setFeedback(null);
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
     const dataHoraInicio = toApiDateTimeFromDate(eventStartDate);
     const dataHoraFim = toApiDateTimeFromDate(eventEndDate);
 
@@ -95,33 +132,44 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     }
 
     const payload: EventoCreatePayload = {
-      nomeEvento: normalizeText(formData.get("nomeEvento")),
+      nomeEvento: eventForm.nomeEvento.trim(),
       dataHoraInicio,
       dataHoraFim,
-      nomeResponsavel: normalizeText(formData.get("nomeResponsavel")),
-      nomeSetor: normalizeText(formData.get("nomeSetor")),
-      numeroContato: normalizeText(formData.get("numeroContato")),
-      ativo: normalizeText(formData.get("ativo")) === "N" ? "N" : "S",
-      descricao: trimOrUndefined(formData.get("descricao"))
+      nomeResponsavel: eventForm.nomeResponsavel.trim(),
+      nomeSetor: eventForm.nomeSetor.trim(),
+      numeroContato: eventForm.numeroContato.trim(),
+      ativo: eventForm.ativo,
+      descricao: trimOrUndefined(eventForm.descricao)
     };
 
     try {
       setEventSubmitting(true);
-      const created = await requestJson<EventoResponse>("/api/eventos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Usuario-Log": payload.nomeResponsavel
-        },
-        body: JSON.stringify(payload)
-      });
 
-      form.reset();
-      setEventStartDate(null);
-      setEventEndDate(null);
-      setSelectedEventId(String(created.id));
-      setEventMessage(`Evento "${created.nomeEvento}" cadastrado com sucesso.`);
-      await refreshData(created.id);
+      const saved = await requestJson<EventoResponse>(
+        editingEventId === null ? "/api/eventos" : `/api/eventos/${editingEventId}`,
+        {
+          method: editingEventId === null ? "POST" : "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      setSelectedEventId(String(saved.id));
+      setEventMessage(
+        editingEventId === null
+          ? `Evento "${saved.nomeEvento}" cadastrado com sucesso.`
+          : `Evento "${saved.nomeEvento}" atualizado com sucesso.`
+      );
+
+      if (editingEventId === null) {
+        resetEventForm(setEditingEventId, setEventForm, setEventStartDate, setEventEndDate, loggedAdminName);
+      } else {
+        setEditingEventId(saved.id);
+      }
+
+      await refreshData(saved.id);
     } catch (error) {
       setEventMessage(getRequestErrorMessage(error));
     } finally {
@@ -161,8 +209,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       await requestJson("/api/categorias", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-Usuario-Log": selectedEvent.nomeResponsavel
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
@@ -177,12 +224,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     }
   }
 
-  async function handleCancelEnrollment(
-    inscricaoId: number,
-    participantLabel: string,
-    userLog: string,
-    eventoId: number
-  ) {
+  async function handleCancelEnrollment(inscricaoId: number, participantLabel: string, eventoId: number) {
     const confirmed = window.confirm(`Deseja cancelar a inscrição de ${participantLabel}?`);
 
     if (!confirmed) {
@@ -194,10 +236,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       setFeedback(null);
 
       await requestVoid(`/api/inscricoes/${inscricaoId}`, {
-        method: "DELETE",
-        headers: {
-          "X-Usuario-Log": userLog
-        }
+        method: "DELETE"
       });
 
       setFeedback("Inscrição cancelada com sucesso.");
@@ -207,6 +246,17 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     } finally {
       setCancelingEnrollmentId(null);
     }
+  }
+
+  function startEditingEvent(evento: EventoResponse) {
+    setEditingEventId(evento.id);
+    setSelectedEventId(String(evento.id));
+    setEventForm(mapEventToForm(evento));
+    setEventStartDate(new Date(evento.dataHoraInicio));
+    setEventEndDate(new Date(evento.dataHoraFim));
+    setEventMessage(null);
+    setFeedback(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   return (
@@ -224,7 +274,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
         </div>
 
         <p className="section-copy">
-          Selecione um evento para cadastrar novas categorias e acompanhe abaixo as categorias e os inscritos de cada uma.
+          Apenas os eventos criados por você aparecem nesta área. Selecione um evento seu para editar dados, cadastrar
+          categorias e acompanhar os participantes inscritos.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
@@ -239,15 +290,22 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
         <article className="panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Novo evento</span>
-              <h2>Cadastro principal</h2>
+              <span className="eyebrow">{editingEventId === null ? "Novo evento" : "Editar evento"}</span>
+              <h2>{editingEventId === null ? "Cadastro principal" : "Atualização do evento selecionado"}</h2>
             </div>
           </div>
 
           <form className="form-grid" onSubmit={handleEventSubmit}>
             <label className="field field--full">
               <span>NOME DO EVENTO</span>
-              <input name="nomeEvento" type="text" placeholder="Ex.: Jornada de Enfermagem" required />
+              <input
+                name="nomeEvento"
+                type="text"
+                placeholder="Ex.: Jornada de Enfermagem"
+                required
+                value={eventForm.nomeEvento}
+                onChange={(event) => updateEventFormField(setEventForm, "nomeEvento", event.target.value)}
+              />
             </label>
 
             <DateTimePickerField
@@ -271,22 +329,47 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
 
             <label className="field">
               <span>NOME DO RESPONSÁVEL</span>
-              <input name="nomeResponsavel" type="text" placeholder="Ex.: Maria da Silva" required />
+              <input
+                name="nomeResponsavel"
+                type="text"
+                placeholder="Ex.: Maria da Silva"
+                required
+                value={eventForm.nomeResponsavel}
+                onChange={(event) => updateEventFormField(setEventForm, "nomeResponsavel", event.target.value)}
+              />
             </label>
 
             <label className="field">
               <span>SETOR RESPONSÁVEL</span>
-              <input name="nomeSetor" type="text" placeholder="Ex.: Educação Continuada" required />
+              <input
+                name="nomeSetor"
+                type="text"
+                placeholder="Ex.: Educação Continuada"
+                required
+                value={eventForm.nomeSetor}
+                onChange={(event) => updateEventFormField(setEventForm, "nomeSetor", event.target.value)}
+              />
             </label>
 
             <label className="field">
               <span>CONTATO</span>
-              <input name="numeroContato" type="text" placeholder="Telefone, ramal ou celular" required />
+              <input
+                name="numeroContato"
+                type="text"
+                placeholder="Telefone, ramal ou celular"
+                required
+                value={eventForm.numeroContato}
+                onChange={(event) => updateEventFormField(setEventForm, "numeroContato", event.target.value)}
+              />
             </label>
 
             <label className="field">
               <span>SITUAÇÃO DO EVENTO</span>
-              <select name="ativo" defaultValue="S">
+              <select
+                name="ativo"
+                value={eventForm.ativo}
+                onChange={(event) => updateEventFormField(setEventForm, "ativo", event.target.value as "S" | "N")}
+              >
                 <option value="S">Ativo</option>
                 <option value="N">Inativo</option>
               </select>
@@ -298,6 +381,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                 name="descricao"
                 rows={4}
                 placeholder="Resumo do evento, público-alvo e observações gerais."
+                value={eventForm.descricao}
+                onChange={(event) => updateEventFormField(setEventForm, "descricao", event.target.value)}
               />
             </label>
 
@@ -305,8 +390,26 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
 
             <div className="form-actions field field--full">
               <button className="button button--primary" type="submit" disabled={eventSubmitting}>
-                {eventSubmitting ? "Salvando..." : "Salvar evento"}
+                {eventSubmitting
+                  ? editingEventId === null
+                    ? "Salvando..."
+                    : "Atualizando..."
+                  : editingEventId === null
+                    ? "Salvar evento"
+                    : "Salvar alterações"}
               </button>
+
+              {editingEventId !== null ? (
+                <button
+                  className="button button--secondary"
+                  type="button"
+                  onClick={() =>
+                    resetEventForm(setEditingEventId, setEventForm, setEventStartDate, setEventEndDate, loggedAdminName)
+                  }
+                >
+                  Cancelar edição
+                </button>
+              ) : null}
             </div>
           </form>
         </article>
@@ -400,15 +503,16 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
           </div>
 
           <p className="section-copy">
-            Selecione um evento para cadastrar novas categorias e acompanhe abaixo as categorias e os inscritos de cada uma.
+            Só aparecem os eventos que você criou. É nessa área que você pode editar os dados do evento, acompanhar as
+            categorias e gerenciar os participantes inscritos.
           </p>
         </article>
 
         {data.eventos.length === 0 ? (
           <section className="panel empty-panel">
-            <span className="empty-panel__badge">Base vazia</span>
-            <h3>Nenhum evento foi cadastrado ainda.</h3>
-            <p>Assim que o primeiro evento for salvo, as categorias e os inscritos aparecerão nesta área.</p>
+            <span className="empty-panel__badge">Sem eventos próprios</span>
+            <h3>Você ainda não cadastrou nenhum evento.</h3>
+            <p>Assim que você salvar o primeiro evento, as categorias e os participantes aparecerão nesta área.</p>
           </section>
         ) : (
           data.eventos.map((evento) => (
@@ -453,6 +557,19 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               <p className="event-card__description">
                 {evento.descricao || "Evento sem descrição complementar cadastrada."}
               </p>
+
+              <div className="card-actions">
+                <button className="button button--secondary" type="button" onClick={() => startEditingEvent(evento)}>
+                  {editingEventId === evento.id ? "Editando este evento" : "Editar evento"}
+                </button>
+                <button
+                  className="button button--secondary"
+                  type="button"
+                  onClick={() => setSelectedEventId(String(evento.id))}
+                >
+                  {selectedEventId === String(evento.id) ? "Evento selecionado para categoria" : "Usar no cadastro de categoria"}
+                </button>
+              </div>
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalInscricoes, "inscrição", "inscrições")}</span>
@@ -535,9 +652,6 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                                       inscricao.tipoParticipante === "EXTERNO"
                                         ? inscricao.nomeUsuario
                                         : `matrícula ${inscricao.matricula}`,
-                                      inscricao.tipoParticipante === "EXTERNO"
-                                        ? inscricao.nomeUsuario
-                                        : inscricao.matricula,
                                       evento.id
                                     )
                                   }
@@ -562,5 +676,48 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
   );
 }
 
+function createDefaultEventForm(loggedAdminName = ""): EventFormState {
+  return {
+    nomeEvento: "",
+    nomeResponsavel: loggedAdminName,
+    nomeSetor: "",
+    numeroContato: "",
+    ativo: "S",
+    descricao: ""
+  };
+}
 
+function mapEventToForm(evento: EventoResponse): EventFormState {
+  return {
+    nomeEvento: evento.nomeEvento,
+    nomeResponsavel: evento.nomeResponsavel,
+    nomeSetor: evento.nomeSetor,
+    numeroContato: evento.numeroContato,
+    ativo: evento.ativo === "N" ? "N" : "S",
+    descricao: evento.descricao ?? ""
+  };
+}
 
+function updateEventFormField(
+  setEventForm: React.Dispatch<React.SetStateAction<EventFormState>>,
+  field: keyof EventFormState,
+  value: string
+) {
+  setEventForm((current) => ({
+    ...current,
+    [field]: value
+  }));
+}
+
+function resetEventForm(
+  setEditingEventId: React.Dispatch<React.SetStateAction<number | null>>,
+  setEventForm: React.Dispatch<React.SetStateAction<EventFormState>>,
+  setEventStartDate: React.Dispatch<React.SetStateAction<Date | null>>,
+  setEventEndDate: React.Dispatch<React.SetStateAction<Date | null>>,
+  loggedAdminName: string
+) {
+  setEditingEventId(null);
+  setEventForm(createDefaultEventForm(loggedAdminName));
+  setEventStartDate(null);
+  setEventEndDate(null);
+}

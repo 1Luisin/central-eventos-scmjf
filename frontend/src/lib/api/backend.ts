@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getServerSessionUserContext } from "@/lib/auth/server-session";
 import type { ApiErrorResponse } from "@/types/api";
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
@@ -8,6 +9,16 @@ export class BackendUnavailableError extends Error {
   constructor(message = "Não foi possível carregar as informações agora. Atualize a página ou tente novamente em instantes.") {
     super(message);
     this.name = "BackendUnavailableError";
+  }
+}
+
+export class ProxyAuthorizationError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ProxyAuthorizationError";
+    this.status = status;
   }
 }
 
@@ -84,12 +95,17 @@ export function buildProxyErrorResponse(error: unknown): NextResponse {
       details: []
     },
     {
-      status: error instanceof BackendUnavailableError ? 502 : 500
+      status:
+        error instanceof ProxyAuthorizationError
+          ? error.status
+          : error instanceof BackendUnavailableError
+            ? 502
+            : 500
     }
   );
 }
 
-export function buildJsonHeaders(userLog?: string | null): HeadersInit {
+export function buildJsonHeaders(userLog?: string | null): Headers {
   const headers = new Headers({
     "Content-Type": "application/json",
     Accept: "application/json"
@@ -98,6 +114,32 @@ export function buildJsonHeaders(userLog?: string | null): HeadersInit {
   if (userLog?.trim()) {
     headers.set("X-Usuario-Log", userLog.trim());
   }
+
+  return headers;
+}
+
+export async function buildSessionJsonHeaders(options?: {
+  requireAuthenticated?: boolean;
+  requireInternalAdmin?: boolean;
+}): Promise<Headers> {
+  const { requireAuthenticated = true, requireInternalAdmin = false } = options ?? {};
+  const context = await getServerSessionUserContext();
+
+  if (!context) {
+    if (requireAuthenticated) {
+      throw new ProxyAuthorizationError("Sessão expirada. Faça login novamente para continuar.", 401);
+    }
+
+    return buildJsonHeaders();
+  }
+
+  if (requireInternalAdmin && !context.isInternalAdmin) {
+    throw new ProxyAuthorizationError("Acesso restrito à área administrativa.", 403);
+  }
+
+  const headers = buildJsonHeaders(context.identifier);
+  headers.set("X-Usuario-Nome", context.displayName);
+  headers.set("X-Usuario-Tipo", context.isInternalAdmin ? "ADMINISTRADOR_INTERNO" : context.accessMode.toUpperCase());
 
   return headers;
 }
