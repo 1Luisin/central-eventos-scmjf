@@ -52,7 +52,18 @@ BACKEND_API_BASE_URL=http://127.0.0.1:8080
 
 Se o frontend e o backend estiverem no mesmo servidor, esse valor costuma ser o mais indicado.
 
+Importante: o frontend só será alimentado pela API quando o backend Spring Boot estiver ativo na porta `8080`.
+
 ## Execução local
+
+Suba primeiro o backend:
+
+```bash
+cd ../backend
+mvn spring-boot:run
+```
+
+Depois, em outro terminal:
 
 ```bash
 npm install

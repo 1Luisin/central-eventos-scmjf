@@ -58,7 +58,18 @@ Protótipo estático anterior, mantido como referência histórica. O fluxo prod
 
 ### Backend
 
-Executar a API Spring Boot no mesmo servidor, normalmente em `http://127.0.0.1:8080`.
+Executar a API Spring Boot antes do frontend.
+
+Para ambiente local:
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+Por padrão, a aplicação sobe em `0.0.0.0:8080`.
+
+Se quiser prender a API ao IP institucional no servidor, defina `SERVER_ADDRESS=172.18.2.246`.
 
 ### Frontend
 
