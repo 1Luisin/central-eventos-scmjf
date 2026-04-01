@@ -292,6 +292,66 @@ textarea {
   min-width: 0;
 }
 
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 249, 0.92), rgba(250, 242, 239, 0.82)),
+    rgba(255, 255, 255, 0.32);
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(16px);
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.topbar__logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 78px;
+  min-height: 58px;
+  padding: 10px 14px;
+  border: 1px solid rgba(145, 70, 81, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.topbar__logo {
+  width: auto;
+  max-width: 148px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.topbar__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.topbar__copy strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1.05;
+}
+
+.topbar__logout {
+  min-width: 120px;
+  white-space: nowrap;
+}
+
 .page-content,
 .stack-xl,
 .stack-lg {
@@ -1073,6 +1133,16 @@ textarea {
 
   .confirmation-card__grid {
     grid-template-columns: 1fr;
+  }
+
+  .topbar,
+  .topbar__brand {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .topbar__logout {
+    width: 100%;
   }
 }
 

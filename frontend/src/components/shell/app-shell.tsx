@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
+
+import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
 
 type AppShellProps = {
   activeRoute: "dashboard" | "cadastros" | "inscricoes";
@@ -62,6 +65,29 @@ export function AppShell({
       </aside>
 
       <div className="main-panel">
+        <header className="topbar">
+          <div className="topbar__brand">
+            <div className="topbar__logo-wrap" aria-hidden="true">
+              <Image
+                src={logoSantaCasa}
+                alt=""
+                className="topbar__logo"
+                sizes="160px"
+                priority
+              />
+            </div>
+
+            <div className="topbar__copy">
+              <span className="eyebrow">Santa Casa de Misericórdia</span>
+              <strong>Central de Eventos</strong>
+            </div>
+          </div>
+
+          <Link className="button button--secondary topbar__logout" href="/login">
+            Logoff
+          </Link>
+        </header>
+
         <header className="page-hero">
           <div>
             <span className="eyebrow">{eyebrow}</span>
