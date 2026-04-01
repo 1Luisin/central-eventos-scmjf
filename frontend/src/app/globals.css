@@ -224,12 +224,12 @@ textarea {
 
 .sidebar-note__content {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .sidebar-note__list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding-left: 18px;
   color: var(--text-soft);
@@ -319,6 +319,12 @@ textarea {
   gap: 18px;
 }
 
+.section-heading--compact {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+}
+
 .section-heading h2 {
   margin-top: 0;
   line-height: 1.12;
@@ -330,6 +336,10 @@ textarea {
   flex-wrap: wrap;
   gap: 12px;
   justify-content: flex-end;
+}
+
+.section-heading--compact .toolbar {
+  justify-content: flex-start;
 }
 
 .search-field {

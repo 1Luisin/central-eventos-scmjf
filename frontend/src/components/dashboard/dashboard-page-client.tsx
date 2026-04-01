@@ -63,7 +63,7 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
   return (
     <div className="stack-xl">
       <section className="panel">
-        <div className="section-heading">
+        <div className="section-heading section-heading--compact">
           <div>
             <span className="eyebrow">Eventos cadastrados</span>
             <h2>Eventos e Categorias</h2>

@@ -15,7 +15,7 @@ export default async function CadastrosPage() {
       description="Registre os eventos da Santa Casa, selecione um evento existente e adicione quantas categorias forem necessárias."
       sidebarEyebrow="Área administrativa"
       sidebarTitle="Cadastros centrais"
-      sidebarDescription="Gerencie eventos e adicione categorias. Depois do cadastro, todas as informações necessárias aparecerão nessa página."
+      sidebarDescription="Gerencie eventos e adicione categorias. Depois do cadastro, todas as informações necessárias aparecerão nesta página."
     >
       <AdminPageClient initialData={data} />
     </AppShell>

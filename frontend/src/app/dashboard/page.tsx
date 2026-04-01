@@ -20,8 +20,8 @@ export default async function DashboardPage() {
           <p>Consulte rapidamente os eventos vigentes, as categorias abertas e o status real de vagas antes de encaminhar um participante.</p>
           <ul className="sidebar-note__list">
             <li>Use a busca para localizar por evento, setor ou categoria.</li>
-            <li>Confira datas, responsÃ¡vel e vagas diretamente no card.</li>
-            <li>Abra inscriÃ§Ãµes ou gestÃ£o usando os atalhos de cada evento.</li>
+            <li>Confira datas, responsável e vagas diretamente no card.</li>
+            <li>Abra inscrições ou gestão usando os atalhos de cada evento.</li>
           </ul>
         </>
       }
