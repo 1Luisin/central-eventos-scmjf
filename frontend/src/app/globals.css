@@ -134,6 +134,18 @@ textarea {
   padding: 22px;
 }
 
+.brand-card,
+.sidebar-note,
+.page-hero > div,
+.section-heading > div,
+.event-card__header > div,
+.category-card__top > div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
 .brand-card strong,
 .sidebar-note h2,
 .page-hero h1,
@@ -146,7 +158,7 @@ textarea {
 
 .brand-card strong {
   display: block;
-  margin-top: 10px;
+  margin-top: 0;
   font-size: 1.9rem;
 }
 
@@ -157,6 +169,7 @@ textarea {
 .event-card__description,
 .category-card p,
 .selection-card p {
+  margin: 0;
   color: var(--text-soft);
   line-height: 1.65;
 }
@@ -203,7 +216,7 @@ textarea {
 }
 
 .page-hero h1 {
-  margin-top: 10px;
+  margin-top: 0;
   font-size: clamp(2.2rem, 4vw, 3.8rem);
 }
 
@@ -242,7 +255,8 @@ textarea {
 }
 
 .section-heading h2 {
-  margin-top: 10px;
+  margin-top: 0;
+  line-height: 1.12;
   font-size: clamp(1.6rem, 2vw, 2.4rem);
 }
 
@@ -404,7 +418,8 @@ textarea {
 
 .event-card h3,
 .event-admin-card h2 {
-  margin-top: 10px;
+  margin-top: 0;
+  line-height: 1.1;
   font-size: clamp(1.5rem, 2vw, 2rem);
 }
 
@@ -535,10 +550,11 @@ textarea {
 .category-card h4 {
   margin: 0;
   font-size: 1.18rem;
+  line-height: 1.2;
 }
 
 .category-card p {
-  margin: 8px 0 0;
+  margin: 0;
 }
 
 .occupancy {
@@ -627,16 +643,30 @@ textarea {
 }
 
 .inline-empty {
+  display: block;
+  margin-top: 16px;
   padding: 18px;
   border: 1px dashed rgba(145, 70, 81, 0.24);
   border-radius: 18px;
   color: var(--text-soft);
   background: rgba(255, 255, 255, 0.52);
+  line-height: 1.55;
 }
 
 .inline-empty--soft {
+  margin-top: 12px;
   padding: 14px;
   font-size: 0.94rem;
+}
+
+.two-column > .panel > .section-heading {
+  margin-bottom: 22px;
+}
+
+.summary-strip + .inline-empty,
+.summary-strip + .category-grid,
+.summary-strip + .admin-category-grid {
+  margin-top: 18px;
 }
 
 .empty-panel {
