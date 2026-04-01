@@ -10,12 +10,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
+import java.util.Set;
+
 @Service
 public class UsuarioInternoService {
 
     private static final String TIPO_USUARIO_COMUM = "COMUM";
     private static final String TIPO_USUARIO_ADMINISTRADOR = "ADMINISTRADOR";
-    private static final String SITUACAO_SENHA_INCORRETA = "SENHA_INCORRETA";
+    private static final Set<String> SITUACOES_SENHA_VALIDAS = Set.of(
+            "OK",
+            "S",
+            "SENHA VALIDA",
+            "VALIDA",
+            "VALIDO"
+    );
 
     private final UsuarioInternoRepository usuarioInternoRepository;
     private final LogEventoService logEventoService;
@@ -102,9 +111,16 @@ public class UsuarioInternoService {
     }
 
     private boolean senhaValida(String situacao) {
-        return situacao != null
-                && !situacao.isBlank()
-                && !SITUACAO_SENHA_INCORRETA.equalsIgnoreCase(situacao.trim());
+        if (situacao == null || situacao.isBlank()) {
+            return false;
+        }
+
+        String normalizada = normalizarSituacao(situacao);
+        if (SITUACOES_SENHA_VALIDAS.contains(normalizada)) {
+            return true;
+        }
+
+        return false;
     }
 
     private String normalizarMatricula(String matricula) {
@@ -120,5 +136,12 @@ public class UsuarioInternoService {
 
     private boolean isAtivo(String ativo) {
         return ativo != null && "S".equalsIgnoreCase(ativo.trim());
+    }
+
+    private String normalizarSituacao(String situacao) {
+        return Normalizer.normalize(situacao, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .trim()
+                .toUpperCase();
     }
 }
