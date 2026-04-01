@@ -25,6 +25,15 @@ public class UsuarioInternoService {
             "VALIDA",
             "VALIDO"
     );
+    private static final Set<String> MARCADORES_SENHA_INVALIDA = Set.of(
+            "INVALID",
+            "INCORRET",
+            "EXPIR",
+            "BLOQUE",
+            "NEGAD",
+            "ERRO",
+            "FALHA"
+    );
 
     private final UsuarioInternoRepository usuarioInternoRepository;
     private final LogEventoService logEventoService;
@@ -120,7 +129,7 @@ public class UsuarioInternoService {
             return true;
         }
 
-        return false;
+        return MARCADORES_SENHA_INVALIDA.stream().noneMatch(normalizada::contains);
     }
 
     private String normalizarMatricula(String matricula) {
