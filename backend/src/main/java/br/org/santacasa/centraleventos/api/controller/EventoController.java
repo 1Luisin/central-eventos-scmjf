@@ -1,9 +1,11 @@
 package br.org.santacasa.centraleventos.api.controller;
 
+import br.org.santacasa.centraleventos.api.auth.AuthenticatedRequest;
 import br.org.santacasa.centraleventos.api.dto.EventoCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.EventoResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.service.EventoService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,12 +32,10 @@ public class EventoController {
     @PostMapping
     public ResponseEntity<EventoResponse> criarEvento(
             @Valid @RequestBody EventoCreateRequest request,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
-            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
-            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
+            HttpServletRequest servletRequest
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                eventoService.criarEvento(request, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario))
+                eventoService.criarEvento(request, resolveUsuario(servletRequest))
         );
     }
 
@@ -46,12 +45,8 @@ public class EventoController {
     }
 
     @GetMapping("/meus")
-    public List<EventoResponse> listarMeusEventos(
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
-            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
-            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
-    ) {
-        return eventoService.listarMeusEventos(UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario));
+    public List<EventoResponse> listarMeusEventos(HttpServletRequest servletRequest) {
+        return eventoService.listarMeusEventos(resolveUsuario(servletRequest));
     }
 
     @GetMapping("/{id}")
@@ -63,10 +58,12 @@ public class EventoController {
     public EventoResponse atualizarEvento(
             @PathVariable Long id,
             @Valid @RequestBody EventoCreateRequest request,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
-            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
-            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
+            HttpServletRequest servletRequest
     ) {
-        return eventoService.atualizarEvento(id, request, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario));
+        return eventoService.atualizarEvento(id, request, resolveUsuario(servletRequest));
+    }
+
+    private UsuarioOperacaoContext resolveUsuario(HttpServletRequest servletRequest) {
+        return UsuarioOperacaoContext.fromAuthenticatedUser(AuthenticatedRequest.require(servletRequest));
     }
 }

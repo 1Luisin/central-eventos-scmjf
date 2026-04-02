@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getServerSessionUserContext } from "@/lib/auth/server-session";
+import { getServerBackendAccessToken, getServerSessionUserContext } from "@/lib/auth/server-session";
 import type { ApiErrorResponse } from "@/types/api";
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
@@ -105,17 +105,11 @@ export function buildProxyErrorResponse(error: unknown): NextResponse {
   );
 }
 
-export function buildJsonHeaders(userLog?: string | null): Headers {
-  const headers = new Headers({
+export function buildJsonHeaders(): Headers {
+  return new Headers({
     "Content-Type": "application/json",
     Accept: "application/json"
   });
-
-  if (userLog?.trim()) {
-    headers.set("X-Usuario-Log", userLog.trim());
-  }
-
-  return headers;
 }
 
 export async function buildSessionJsonHeaders(options?: {
@@ -123,9 +117,9 @@ export async function buildSessionJsonHeaders(options?: {
   requireInternalAdmin?: boolean;
 }): Promise<Headers> {
   const { requireAuthenticated = true, requireInternalAdmin = false } = options ?? {};
-  const context = await getServerSessionUserContext();
+  const sessionContext = await getServerSessionUserContext();
 
-  if (!context) {
+  if (!sessionContext) {
     if (requireAuthenticated) {
       throw new ProxyAuthorizationError("Sessão expirada. Faça login novamente para continuar.", 401);
     }
@@ -133,13 +127,16 @@ export async function buildSessionJsonHeaders(options?: {
     return buildJsonHeaders();
   }
 
-  if (requireInternalAdmin && !context.isInternalAdmin) {
+  if (requireInternalAdmin && !sessionContext.isInternalAdmin) {
     throw new ProxyAuthorizationError("Acesso restrito à área administrativa.", 403);
   }
 
-  const headers = buildJsonHeaders(context.identifier);
-  headers.set("X-Usuario-Nome", context.displayName);
-  headers.set("X-Usuario-Tipo", context.isInternalAdmin ? "ADMINISTRADOR_INTERNO" : context.accessMode.toUpperCase());
+  const accessToken = await getServerBackendAccessToken();
+  if (!accessToken) {
+    throw new ProxyAuthorizationError("Sessão expirada. Faça login novamente para continuar.", 401);
+  }
 
+  const headers = buildJsonHeaders();
+  headers.set("Authorization", `Bearer ${accessToken}`);
   return headers;
 }

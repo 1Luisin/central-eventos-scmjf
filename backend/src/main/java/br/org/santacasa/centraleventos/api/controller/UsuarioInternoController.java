@@ -1,5 +1,6 @@
 package br.org.santacasa.centraleventos.api.controller;
 
+import br.org.santacasa.centraleventos.api.dto.AuthLoginResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioInternoLoginRequest;
 import br.org.santacasa.centraleventos.api.dto.UsuarioInternoResponse;
 import br.org.santacasa.centraleventos.api.service.UsuarioInternoService;
@@ -21,7 +22,9 @@ public class UsuarioInternoController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UsuarioInternoResponse> login(@Valid @RequestBody UsuarioInternoLoginRequest request) {
+    public ResponseEntity<AuthLoginResponse<UsuarioInternoResponse>> login(
+            @Valid @RequestBody UsuarioInternoLoginRequest request
+    ) {
         return ResponseEntity.ok(usuarioInternoService.autenticar(request));
     }
 }

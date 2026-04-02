@@ -5,6 +5,7 @@ import br.org.santacasa.centraleventos.api.dto.CategoriaResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.entity.Categoria;
 import br.org.santacasa.centraleventos.api.entity.Evento;
+import br.org.santacasa.centraleventos.api.exception.BusinessRuleException;
 import br.org.santacasa.centraleventos.api.exception.ResourceNotFoundException;
 import br.org.santacasa.centraleventos.api.repository.CategoriaRepository;
 import br.org.santacasa.centraleventos.api.repository.InscricaoRepository;
@@ -40,11 +41,7 @@ public class CategoriaService {
 
         Categoria categoria = new Categoria();
         categoria.setEvento(evento);
-        categoria.setNmCategoria(request.nomeCategoria().trim());
-        categoria.setSnExterno(normalizarFlag(request.externo()));
-        categoria.setDescricao(trimToNull(request.descricao()));
-        categoria.setSnAtivo(normalizarFlag(request.ativo()));
-        categoria.setNrInscricoes(request.limiteInscricoes());
+        preencherCategoria(categoria, request);
 
         Categoria salva = categoriaRepository.save(categoria);
 
@@ -54,6 +51,27 @@ public class CategoriaService {
         );
 
         return toResponse(salva, 0L);
+    }
+
+    @Transactional
+    public CategoriaResponse atualizarCategoria(Long categoriaId, CategoriaCreateRequest request, UsuarioOperacaoContext usuario) {
+        Categoria categoria = buscarEntidadePorId(categoriaId);
+        Evento evento = categoria.getEvento();
+        eventoService.validarPermissaoDeGestao(evento, usuario);
+
+        if (!evento.getId().equals(request.eventoId())) {
+            throw new BusinessRuleException("A categoria só pode ser atualizada dentro do evento original.");
+        }
+
+        preencherCategoria(categoria, request);
+        Categoria salva = categoriaRepository.save(categoria);
+
+        logEventoService.registrarAcao(
+                "Atualizou a categoria " + salva.getId() + " - " + salva.getNmCategoria() + " no evento " + evento.getId(),
+                logEventoService.normalizarUsuarioLog(usuario.usuarioParaAuditoria(evento.getNmResponsavel()), evento.getNmResponsavel())
+        );
+
+        return toResponse(salva, inscricaoRepository.countByCategoria_Id(salva.getId()));
     }
 
     @Transactional(readOnly = true)
@@ -74,6 +92,14 @@ public class CategoriaService {
     public Categoria buscarEntidadePorId(Long categoriaId) {
         return categoriaRepository.findById(categoriaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada"));
+    }
+
+    private void preencherCategoria(Categoria categoria, CategoriaCreateRequest request) {
+        categoria.setNmCategoria(request.nomeCategoria().trim());
+        categoria.setSnExterno(normalizarFlag(request.externo()));
+        categoria.setDescricao(trimToNull(request.descricao()));
+        categoria.setSnAtivo(normalizarFlag(request.ativo()));
+        categoria.setNrInscricoes(request.limiteInscricoes());
     }
 
     private CategoriaResponse toResponse(Categoria categoria, long inscricoesRealizadas) {

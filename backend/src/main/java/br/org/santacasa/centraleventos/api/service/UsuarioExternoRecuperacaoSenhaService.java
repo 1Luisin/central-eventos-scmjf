@@ -34,6 +34,7 @@ public class UsuarioExternoRecuperacaoSenhaService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final LogEventoService logEventoService;
+    private final PasswordPolicyService passwordPolicyService;
     private final SecureRandom secureRandom = new SecureRandom();
     private final long expiracaoMinutos;
     private final int maxTentativas;
@@ -45,6 +46,7 @@ public class UsuarioExternoRecuperacaoSenhaService {
             PasswordEncoder passwordEncoder,
             EmailService emailService,
             LogEventoService logEventoService,
+            PasswordPolicyService passwordPolicyService,
             @Value("${app.security.password-recovery.expiration-minutes:15}") long expiracaoMinutos,
             @Value("${app.security.password-recovery.max-attempts:5}") int maxTentativas,
             @Value("${app.frontend.base-url:http://127.0.0.1:3000}") String frontendBaseUrl
@@ -54,6 +56,7 @@ public class UsuarioExternoRecuperacaoSenhaService {
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.logEventoService = logEventoService;
+        this.passwordPolicyService = passwordPolicyService;
         this.expiracaoMinutos = expiracaoMinutos;
         this.maxTentativas = maxTentativas;
         this.frontendBaseUrl = frontendBaseUrl == null ? "http://127.0.0.1:3000" : frontendBaseUrl.trim();
@@ -98,7 +101,10 @@ public class UsuarioExternoRecuperacaoSenhaService {
         emailService.enviarRecuperacaoSenhaUsuarioExterno(usuarioExterno, codigo, link, expiracaoMinutos);
 
         logEventoService.registrarAcao(
-                "Solicitou recuperação de senha para o usuário externo " + usuarioExterno.getId() + " - " + usuarioExterno.getDsEmail(),
+                "Solicitou recuperação de senha para o usuário externo "
+                        + usuarioExterno.getId()
+                        + " - "
+                        + usuarioExterno.getDsEmail(),
                 usuarioExterno.getDsEmail()
         );
 
@@ -154,6 +160,8 @@ public class UsuarioExternoRecuperacaoSenhaService {
         if (!request.novaSenha().trim().equals(request.confirmacaoNovaSenha().trim())) {
             throw new BusinessRuleException("A confirmação da nova senha deve ser igual à senha informada.");
         }
+
+        passwordPolicyService.validateOrThrow(request.novaSenha().trim());
 
         RecupSenhaUsrExt solicitacao = buscarSolicitacaoAtivaObrigatoria(request.token());
         LocalDateTime agora = LocalDateTime.now();

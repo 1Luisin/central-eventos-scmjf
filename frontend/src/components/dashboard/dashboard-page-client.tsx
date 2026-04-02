@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
-import { isAdminSession, readLoginSession, type LoginSession } from "@/lib/auth/session";
+import type { SessionUserContext } from "@/lib/auth/session";
 import {
   formatBooleanFlag,
   formatCountLabel,
@@ -16,21 +16,17 @@ import type { DashboardData } from "@/types/api";
 
 type DashboardPageClientProps = {
   initialData: DashboardData;
+  sessionContext: SessionUserContext;
 };
 
-export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
+export function DashboardPageClient({ initialData, sessionContext }: DashboardPageClientProps) {
   const [data, setData] = useState(initialData);
-  const [loginSession, setLoginSession] = useState<LoginSession | null>(null);
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(initialData.erroInicial ?? null);
   const deferredSearch = useDeferredValue(search);
 
-  useEffect(() => {
-    setLoginSession(readLoginSession());
-  }, []);
-
-  const canManageEvents = isAdminSession(loginSession);
+  const canManageEvents = sessionContext.isInternalAdmin;
   const normalizedSearch = deferredSearch.trim().toLowerCase();
   const filteredEvents = data.eventos.filter((evento) => {
     if (!normalizedSearch) {

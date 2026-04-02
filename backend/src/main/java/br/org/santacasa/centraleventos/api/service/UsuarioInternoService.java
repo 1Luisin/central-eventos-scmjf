@@ -1,5 +1,8 @@
 package br.org.santacasa.centraleventos.api.service;
 
+import br.org.santacasa.centraleventos.api.auth.AuthenticatedUser;
+import br.org.santacasa.centraleventos.api.auth.AuthTokenService;
+import br.org.santacasa.centraleventos.api.dto.AuthLoginResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioInternoLoginRequest;
 import br.org.santacasa.centraleventos.api.dto.UsuarioInternoResponse;
 import br.org.santacasa.centraleventos.api.exception.AccessDeniedException;
@@ -18,12 +21,21 @@ public class UsuarioInternoService {
 
     private static final String TIPO_USUARIO_COMUM = "COMUM";
     private static final String TIPO_USUARIO_ADMINISTRADOR = "ADMINISTRADOR";
+    private static final String LOGIN_SCOPE = "LOGIN_INTERNO";
     private static final Set<String> SITUACOES_SENHA_VALIDAS = Set.of(
             "OK",
             "S",
-            "SENHA VALIDA",
             "VALIDA",
-            "VALIDO"
+            "VALIDO",
+            "SENHA VALIDA",
+            "SENHA CORRETA",
+            "AUTENTICADO",
+            "USUARIO AUTENTICADO",
+            "ACESSO LIBERADO",
+            "ACESSO AUTORIZADO",
+            "AUTORIZADO",
+            "LOGIN EFETUADO",
+            "LOGON EFETUADO"
     );
     private static final Set<String> MARCADORES_SENHA_INVALIDA = Set.of(
             "INVALID",
@@ -37,66 +49,103 @@ public class UsuarioInternoService {
 
     private final UsuarioInternoRepository usuarioInternoRepository;
     private final LogEventoService logEventoService;
+    private final AuthenticationAttemptService authenticationAttemptService;
+    private final AuthTokenService authTokenService;
     private final String papelUsuarioComum;
     private final String papelUsuarioAdministrador;
 
     public UsuarioInternoService(
             UsuarioInternoRepository usuarioInternoRepository,
             LogEventoService logEventoService,
+            AuthenticationAttemptService authenticationAttemptService,
+            AuthTokenService authTokenService,
             @Value("${app.auth.interno.papel-comum:652}") String papelUsuarioComum,
             @Value("${app.auth.interno.papel-admin:653}") String papelUsuarioAdministrador
     ) {
         this.usuarioInternoRepository = usuarioInternoRepository;
         this.logEventoService = logEventoService;
+        this.authenticationAttemptService = authenticationAttemptService;
+        this.authTokenService = authTokenService;
         this.papelUsuarioComum = papelUsuarioComum;
         this.papelUsuarioAdministrador = papelUsuarioAdministrador;
     }
 
     @Transactional
-    public UsuarioInternoResponse autenticar(UsuarioInternoLoginRequest request) {
+    public AuthLoginResponse<UsuarioInternoResponse> autenticar(UsuarioInternoLoginRequest request) {
         String matricula = normalizarMatricula(request.matricula());
         String senha = normalizarObrigatorio(request.senha(), "Senha é obrigatória");
 
-        UsuarioInternoAutenticacaoRow usuarioInterno = usuarioInternoRepository
-                .buscarParaAutenticacao(matricula, senha, papeisPermitidos())
-                .orElseThrow(() -> new AuthenticationFailedException("Matrícula não encontrada"));
+        authenticationAttemptService.assertCanAttempt(LOGIN_SCOPE, matricula);
 
-        if (!isAtivo(usuarioInterno.ativo())) {
-            throw new AccessDeniedException("Usuário interno inativo");
-        }
+        try {
+            UsuarioInternoAutenticacaoRow usuarioInterno = usuarioInternoRepository
+                    .buscarParaAutenticacao(matricula, senha, papeisPermitidos())
+                    .orElseThrow(() -> new AuthenticationFailedException("Matrícula ou senha inválidos"));
 
-        if (!senhaValida(usuarioInterno.situacao())) {
-            throw new AuthenticationFailedException("Matrícula ou senha inválidos");
-        }
+            if (!isAtivo(usuarioInterno.ativo())) {
+                throw new AuthenticationFailedException("Matrícula ou senha inválidos");
+            }
 
-        String codigoPapel = resolverCodigoPapel(usuarioInterno.papel());
-        if (codigoPapel == null) {
-            throw new AccessDeniedException(
-                    "Seu usuário não possui acesso à Central de Eventos. Entre em contato com a TI."
+            if (!senhaValida(usuarioInterno.situacao())) {
+                throw new AuthenticationFailedException("Matrícula ou senha inválidos");
+            }
+
+            String codigoPapel = resolverCodigoPapel(usuarioInterno.papel());
+            if (codigoPapel == null) {
+                throw new AccessDeniedException(
+                        "Seu usuário não possui acesso à Central de Eventos. Entre em contato com a TI."
+                );
+            }
+
+            String tipoUsuario = papelUsuarioAdministrador.equals(codigoPapel)
+                    ? TIPO_USUARIO_ADMINISTRADOR
+                    : TIPO_USUARIO_COMUM;
+
+            UsuarioInternoResponse usuario = new UsuarioInternoResponse(
+                    usuarioInterno.matricula(),
+                    usuarioInterno.nomeUsuario(),
+                    usuarioInterno.email(),
+                    usuarioInterno.ativo(),
+                    usuarioInterno.situacao(),
+                    codigoPapel,
+                    tipoUsuario,
+                    usuarioInterno.prestador()
             );
+
+            authenticationAttemptService.registerSuccess(LOGIN_SCOPE, matricula);
+
+            logEventoService.registrarAcao(
+                    "Realizou login interno na Central de Eventos com a matrícula "
+                            + usuario.matricula()
+                            + " como "
+                            + tipoUsuario,
+                    usuario.matricula()
+            );
+
+            return new AuthLoginResponse<>(
+                    authTokenService.issueToken(buildAuthenticatedUser(usuario)),
+                    "Bearer",
+                    authTokenService.getExpirationSeconds(),
+                    usuario
+            );
+        } catch (AuthenticationFailedException exception) {
+            authenticationAttemptService.registerFailure(LOGIN_SCOPE, matricula);
+            throw exception;
         }
+    }
 
-        String tipoUsuario = papelUsuarioAdministrador.equals(codigoPapel)
-                ? TIPO_USUARIO_ADMINISTRADOR
-                : TIPO_USUARIO_COMUM;
-
-        logEventoService.registrarAcao(
-                "Realizou login interno na Central de Eventos com a matrícula "
-                        + usuarioInterno.matricula()
-                        + " como "
-                        + tipoUsuario,
-                usuarioInterno.matricula()
-        );
-
-        return new UsuarioInternoResponse(
-                usuarioInterno.matricula(),
-                usuarioInterno.nomeUsuario(),
-                usuarioInterno.email(),
-                usuarioInterno.ativo(),
-                usuarioInterno.situacao(),
-                codigoPapel,
-                tipoUsuario,
-                usuarioInterno.prestador()
+    private AuthenticatedUser buildAuthenticatedUser(UsuarioInternoResponse usuario) {
+        return new AuthenticatedUser(
+                "INTERNO",
+                usuario.matricula(),
+                usuario.nomeUsuario(),
+                TIPO_USUARIO_ADMINISTRADOR.equalsIgnoreCase(usuario.tipoUsuario()),
+                usuario.codigoPapel(),
+                usuario.matricula(),
+                null,
+                usuario.email(),
+                null,
+                null
         );
     }
 
@@ -129,7 +178,10 @@ public class UsuarioInternoService {
             return true;
         }
 
-        return MARCADORES_SENHA_INVALIDA.stream().noneMatch(normalizada::contains);
+        return MARCADORES_SENHA_INVALIDA.stream().noneMatch(normalizada::contains)
+                && SITUACOES_SENHA_VALIDAS.stream()
+                .filter(status -> status.length() > 1)
+                .anyMatch(normalizada::contains);
     }
 
     private String normalizarMatricula(String matricula) {

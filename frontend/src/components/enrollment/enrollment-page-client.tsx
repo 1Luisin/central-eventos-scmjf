@@ -4,7 +4,7 @@ import { useDeferredValue, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
-import { readLoginSession, type LoginSession } from "@/lib/auth/session";
+import type { SessionUserContext } from "@/lib/auth/session";
 import {
   formatBooleanFlag,
   formatCountLabel,
@@ -17,6 +17,7 @@ import type { EnrollmentData, InscricaoCreatePayload, InscricaoResponse } from "
 
 type EnrollmentPageClientProps = {
   initialData: EnrollmentData;
+  sessionContext: SessionUserContext;
 };
 
 type EnrollmentSuccessState = {
@@ -25,13 +26,12 @@ type EnrollmentSuccessState = {
   eventoNome: string;
 };
 
-export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps) {
+export function EnrollmentPageClient({ initialData, sessionContext }: EnrollmentPageClientProps) {
   const searchParams = useSearchParams();
   const queryCategoryId = searchParams.get("categoriaId");
   const queryEventId = searchParams.get("eventoId");
 
   const [data, setData] = useState(initialData);
-  const [loginSession, setLoginSession] = useState<LoginSession | null>(null);
   const [selectedCategoryId, setSelectedCategoryId] = useState(queryCategoryId || "");
   const [search, setSearch] = useState("");
   const [pageFeedback, setPageFeedback] = useState<string | null>(initialData.erroInicial ?? null);
@@ -40,10 +40,6 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const deferredSearch = useDeferredValue(search);
-
-  useEffect(() => {
-    setLoginSession(readLoginSession());
-  }, []);
 
   useEffect(() => {
     if (queryCategoryId && data.categorias.some((categoria) => String(categoria.id) === queryCategoryId)) {
@@ -65,8 +61,8 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     }
   }, [data.categorias, queryCategoryId, queryEventId, selectedCategoryId]);
 
-  const externalUser = loginSession?.accessMode === "externo" ? loginSession.externalUser ?? null : null;
-  const internalUser = loginSession?.accessMode === "interno" ? loginSession.internalUser ?? null : null;
+  const externalUser = sessionContext.accessMode === "externo" ? sessionContext.externalUser ?? null : null;
+  const internalUser = sessionContext.accessMode === "interno" ? sessionContext.internalUser ?? null : null;
   const normalizedSearch = deferredSearch.trim().toLowerCase();
   const visibleEvents = data.eventos
     .map((evento) => ({
@@ -177,9 +173,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
       const created = await requestJson<InscricaoResponse>("/api/inscricoes", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-Usuario-Log":
-            externalUser?.email ?? internalUser?.matricula ?? payload.matricula ?? payload.nomeUsuario ?? "PARTICIPANTE"
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });

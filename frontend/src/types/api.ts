@@ -11,6 +11,13 @@ export type MessageResponse = {
   mensagem: string;
 };
 
+export type AuthLoginResponse<T> = {
+  accessToken: string;
+  tokenType: string;
+  expiresInSeconds: number;
+  usuario: T;
+};
+
 export type EventoResponse = {
   id: number;
   nomeEvento: string;

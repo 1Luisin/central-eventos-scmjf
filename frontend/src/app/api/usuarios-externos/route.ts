@@ -7,12 +7,11 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
-    const userLog = request.headers.get("x-usuario-log");
 
     const response = await requestBackend("/usuarios-externos", {
       method: "POST",
       body,
-      headers: buildJsonHeaders(userLog)
+      headers: buildJsonHeaders()
     });
 
     return toProxyResponse(response);

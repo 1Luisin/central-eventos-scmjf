@@ -72,8 +72,7 @@ export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { i
       const createdUser = await requestJson<ExternalUserResponse>("/api/usuarios-externos", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-Usuario-Log": payload.email
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });

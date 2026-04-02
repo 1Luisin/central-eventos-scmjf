@@ -7,6 +7,7 @@ import br.org.santacasa.centraleventos.api.entity.Categoria;
 import br.org.santacasa.centraleventos.api.entity.Evento;
 import br.org.santacasa.centraleventos.api.entity.Inscricao;
 import br.org.santacasa.centraleventos.api.entity.UsuarioExterno;
+import br.org.santacasa.centraleventos.api.exception.AccessDeniedException;
 import br.org.santacasa.centraleventos.api.exception.BusinessRuleException;
 import br.org.santacasa.centraleventos.api.exception.ResourceNotFoundException;
 import br.org.santacasa.centraleventos.api.repository.CategoriaRepository;
@@ -59,26 +60,32 @@ public class InscricaoService {
 
         String identificadorParticipante;
 
-        if (request.idUsuarioExterno() != null) {
-            UsuarioExterno usuarioExterno = usuarioExternoService.buscarEntidadePorId(request.idUsuarioExterno());
+        if (usuario.isExterno()) {
+            if (usuario.idUsuarioExterno() == null) {
+                throw new AccessDeniedException("Sessão externa inválida. Faça login novamente para continuar.");
+            }
+
+            UsuarioExterno usuarioExterno = usuarioExternoService.buscarEntidadePorId(usuario.idUsuarioExterno());
             validarInscricaoExterna(categoria, usuarioExterno);
             validarDuplicidadeExterna(request.categoriaId(), usuarioExterno.getId());
 
             inscricao.setUsuarioExterno(usuarioExterno);
             inscricao.setNrContato(normalizarContatoExterno(request.numeroContato(), usuarioExterno));
-            inscricao.setNmSetor(normalizarOpcional(request.nomeSetor(), SETOR_PUBLICO_EXTERNO));
+            inscricao.setNmSetor(SETOR_PUBLICO_EXTERNO);
             inscricao.setNmUsuario(usuarioExterno.getNmCompleto());
             inscricao.setMatricula(usuarioExterno.getNrCpf());
             identificadorParticipante = usuarioExterno.getDsEmail();
-        } else {
+        } else if (usuario.isInterno()) {
             validarCamposInscricaoInterna(request);
-            validarDuplicidadeInterna(request.categoriaId(), request.matricula());
+            validarDuplicidadeInterna(request.categoriaId(), usuario.usuarioLog());
 
             inscricao.setNrContato(request.numeroContato().trim());
             inscricao.setNmSetor(request.nomeSetor().trim());
-            inscricao.setNmUsuario(request.nomeUsuario().trim());
-            inscricao.setMatricula(request.matricula().trim());
-            identificadorParticipante = inscricao.getMatricula();
+            inscricao.setNmUsuario(usuario.nomeUsuario());
+            inscricao.setMatricula(usuario.usuarioLog());
+            identificadorParticipante = usuario.usuarioLog();
+        } else {
+            throw new AccessDeniedException("Sessão inválida. Faça login novamente para continuar.");
         }
 
         Inscricao salva = inscricaoRepository.save(inscricao);
@@ -152,12 +159,6 @@ public class InscricaoService {
         if (request.nomeSetor() == null || request.nomeSetor().isBlank()) {
             throw new BusinessRuleException("Setor é obrigatório");
         }
-        if (request.nomeUsuario() == null || request.nomeUsuario().isBlank()) {
-            throw new BusinessRuleException("Nome do usuário é obrigatório");
-        }
-        if (request.matricula() == null || request.matricula().isBlank()) {
-            throw new BusinessRuleException("Matrícula é obrigatória");
-        }
     }
 
     private void validarDuplicidadeInterna(Long categoriaId, String matricula) {
@@ -187,13 +188,6 @@ public class InscricaoService {
             return usuarioExterno.getNrTelefone().trim();
         }
         throw new BusinessRuleException("Contato é obrigatório");
-    }
-
-    private String normalizarOpcional(String valor, String fallback) {
-        if (valor != null && !valor.isBlank()) {
-            return valor.trim();
-        }
-        return fallback;
     }
 
     private boolean isInativo(String flag) {

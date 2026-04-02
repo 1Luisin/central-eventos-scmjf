@@ -1,5 +1,8 @@
 package br.org.santacasa.centraleventos.api.service;
 
+import br.org.santacasa.centraleventos.api.auth.AuthenticatedUser;
+import br.org.santacasa.centraleventos.api.auth.AuthTokenService;
+import br.org.santacasa.centraleventos.api.dto.AuthLoginResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioExternoCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.UsuarioExternoLoginRequest;
 import br.org.santacasa.centraleventos.api.dto.UsuarioExternoResponse;
@@ -8,6 +11,7 @@ import br.org.santacasa.centraleventos.api.exception.AuthenticationFailedExcepti
 import br.org.santacasa.centraleventos.api.exception.BusinessRuleException;
 import br.org.santacasa.centraleventos.api.exception.ResourceNotFoundException;
 import br.org.santacasa.centraleventos.api.repository.UsuarioExternoRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,22 +21,36 @@ import java.time.LocalDateTime;
 @Service
 public class UsuarioExternoService {
 
+    private static final String LOGIN_SCOPE = "LOGIN_EXTERNO";
+
     private final UsuarioExternoRepository usuarioExternoRepository;
     private final PasswordEncoder passwordEncoder;
     private final LogEventoService logEventoService;
+    private final PasswordPolicyService passwordPolicyService;
+    private final AuthenticationAttemptService authenticationAttemptService;
+    private final AuthTokenService authTokenService;
+    private final String lgpdTermsVersion;
 
     public UsuarioExternoService(
             UsuarioExternoRepository usuarioExternoRepository,
             PasswordEncoder passwordEncoder,
-            LogEventoService logEventoService
+            LogEventoService logEventoService,
+            PasswordPolicyService passwordPolicyService,
+            AuthenticationAttemptService authenticationAttemptService,
+            AuthTokenService authTokenService,
+            @Value("${app.lgpd.terms-version:2026.1}") String lgpdTermsVersion
     ) {
         this.usuarioExternoRepository = usuarioExternoRepository;
         this.passwordEncoder = passwordEncoder;
         this.logEventoService = logEventoService;
+        this.passwordPolicyService = passwordPolicyService;
+        this.authenticationAttemptService = authenticationAttemptService;
+        this.authTokenService = authTokenService;
+        this.lgpdTermsVersion = lgpdTermsVersion == null ? "2026.1" : lgpdTermsVersion.trim();
     }
 
     @Transactional
-    public UsuarioExternoResponse cadastrar(UsuarioExternoCreateRequest request, String usuarioLog) {
+    public UsuarioExternoResponse cadastrar(UsuarioExternoCreateRequest request) {
         String cpf = normalizarCpf(request.cpf());
         String email = normalizarEmail(request.email());
 
@@ -49,13 +67,16 @@ public class UsuarioExternoService {
             throw new BusinessRuleException("Já existe um usuário externo cadastrado com este e-mail");
         }
 
+        String senha = normalizarObrigatorio(request.senha(), "Senha é obrigatória");
+        passwordPolicyService.validateOrThrow(senha);
+
         LocalDateTime agora = LocalDateTime.now();
 
         UsuarioExterno usuarioExterno = new UsuarioExterno();
         usuarioExterno.setNmCompleto(normalizarObrigatorio(request.nomeCompleto(), "Nome completo é obrigatório"));
         usuarioExterno.setNrCpf(cpf);
         usuarioExterno.setDsEmail(email);
-        usuarioExterno.setDsSenhaHash(passwordEncoder.encode(normalizarObrigatorio(request.senha(), "Senha é obrigatória")));
+        usuarioExterno.setDsSenhaHash(passwordEncoder.encode(senha));
         usuarioExterno.setNrTelefone(normalizarOpcional(request.numeroTelefone()));
         usuarioExterno.setDtNascimento(request.dataNascimento());
         usuarioExterno.setFlAtivo("S");
@@ -66,41 +87,77 @@ public class UsuarioExternoService {
         UsuarioExterno salvo = usuarioExternoRepository.save(usuarioExterno);
 
         logEventoService.registrarAcao(
-                "Criou o cadastro do usuário externo " + salvo.getId() + " - " + salvo.getDsEmail(),
-                logEventoService.normalizarUsuarioLog(usuarioLog, salvo.getDsEmail())
+                "Criou o cadastro do usuário externo " + salvo.getId()
+                        + " - " + salvo.getDsEmail()
+                        + " com aceite LGPD versão "
+                        + lgpdTermsVersion,
+                salvo.getDsEmail()
         );
 
         return toResponse(salvo);
     }
 
     @Transactional
-    public UsuarioExternoResponse autenticar(UsuarioExternoLoginRequest request) {
-        UsuarioExterno usuarioExterno = usuarioExternoRepository.findByDsEmailIgnoreCase(normalizarEmail(request.email()))
-                .orElseThrow(() -> new AuthenticationFailedException("Credenciais inválidas"));
+    public AuthLoginResponse<UsuarioExternoResponse> autenticar(UsuarioExternoLoginRequest request) {
+        String email = normalizarEmail(request.email());
+        String senha = normalizarObrigatorio(request.senha(), "Senha é obrigatória");
 
-        if (!isAtivo(usuarioExterno.getFlAtivo())) {
-            throw new AuthenticationFailedException("Cadastro externo inativo");
+        authenticationAttemptService.assertCanAttempt(LOGIN_SCOPE, email);
+
+        try {
+            UsuarioExterno usuarioExterno = usuarioExternoRepository.findByDsEmailIgnoreCase(email)
+                    .orElseThrow(() -> new AuthenticationFailedException("Credenciais inválidas"));
+
+            if (!isAtivo(usuarioExterno.getFlAtivo())) {
+                throw new AuthenticationFailedException("Credenciais inválidas");
+            }
+            if (!passwordEncoder.matches(senha, usuarioExterno.getDsSenhaHash())) {
+                throw new AuthenticationFailedException("Credenciais inválidas");
+            }
+
+            usuarioExterno.setDtUltimoAcesso(LocalDateTime.now());
+            usuarioExterno.setDtUltimaAtualizacao(LocalDateTime.now());
+            UsuarioExterno atualizado = usuarioExternoRepository.save(usuarioExterno);
+            UsuarioExternoResponse usuario = toResponse(atualizado);
+
+            authenticationAttemptService.registerSuccess(LOGIN_SCOPE, email);
+
+            logEventoService.registrarAcao(
+                    "Realizou login com o usuário externo " + atualizado.getId() + " - " + atualizado.getDsEmail(),
+                    atualizado.getDsEmail()
+            );
+
+            return new AuthLoginResponse<>(
+                    authTokenService.issueToken(buildAuthenticatedUser(usuario)),
+                    "Bearer",
+                    authTokenService.getExpirationSeconds(),
+                    usuario
+            );
+        } catch (AuthenticationFailedException exception) {
+            authenticationAttemptService.registerFailure(LOGIN_SCOPE, email);
+            throw exception;
         }
-        if (!passwordEncoder.matches(normalizarObrigatorio(request.senha(), "Senha é obrigatória"), usuarioExterno.getDsSenhaHash())) {
-            throw new AuthenticationFailedException("Credenciais inválidas");
-        }
-
-        usuarioExterno.setDtUltimoAcesso(LocalDateTime.now());
-        usuarioExterno.setDtUltimaAtualizacao(LocalDateTime.now());
-        UsuarioExterno atualizado = usuarioExternoRepository.save(usuarioExterno);
-
-        logEventoService.registrarAcao(
-                "Realizou login com o usuário externo " + atualizado.getId() + " - " + atualizado.getDsEmail(),
-                atualizado.getDsEmail()
-        );
-
-        return toResponse(atualizado);
     }
 
     @Transactional(readOnly = true)
     public UsuarioExterno buscarEntidadePorId(Long usuarioExternoId) {
         return usuarioExternoRepository.findById(usuarioExternoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário externo não encontrado"));
+    }
+
+    private AuthenticatedUser buildAuthenticatedUser(UsuarioExternoResponse usuario) {
+        return new AuthenticatedUser(
+                "EXTERNO",
+                usuario.email(),
+                usuario.nomeCompleto(),
+                false,
+                null,
+                null,
+                usuario.idUsuarioExterno(),
+                usuario.email(),
+                usuario.cpf(),
+                usuario.numeroTelefone()
+        );
     }
 
     private UsuarioExternoResponse toResponse(UsuarioExterno usuarioExterno) {

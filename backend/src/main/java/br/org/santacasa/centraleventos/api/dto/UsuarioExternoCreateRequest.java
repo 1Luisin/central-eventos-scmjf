@@ -24,7 +24,7 @@ public record UsuarioExternoCreateRequest(
         String email,
 
         @NotBlank(message = "Senha é obrigatória")
-        @Size(min = 6, max = 120, message = "Senha deve ter entre 6 e 120 caracteres")
+        @Size(min = 8, max = 120, message = "Senha deve ter entre 8 e 120 caracteres")
         String senha,
 
         @Size(max = 20, message = "Telefone deve ter até 20 caracteres")

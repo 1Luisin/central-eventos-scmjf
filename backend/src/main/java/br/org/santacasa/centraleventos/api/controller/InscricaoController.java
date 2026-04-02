@@ -1,9 +1,11 @@
 package br.org.santacasa.centraleventos.api.controller;
 
+import br.org.santacasa.centraleventos.api.auth.AuthenticatedRequest;
 import br.org.santacasa.centraleventos.api.dto.InscricaoCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.InscricaoResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioOperacaoContext;
 import br.org.santacasa.centraleventos.api.service.InscricaoService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,33 +32,31 @@ public class InscricaoController {
     @PostMapping
     public ResponseEntity<InscricaoResponse> criarInscricao(
             @Valid @RequestBody InscricaoCreateRequest request,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
-            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
-            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
+            HttpServletRequest servletRequest
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                inscricaoService.criarInscricao(request, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario))
+                inscricaoService.criarInscricao(request, resolveUsuario(servletRequest))
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelarInscricao(
             @PathVariable Long id,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
-            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
-            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
+            HttpServletRequest servletRequest
     ) {
-        inscricaoService.cancelarInscricao(id, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario));
+        inscricaoService.cancelarInscricao(id, resolveUsuario(servletRequest));
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/evento/{eventoId}")
     public List<InscricaoResponse> listarInscricoesPorEvento(
             @PathVariable Long eventoId,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog,
-            @RequestHeader(value = "X-Usuario-Nome", required = false) String usuarioNome,
-            @RequestHeader(value = "X-Usuario-Tipo", required = false) String tipoUsuario
+            HttpServletRequest servletRequest
     ) {
-        return inscricaoService.listarPorEvento(eventoId, UsuarioOperacaoContext.of(usuarioLog, usuarioNome, tipoUsuario));
+        return inscricaoService.listarPorEvento(eventoId, resolveUsuario(servletRequest));
+    }
+
+    private UsuarioOperacaoContext resolveUsuario(HttpServletRequest servletRequest) {
+        return UsuarioOperacaoContext.fromAuthenticatedUser(AuthenticatedRequest.require(servletRequest));
     }
 }

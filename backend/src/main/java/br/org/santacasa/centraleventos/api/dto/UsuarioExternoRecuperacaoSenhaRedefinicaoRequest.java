@@ -13,11 +13,11 @@ public record UsuarioExternoRecuperacaoSenhaRedefinicaoRequest(
         String codigo,
 
         @NotBlank(message = "Nova senha é obrigatória")
-        @Size(min = 6, max = 120, message = "A nova senha deve ter entre 6 e 120 caracteres")
+        @Size(min = 8, max = 120, message = "A nova senha deve ter entre 8 e 120 caracteres")
         String novaSenha,
 
         @NotBlank(message = "A confirmação da nova senha é obrigatória")
-        @Size(min = 6, max = 120, message = "A confirmação da nova senha deve ter entre 6 e 120 caracteres")
+        @Size(min = 8, max = 120, message = "A confirmação da nova senha deve ter entre 8 e 120 caracteres")
         String confirmacaoNovaSenha
 ) {
 }

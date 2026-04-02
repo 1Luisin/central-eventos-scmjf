@@ -1,5 +1,7 @@
 package br.org.santacasa.centraleventos.api.dto;
 
+import br.org.santacasa.centraleventos.api.auth.AuthenticatedUser;
+
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -7,20 +9,31 @@ import java.util.Set;
 public record UsuarioOperacaoContext(
         String usuarioLog,
         String nomeUsuario,
-        String tipoUsuario
+        String accessMode,
+        boolean administradorInterno,
+        Long idUsuarioExterno
 ) {
 
-    public static UsuarioOperacaoContext of(String usuarioLog, String nomeUsuario, String tipoUsuario) {
-        return new UsuarioOperacaoContext(trimToNull(usuarioLog), trimToNull(nomeUsuario), trimToNull(tipoUsuario));
+    public static UsuarioOperacaoContext fromAuthenticatedUser(AuthenticatedUser authenticatedUser) {
+        return new UsuarioOperacaoContext(
+                trimToNull(authenticatedUser.identifier()),
+                trimToNull(authenticatedUser.displayName()),
+                trimToNull(authenticatedUser.accessMode()),
+                authenticatedUser.internalAdmin(),
+                authenticatedUser.idUsuarioExterno()
+        );
     }
 
     public boolean isAdministradorInterno() {
-        if (tipoUsuario == null) {
-            return false;
-        }
+        return administradorInterno;
+    }
 
-        String normalizado = tipoUsuario.trim().toUpperCase(Locale.ROOT);
-        return "ADMINISTRADOR".equals(normalizado) || "ADMINISTRADOR_INTERNO".equals(normalizado);
+    public boolean isInterno() {
+        return "INTERNO".equalsIgnoreCase(accessMode);
+    }
+
+    public boolean isExterno() {
+        return "EXTERNO".equalsIgnoreCase(accessMode);
     }
 
     public String usuarioParaAuditoria(String fallback) {

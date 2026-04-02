@@ -3,4 +3,5 @@ target/
 .vscode/
 *.iml
 mail-local.properties
-mail-local.properties
+datasource-local.properties
+auth-local.properties

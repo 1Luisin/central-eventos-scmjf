@@ -1,10 +1,19 @@
+import { redirect } from "next/navigation";
+
 import { DashboardPageClient } from "@/components/dashboard/dashboard-page-client";
 import { AppShell } from "@/components/shell/app-shell";
 import { getDashboardData } from "@/lib/api/portal";
+import { getServerSessionUserContext } from "@/lib/auth/server-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const sessionContext = await getServerSessionUserContext();
+
+  if (!sessionContext) {
+    redirect("/login?redirect=%2Fdashboard");
+  }
+
   const data = await getDashboardData();
 
   return (
@@ -13,6 +22,7 @@ export default async function DashboardPage() {
       eyebrow="Eventos"
       title="Agenda de eventos"
       description="Consulte os eventos da Santa Casa, acompanhe as categorias disponíveis e encontre rapidamente a inscrição desejada."
+      sessionContext={sessionContext}
       sidebarEyebrow="Consulta rápida"
       sidebarTitle="Orientações"
       sidebarDescription={
@@ -26,7 +36,7 @@ export default async function DashboardPage() {
         </>
       }
     >
-      <DashboardPageClient initialData={data} />
+      <DashboardPageClient initialData={data} sessionContext={sessionContext} />
     </AppShell>
   );
 }

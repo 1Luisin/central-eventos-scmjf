@@ -1,5 +1,6 @@
 package br.org.santacasa.centraleventos.api.controller;
 
+import br.org.santacasa.centraleventos.api.dto.AuthLoginResponse;
 import br.org.santacasa.centraleventos.api.dto.UsuarioExternoCreateRequest;
 import br.org.santacasa.centraleventos.api.dto.UsuarioExternoLoginRequest;
 import br.org.santacasa.centraleventos.api.dto.UsuarioExternoResponse;
@@ -9,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,15 +24,14 @@ public class UsuarioExternoController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioExternoResponse> cadastrar(
-            @Valid @RequestBody UsuarioExternoCreateRequest request,
-            @RequestHeader(value = "X-Usuario-Log", required = false) String usuarioLog
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioExternoService.cadastrar(request, usuarioLog));
+    public ResponseEntity<UsuarioExternoResponse> cadastrar(@Valid @RequestBody UsuarioExternoCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuarioExternoService.cadastrar(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UsuarioExternoResponse> login(@Valid @RequestBody UsuarioExternoLoginRequest request) {
+    public ResponseEntity<AuthLoginResponse<UsuarioExternoResponse>> login(
+            @Valid @RequestBody UsuarioExternoLoginRequest request
+    ) {
         return ResponseEntity.ok(usuarioExternoService.autenticar(request));
     }
 }

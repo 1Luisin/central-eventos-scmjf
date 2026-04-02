@@ -3,16 +3,23 @@
 import { useRouter } from "next/navigation";
 import { startTransition } from "react";
 
-import { clearLoginSession } from "@/lib/auth/session";
+import { requestVoid } from "@/lib/api/client";
 
 export function LogoutButton() {
   const router = useRouter();
 
-  function handleClick() {
-    clearLoginSession();
+  async function handleClick() {
+    try {
+      await requestVoid("/api/auth/logout", {
+        method: "POST"
+      });
+    } catch {
+      // Intencionalmente silencioso: o retorno para o login deve acontecer mesmo se a limpeza falhar.
+    }
 
     startTransition(() => {
       router.push("/login");
+      router.refresh();
     });
   }
 

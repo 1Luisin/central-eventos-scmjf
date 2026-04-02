@@ -1,34 +1,13 @@
-"use client";
-
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-
-import { isAdminSession, readLoginSession } from "@/lib/auth/session";
 
 type AdminAccessGateProps = {
+  isAllowed: boolean;
   children: ReactNode;
 };
 
-export function AdminAccessGate({ children }: AdminAccessGateProps) {
-  const [accessState, setAccessState] = useState<"checking" | "allowed" | "denied">("checking");
-
-  useEffect(() => {
-    const session = readLoginSession();
-    setAccessState(isAdminSession(session) ? "allowed" : "denied");
-  }, []);
-
-  if (accessState === "checking") {
-    return (
-      <section className="panel empty-panel">
-        <span className="empty-panel__badge">Verificando acesso</span>
-        <h3>Estamos confirmando suas permissões.</h3>
-        <p>Aguarde um instante para liberar esta área.</p>
-      </section>
-    );
-  }
-
-  if (accessState === "denied") {
+export function AdminAccessGate({ isAllowed, children }: AdminAccessGateProps) {
+  if (!isAllowed) {
     return (
       <section className="panel empty-panel">
         <span className="empty-panel__badge">Acesso restrito</span>

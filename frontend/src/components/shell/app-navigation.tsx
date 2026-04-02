@@ -1,12 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
-import { isAdminSession, readLoginSession, type LoginSession } from "@/lib/auth/session";
+import type { SessionUserContext } from "@/lib/auth/session";
 
 type AppNavigationProps = {
   activeRoute: "dashboard" | "cadastros" | "inscricoes";
+  sessionContext: SessionUserContext | null;
 };
 
 const navigation = [
@@ -15,14 +13,8 @@ const navigation = [
   { href: "/inscricoes", key: "inscricoes", label: "Inscrições", adminOnly: false }
 ] as const;
 
-export function AppNavigation({ activeRoute }: AppNavigationProps) {
-  const [session, setSession] = useState<LoginSession | null>(null);
-
-  useEffect(() => {
-    setSession(readLoginSession());
-  }, []);
-
-  const availableItems = navigation.filter((item) => !item.adminOnly || isAdminSession(session));
+export function AppNavigation({ activeRoute, sessionContext }: AppNavigationProps) {
+  const availableItems = navigation.filter((item) => !item.adminOnly || sessionContext?.isInternalAdmin);
 
   return (
     <nav className="nav-card" aria-label="Menu principal">

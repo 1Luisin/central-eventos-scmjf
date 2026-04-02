@@ -77,6 +77,21 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ApiErrorResponse> handleTooManyRequests(
+            TooManyRequestsException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
+                buildResponse(
+                        HttpStatus.TOO_MANY_REQUESTS,
+                        exception.getMessage(),
+                        request.getRequestURI(),
+                        List.of()
+                )
+        );
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException exception,

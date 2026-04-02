@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 
 import { DateTimePickerField } from "@/components/forms/date-time-picker-field";
 import { getRequestErrorMessage, requestJson, requestVoid } from "@/lib/api/client";
-import { readLoginSession } from "@/lib/auth/session";
+import type { SessionUserContext } from "@/lib/auth/session";
 import {
   formatBooleanFlag,
   formatCountLabel,
@@ -18,6 +18,7 @@ import {
 } from "@/lib/formatters";
 import type {
   AdminData,
+  CategoriaAdminItem,
   CategoriaCreatePayload,
   EventoCreatePayload,
   EventoResponse
@@ -25,6 +26,7 @@ import type {
 
 type AdminPageClientProps = {
   initialData: AdminData;
+  sessionContext: SessionUserContext;
 };
 
 type EventFormState = {
@@ -36,9 +38,18 @@ type EventFormState = {
   descricao: string;
 };
 
-export function AdminPageClient({ initialData }: AdminPageClientProps) {
+type CategoryFormState = {
+  nomeCategoria: string;
+  limiteInscricoes: string;
+  externo: "S" | "N";
+  ativo: "S" | "N";
+  descricao: string;
+};
+
+export function AdminPageClient({ initialData, sessionContext }: AdminPageClientProps) {
   const searchParams = useSearchParams();
   const requestedEventId = searchParams.get("eventoId");
+  const loggedAdminName = sessionContext.internalUser?.nomeUsuario ?? sessionContext.displayName ?? "";
 
   const [data, setData] = useState(initialData);
   const [selectedEventId, setSelectedEventId] = useState(requestedEventId || String(initialData.eventos[0]?.id ?? ""));
@@ -50,19 +61,11 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [cancelingEnrollmentId, setCancelingEnrollmentId] = useState<number | null>(null);
   const [editingEventId, setEditingEventId] = useState<number | null>(null);
-  const [loggedAdminName, setLoggedAdminName] = useState("");
-  const [eventForm, setEventForm] = useState<EventFormState>(createDefaultEventForm());
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [eventForm, setEventForm] = useState<EventFormState>(createDefaultEventForm(loggedAdminName));
+  const [categoryForm, setCategoryForm] = useState<CategoryFormState>(createDefaultCategoryForm());
   const [eventStartDate, setEventStartDate] = useState<Date | null>(null);
   const [eventEndDate, setEventEndDate] = useState<Date | null>(null);
-
-  useEffect(() => {
-    const session = readLoginSession();
-    const adminName = session?.internalUser?.nomeUsuario ?? "";
-    setLoggedAdminName(adminName);
-    setEventForm((current) =>
-      current.nomeResponsavel.trim() ? current : createDefaultEventForm(adminName)
-    );
-  }, []);
 
   useEffect(() => {
     if (requestedEventId && data.eventos.some((evento) => String(evento.id) === requestedEventId)) {
@@ -91,6 +94,22 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     setEventStartDate(new Date(editingEvent.dataHoraInicio));
     setEventEndDate(new Date(editingEvent.dataHoraFim));
   }, [data.eventos, editingEventId, loggedAdminName]);
+
+  useEffect(() => {
+    if (editingCategoryId === null) {
+      return;
+    }
+
+    const editingCategory = findCategoryById(data, editingCategoryId);
+
+    if (!editingCategory) {
+      resetCategoryForm(setEditingCategoryId, setCategoryForm);
+      return;
+    }
+
+    setSelectedEventId(String(editingCategory.eventoId));
+    setCategoryForm(mapCategoryToForm(editingCategory));
+  }, [data, editingCategoryId]);
 
   const selectedEvent = data.eventos.find((evento) => String(evento.id) === selectedEventId) ?? null;
 
@@ -187,16 +206,13 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-
     const payload: CategoriaCreatePayload = {
       eventoId: Number(selectedEventId),
-      nomeCategoria: normalizeText(formData.get("nomeCategoria")),
-      externo: normalizeText(formData.get("externo")) === "S" ? "S" : "N",
-      descricao: trimOrUndefined(formData.get("descricao")),
-      ativo: normalizeText(formData.get("ativo")) === "N" ? "N" : "S",
-      limiteInscricoes: Number(normalizeText(formData.get("limiteInscricoes")))
+      nomeCategoria: categoryForm.nomeCategoria.trim(),
+      externo: categoryForm.externo,
+      descricao: trimOrUndefined(categoryForm.descricao),
+      ativo: categoryForm.ativo,
+      limiteInscricoes: Number(categoryForm.limiteInscricoes)
     };
 
     if (!Number.isFinite(payload.limiteInscricoes) || payload.limiteInscricoes <= 0) {
@@ -206,16 +222,20 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
 
     try {
       setCategorySubmitting(true);
-      await requestJson("/api/categorias", {
-        method: "POST",
+      await requestJson(editingCategoryId === null ? "/api/categorias" : `/api/categorias/${editingCategoryId}`, {
+        method: editingCategoryId === null ? "POST" : "PUT",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
 
-      form.reset();
-      setCategoryMessage(`Categoria cadastrada com sucesso no evento "${selectedEvent.nomeEvento}".`);
+      setCategoryMessage(
+        editingCategoryId === null
+          ? `Categoria cadastrada com sucesso no evento "${selectedEvent.nomeEvento}".`
+          : "Categoria atualizada com sucesso."
+      );
+      resetCategoryForm(setEditingCategoryId, setCategoryForm);
       await refreshData(selectedEvent.id);
     } catch (error) {
       setCategoryMessage(getRequestErrorMessage(error));
@@ -255,6 +275,15 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     setEventStartDate(new Date(evento.dataHoraInicio));
     setEventEndDate(new Date(evento.dataHoraFim));
     setEventMessage(null);
+    setFeedback(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function startEditingCategory(categoria: CategoriaAdminItem) {
+    setEditingCategoryId(categoria.id);
+    setSelectedEventId(String(categoria.eventoId));
+    setCategoryForm(mapCategoryToForm(categoria));
+    setCategoryMessage(null);
     setFeedback(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -417,8 +446,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
         <article className="panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Nova categoria</span>
-              <h2>Categoria do evento</h2>
+              <span className="eyebrow">{editingCategoryId === null ? "Nova categoria" : "Editar categoria"}</span>
+              <h2>{editingCategoryId === null ? "Categoria do evento" : "Atualização da categoria"}</h2>
             </div>
           </div>
 
@@ -429,7 +458,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                 name="eventoId"
                 value={selectedEventId}
                 onChange={(event) => setSelectedEventId(event.target.value)}
-                disabled={data.eventos.length === 0}
+                  disabled={data.eventos.length === 0 || editingCategoryId !== null}
               >
                 {data.eventos.length === 0 ? (
                   <option value="">Cadastre um evento primeiro</option>
@@ -445,17 +474,37 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
 
             <label className="field field--full">
               <span>NOME DA CATEGORIA</span>
-              <input name="nomeCategoria" type="text" placeholder="Ex.: Oficina prática" required />
+              <input
+                name="nomeCategoria"
+                type="text"
+                placeholder="Ex.: Oficina prática"
+                required
+                value={categoryForm.nomeCategoria}
+                onChange={(event) => updateCategoryFormField(setCategoryForm, "nomeCategoria", event.target.value)}
+              />
             </label>
 
             <label className="field">
               <span>VAGAS</span>
-              <input name="limiteInscricoes" type="number" min="1" step="1" placeholder="Ex.: 40" required />
+              <input
+                name="limiteInscricoes"
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Ex.: 40"
+                required
+                value={categoryForm.limiteInscricoes}
+                onChange={(event) => updateCategoryFormField(setCategoryForm, "limiteInscricoes", event.target.value)}
+              />
             </label>
 
             <label className="field">
               <span>INSCRIÇÃO EXTERNA</span>
-              <select name="externo" defaultValue="N">
+              <select
+                name="externo"
+                value={categoryForm.externo}
+                onChange={(event) => updateCategoryFormField(setCategoryForm, "externo", event.target.value as "S" | "N")}
+              >
                 <option value="N">Não permite</option>
                 <option value="S">Permite</option>
               </select>
@@ -463,7 +512,11 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
 
             <label className="field">
               <span>SITUAÇÃO DA CATEGORIA</span>
-              <select name="ativo" defaultValue="S">
+              <select
+                name="ativo"
+                value={categoryForm.ativo}
+                onChange={(event) => updateCategoryFormField(setCategoryForm, "ativo", event.target.value as "S" | "N")}
+              >
                 <option value="S">Ativa</option>
                 <option value="N">Inativa</option>
               </select>
@@ -475,6 +528,8 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                 name="descricao"
                 rows={4}
                 placeholder="Descreva o formato, o público e as orientações desta categoria."
+                value={categoryForm.descricao}
+                onChange={(event) => updateCategoryFormField(setCategoryForm, "descricao", event.target.value)}
               />
             </label>
 
@@ -486,8 +541,24 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                 type="submit"
                 disabled={categorySubmitting || data.eventos.length === 0}
               >
-                {categorySubmitting ? "Salvando..." : "Salvar categoria"}
+                {categorySubmitting
+                  ? editingCategoryId === null
+                    ? "Salvando..."
+                    : "Atualizando..."
+                  : editingCategoryId === null
+                    ? "Salvar categoria"
+                    : "Salvar alterações"}
               </button>
+
+              {editingCategoryId !== null ? (
+                <button
+                  className="button button--secondary"
+                  type="button"
+                  onClick={() => resetCategoryForm(setEditingCategoryId, setCategoryForm)}
+                >
+                  Cancelar edição
+                </button>
+              ) : null}
             </div>
           </form>
         </article>
@@ -601,6 +672,12 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                         </span>
                       </div>
 
+                      <div className="card-actions">
+                        <button className="button button--secondary" type="button" onClick={() => startEditingCategory(categoria)}>
+                          {editingCategoryId === categoria.id ? "Editando esta categoria" : "Editar categoria"}
+                        </button>
+                      </div>
+
                       <div className="occupancy">
                         <div className="occupancy__track">
                           <div
@@ -687,6 +764,16 @@ function createDefaultEventForm(loggedAdminName = ""): EventFormState {
   };
 }
 
+function createDefaultCategoryForm(): CategoryFormState {
+  return {
+    nomeCategoria: "",
+    limiteInscricoes: "",
+    externo: "N",
+    ativo: "S",
+    descricao: ""
+  };
+}
+
 function mapEventToForm(evento: EventoResponse): EventFormState {
   return {
     nomeEvento: evento.nomeEvento,
@@ -698,12 +785,44 @@ function mapEventToForm(evento: EventoResponse): EventFormState {
   };
 }
 
+function mapCategoryToForm(categoria: CategoriaAdminItem): CategoryFormState {
+  return {
+    nomeCategoria: categoria.nomeCategoria,
+    limiteInscricoes: String(categoria.limiteInscricoes),
+    externo: normalizeText(categoria.externo) === "S" ? "S" : "N",
+    ativo: normalizeText(categoria.ativo) === "N" ? "N" : "S",
+    descricao: categoria.descricao ?? ""
+  };
+}
+
+function findCategoryById(data: AdminData, categoryId: number): CategoriaAdminItem | null {
+  for (const evento of data.eventos) {
+    const categoria = evento.categorias.find((item) => item.id === categoryId);
+    if (categoria) {
+      return categoria;
+    }
+  }
+
+  return null;
+}
+
 function updateEventFormField(
   setEventForm: React.Dispatch<React.SetStateAction<EventFormState>>,
   field: keyof EventFormState,
   value: string
 ) {
   setEventForm((current) => ({
+    ...current,
+    [field]: value
+  }));
+}
+
+function updateCategoryFormField(
+  setCategoryForm: React.Dispatch<React.SetStateAction<CategoryFormState>>,
+  field: keyof CategoryFormState,
+  value: string
+) {
+  setCategoryForm((current) => ({
     ...current,
     [field]: value
   }));
@@ -720,4 +839,12 @@ function resetEventForm(
   setEventForm(createDefaultEventForm(loggedAdminName));
   setEventStartDate(null);
   setEventEndDate(null);
+}
+
+function resetCategoryForm(
+  setEditingCategoryId: React.Dispatch<React.SetStateAction<number | null>>,
+  setCategoryForm: React.Dispatch<React.SetStateAction<CategoryFormState>>
+) {
+  setEditingCategoryId(null);
+  setCategoryForm(createDefaultCategoryForm());
 }

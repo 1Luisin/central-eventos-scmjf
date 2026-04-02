@@ -1,19 +1,19 @@
 # Central de Eventos SCMJF
 
-Sistema da Santa Casa de Misericórdia para gestão de eventos, categorias e inscrições, com backend Java/Spring Boot integrado ao Oracle e um frontend web moderno preparado para operação no servidor institucional.
+Sistema da Santa Casa de Misericordia para gestao de eventos, categorias e inscricoes, com backend Java/Spring Boot integrado ao Oracle e frontend Next.js preparado para operacao institucional.
 
 ## Estrutura principal
 
 ```text
 .
-├── backend/   -> API REST Spring Boot + Oracle
-├── frontend/  -> aplicação oficial Next.js para produção
-├── app/       -> protótipo estático legado
-├── index.html -> entrada antiga do protótipo estático
-└── README.MD
+|-- backend/   -> API REST Spring Boot + Oracle
+|-- frontend/  -> aplicacao oficial Next.js para producao
+|-- app/       -> prototipo estatico legado
+|-- index.html -> entrada antiga do prototipo estatico
+`-- README.MD
 ```
 
-## Módulos
+## Modulos
 
 ### `backend/`
 
@@ -25,68 +25,101 @@ Endpoints principais:
 - `GET /eventos`
 - `GET /eventos/{id}`
 - `POST /categorias`
+- `PUT /categorias/{id}`
 - `GET /categorias/evento/{eventoId}`
 - `POST /inscricoes`
 - `DELETE /inscricoes/{id}`
 - `GET /inscricoes/evento/{eventoId}`
+- `POST /usuarios-internos/login`
+- `POST /usuarios-externos`
+- `POST /usuarios-externos/login`
+- `POST /usuarios-externos/recuperacao-senha/solicitar`
+- `POST /usuarios-externos/recuperacao-senha/validar`
+- `POST /usuarios-externos/recuperacao-senha/redefinir`
 
-Regras de negócio já implementadas:
+Regras principais:
 
-- bloqueio de inscrição em evento inativo
-- bloqueio de inscrição em categoria inativa
+- bloqueio de inscricao em evento inativo
+- bloqueio de inscricao em categoria inativa
 - bloqueio de categoria lotada por contagem real na tabela `INSCRICAO`
-- bloqueio de duplicidade por matrícula + categoria
-- geração de logs em `LOG_EVENTOS`
+- bloqueio de duplicidade por matricula + categoria
+- posse do evento vinculada ao criador do evento
+- autenticacao interna por matricula MV
+- autenticacao externa por e-mail e senha com hash
+- sessao autenticada por bearer token assinado
+- rate limit basico para login
 
 ### `frontend/`
 
-Frontend oficial em Next.js com App Router, preparado para rodar em Node na porta `3000`.
+Frontend oficial em Next.js com App Router, rodando em Node na porta `3000`.
 
-Características:
+Caracteristicas:
 
-- dashboard de eventos com categorias dentro do card do evento
-- tela administrativa para cadastro de eventos e categorias
-- tela de inscrições com bloqueios visuais conforme as regras da API
-- proxy interno para o backend Spring, evitando dependência de CORS no navegador
-- scripts de execução para ambiente de servidor
+- dashboard de eventos com categorias no card do evento
+- area administrativa para eventos e categorias do criador logado
+- tela de inscricoes com regras visuais de disponibilidade
+- proxy interno para o backend Spring
+- sessao assinada em cookie HTTP-only
 
 ### `app/`
 
-Protótipo estático anterior, mantido como referência histórica. O fluxo produtivo deve considerar `frontend/` como a aplicação principal.
+Prototipo estatico legado, mantido apenas como referencia historica.
 
-## Deploy recomendado
+## Execucao local
 
 ### Backend
-
-Executar a API Spring Boot antes do frontend.
-
-Para ambiente local:
 
 ```bash
 cd backend
 mvn spring-boot:run
 ```
 
-Por padrão, a aplicação sobe em `0.0.0.0:8080`.
-
-Se quiser prender a API ao IP institucional no servidor, defina `SERVER_ADDRESS=172.18.2.246`.
+Por padrao, a API sobe em `0.0.0.0:8080`.
 
 ### Frontend
 
-Dentro de `frontend/`:
-
 ```bash
+cd frontend
 npm install
 npm run build
 npm run start
 ```
 
-O script `start` já sobe o Next.js em `0.0.0.0:3000`.
+O frontend sobe em `0.0.0.0:3000`.
 
-Também existe um arquivo `frontend/ecosystem.config.cjs` para uso com PM2.
+## Configuracao segura
 
-## Observações
+### Backend
 
-- O frontend oficial consome os contratos reais da API, não mais `localStorage`.
-- O modelo está preparado para evolução futura com autenticação, módulos extras e novas rotas.
-- Para instruções detalhadas do frontend, consulte [frontend/README.md](./frontend/README.md).
+Nao grave credenciais reais no `application.properties`.
+
+Crie arquivos locais nao versionados dentro de `backend/`:
+
+- `datasource-local.properties`
+- `auth-local.properties`
+- `mail-local.properties`
+
+Modelos disponiveis:
+
+- `backend/datasource-local.example.properties`
+- `backend/auth-local.example.properties`
+- `backend/mail-local.example.properties`
+
+Esses arquivos sao carregados automaticamente por `spring.config.import`.
+
+### Frontend
+
+Copie `frontend/.env.example` para `frontend/.env.local` e preencha:
+
+- `BACKEND_API_BASE_URL`
+- `FRONTEND_SESSION_SECRET`
+
+O `FRONTEND_SESSION_SECRET` deve ser uma chave longa e exclusiva para assinar a sessao do frontend.
+
+## Observacoes
+
+- o frontend oficial consome os contratos reais da API
+- o frontend usa sessao assinada em cookie HTTP-only
+- a API usa bearer token assinado para rotas protegidas
+- o prototipo estatico em `app/` nao deve ser tratado como versao produtiva
+- para detalhes do frontend, consulte [frontend/README.md](./frontend/README.md)

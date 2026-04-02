@@ -4,7 +4,7 @@ import Image from "next/image";
 import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
 import { AppNavigation } from "@/components/shell/app-navigation";
 import { LogoutButton } from "@/components/shell/logout-button";
-import { getAuthenticatedUserGreetingName } from "@/lib/auth/server-session";
+import type { SessionUserContext } from "@/lib/auth/session";
 
 type AppShellProps = {
   activeRoute: "dashboard" | "cadastros" | "inscricoes";
@@ -14,10 +14,11 @@ type AppShellProps = {
   sidebarEyebrow: string;
   sidebarTitle: string;
   sidebarDescription: ReactNode;
+  sessionContext: SessionUserContext | null;
   children: ReactNode;
 };
 
-export async function AppShell({
+export function AppShell({
   activeRoute,
   eyebrow,
   title,
@@ -25,9 +26,10 @@ export async function AppShell({
   sidebarEyebrow,
   sidebarTitle,
   sidebarDescription,
+  sessionContext,
   children
 }: AppShellProps) {
-  const greetingName = await getAuthenticatedUserGreetingName();
+  const greetingName = formatGreetingName(sessionContext?.displayName ?? "");
 
   return (
     <>
@@ -58,7 +60,7 @@ export async function AppShell({
             <strong>Central de Eventos</strong>
           </div>
 
-          <AppNavigation activeRoute={activeRoute} />
+          <AppNavigation activeRoute={activeRoute} sessionContext={sessionContext} />
 
           <div className="sidebar-note">
             <span className="eyebrow">{sidebarEyebrow}</span>
@@ -87,4 +89,20 @@ export async function AppShell({
       </div>
     </>
   );
+}
+
+function formatGreetingName(fullName: string): string | null {
+  const normalizedParts = fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (normalizedParts.length === 0) {
+    return null;
+  }
+
+  return normalizedParts
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
 }

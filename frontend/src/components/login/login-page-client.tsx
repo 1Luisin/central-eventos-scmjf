@@ -9,13 +9,8 @@ import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
-import { saveLoginSession, type AccessMode } from "@/lib/auth/session";
-import type {
-  ExternalUserLoginPayload,
-  ExternalUserResponse,
-  InternalUserLoginPayload,
-  InternalUserResponse
-} from "@/types/api";
+import { type AccessMode } from "@/lib/auth/session";
+import type { ExternalUserLoginPayload, InternalUserLoginPayload, MessageResponse } from "@/types/api";
 import styles from "./login-page-client.module.css";
 
 type FeedbackTone = "error" | "success";
@@ -68,19 +63,12 @@ export function LoginPageClient({
         setSubmitting(true);
         setFeedback("");
 
-        const internalUser = await requestJson<InternalUserResponse>("/api/usuarios-internos/login", {
+        await requestJson<MessageResponse>("/api/usuarios-internos/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify(payload)
-        });
-
-        saveLoginSession({
-          accessMode,
-          identifier: internalUser.matricula,
-          internalUser,
-          loggedAt: new Date().toISOString()
         });
 
         startTransition(() => {
@@ -109,19 +97,12 @@ export function LoginPageClient({
       setSubmitting(true);
       setFeedback("");
 
-      const externalUser = await requestJson<ExternalUserResponse>("/api/usuarios-externos/login", {
+      await requestJson<MessageResponse>("/api/usuarios-externos/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
-      });
-
-      saveLoginSession({
-        accessMode,
-        identifier: externalUser.email,
-        externalUser,
-        loggedAt: new Date().toISOString()
       });
 
       startTransition(() => {
