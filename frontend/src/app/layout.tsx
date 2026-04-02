@@ -7,7 +7,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Central de Eventos | Santa Casa de Misericórdia",
-  description: "Sistema web para gestão de eventos, categorias e inscrições da Santa Casa de Misericórdia."
+  description: "Sistema web para gestão de eventos, categorias e inscrições da Santa Casa de Misericórdia.",
+  icons: {
+    icon: [{ url: "/logo-santa-casa.png", type: "image/png" }],
+    shortcut: ["/logo-santa-casa.png"],
+    apple: ["/logo-santa-casa.png"]
+  }
 };
 
 export default function RootLayout({
