@@ -70,7 +70,7 @@ export async function fetchBackendJson<T>(path: string, init: RequestInit = {}):
 
   if (!response.ok) {
     const apiError = payload as ApiErrorResponse | null;
-    throw new Error(apiError?.message || `Falha ao consumir a API (${response.status}).`);
+    throw new Error(apiError?.message || `Não foi possível concluir a solicitação agora (${response.status}).`);
   }
 
   return (payload ?? null) as T;
@@ -87,7 +87,7 @@ export async function toProxyResponse(response: Response): Promise<NextResponse>
 }
 
 export function buildProxyErrorResponse(error: unknown): NextResponse {
-  const message = error instanceof Error ? error.message : "Falha inesperada ao comunicar com a API.";
+  const message = error instanceof Error ? error.message : "Não foi possível concluir a solicitação no momento.";
 
   return NextResponse.json(
     {

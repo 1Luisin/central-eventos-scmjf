@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       initialAccessMode={initialAccessMode}
       initialFeedback={
         resolvedSearchParams?.registered === "1"
-          ? "Cadastro externo concluído. Agora faça seu acesso com o e-mail e a senha definidos."
+          ? "Cadastro concluído com sucesso. Entre com o e-mail e a senha cadastrados."
           : ""
       }
       initialFeedbackTone={resolvedSearchParams?.registered === "1" ? "success" : "error"}

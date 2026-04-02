@@ -73,12 +73,12 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
         <div className="section-heading section-heading--compact">
           <div>
             <span className="eyebrow">Eventos cadastrados</span>
-            <h2>Eventos e Categorias</h2>
+            <h2>Eventos e categorias</h2>
           </div>
 
           <div className="toolbar">
             <label className="search-field">
-              <span className="search-field__label">Buscar no painel</span>
+              <span className="search-field__label">Buscar eventos</span>
               <input
                 type="search"
                 placeholder="Procure por evento, setor ou categoria"
@@ -88,20 +88,19 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
             </label>
 
             <button className="button button--secondary" type="button" onClick={handleRefresh} disabled={refreshing}>
-              {refreshing ? "Atualizando..." : "Atualizar painel"}
+              {refreshing ? "Atualizando..." : "Atualizar lista"}
             </button>
           </div>
         </div>
 
         <p className="section-copy">
-          Cada card resume o evento, exibe as categorias relacionadas e oferece acesso rápido para inscrições e, quando
-          liberado, para a gestão administrativa.
+          Cada card apresenta as principais informações do evento, as categorias disponíveis e os atalhos para inscrição ou gestão.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">
-          <span>{formatCountLabel(filteredEvents.length, "evento listado", "eventos listados")}</span>
+          <span>{formatCountLabel(filteredEvents.length, "evento encontrado", "eventos encontrados")}</span>
           <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
         </div>
       </section>
@@ -109,8 +108,8 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
       {filteredEvents.length === 0 ? (
         <section className="panel empty-panel">
           <span className="empty-panel__badge">Nenhum resultado</span>
-          <h3>Não encontramos eventos para o filtro informado.</h3>
-          <p>Limpe a busca ou atualize o painel para consultar novamente a API.</p>
+          <h3>Nenhum evento foi encontrado com esse filtro.</h3>
+          <p>Altere o termo pesquisado ou atualize a lista para tentar novamente.</p>
         </section>
       ) : (
         <section className="event-grid">
@@ -154,18 +153,16 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
               </div>
 
               <p className="event-card__description">
-                {evento.descricao || "Evento sem descrição complementar cadastrada."}
+                {evento.descricao || "Evento sem descrição complementar."}
               </p>
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalInscricoes, "inscrição registrada", "inscrições registradas")}</span>
-                <span>
-                  {formatCountLabel(evento.totalVagas, "vaga distribuída nas categorias", "vagas distribuídas nas categorias")}
-                </span>
+                <span>{formatCountLabel(evento.totalVagas, "vaga disponível nas categorias", "vagas disponíveis nas categorias")}</span>
               </div>
 
               {evento.categorias.length === 0 ? (
-                <div className="inline-empty">Nenhuma categoria cadastrada para este evento até o momento.</div>
+                <div className="inline-empty">Nenhuma categoria foi cadastrada para este evento até o momento.</div>
               ) : (
                 <div className="category-grid">
                   {evento.categorias.map((categoria) => (
@@ -183,7 +180,7 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
 
                       <div className="badge-row">
                         <span className="badge badge--ghost">
-                          {formatBooleanFlag(categoria.externo, "Inscrição externa permitida", "Somente público interno")}
+                          {formatBooleanFlag(categoria.externo, "Permite público externo", "Exclusiva para público interno")}
                         </span>
                         <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
                           {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
@@ -214,7 +211,7 @@ export function DashboardPageClient({ initialData }: DashboardPageClientProps) {
                           className="button button--primary"
                           href={`/inscricoes?categoriaId=${categoria.id}&eventoId=${evento.id}`}
                         >
-                          {categoria.permiteInscricao ? "Ir para inscrição" : "Ver bloqueio"}
+                          {categoria.permiteInscricao ? "Realizar inscrição" : "Ver detalhes"}
                         </Link>
                         {canManageEvents ? (
                           <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>

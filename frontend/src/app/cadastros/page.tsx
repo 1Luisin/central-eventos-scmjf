@@ -13,10 +13,10 @@ export default async function CadastrosPage() {
       activeRoute="cadastros"
       eyebrow="Cadastros"
       title="Eventos e categorias"
-      description="Registre os eventos da Santa Casa, selecione um evento existente e adicione quantas categorias forem necessárias."
-      sidebarEyebrow="Área administrativa"
-      sidebarTitle="Cadastros centrais"
-      sidebarDescription="Gerencie eventos e adicione categorias. Depois do cadastro, todas as informações necessárias aparecerão nesta página."
+      description="Cadastre novos eventos, atualize as informações dos eventos criados por você e inclua as categorias necessárias."
+      sidebarEyebrow="Gestão"
+      sidebarTitle="Eventos do responsável"
+      sidebarDescription="Nesta área você acompanha apenas os eventos que criou, podendo atualizar dados, cadastrar categorias e acompanhar os participantes inscritos."
     >
       <AdminAccessGate>
         <AdminPageClient initialData={data} />

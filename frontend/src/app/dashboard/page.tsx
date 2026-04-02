@@ -1,5 +1,5 @@
-import { AppShell } from "@/components/shell/app-shell";
 import { DashboardPageClient } from "@/components/dashboard/dashboard-page-client";
+import { AppShell } from "@/components/shell/app-shell";
 import { getDashboardData } from "@/lib/api/portal";
 
 export const dynamic = "force-dynamic";
@@ -10,18 +10,18 @@ export default async function DashboardPage() {
   return (
     <AppShell
       activeRoute="dashboard"
-      eyebrow="Dashboard"
-      title="Painel de eventos"
-      description="Visualize os eventos da Santa Casa, acompanhe as categorias abertas e acesse rapidamente as telas de cadastro e inscrições."
-      sidebarEyebrow="Painel principal"
-      sidebarTitle="Eventos"
+      eyebrow="Eventos"
+      title="Agenda de eventos"
+      description="Consulte os eventos da Santa Casa, acompanhe as categorias disponíveis e encontre rapidamente a inscrição desejada."
+      sidebarEyebrow="Consulta rápida"
+      sidebarTitle="Orientações"
       sidebarDescription={
         <>
-          <p>Consulte rapidamente os eventos vigentes, as categorias abertas e o status real de vagas antes de encaminhar um participante.</p>
+          <p>Use esta tela para localizar eventos, conferir vagas e orientar o participante para a categoria correta.</p>
           <ul className="sidebar-note__list">
             <li>Use a busca para localizar por evento, setor ou categoria.</li>
-            <li>Confira datas, responsável e vagas diretamente no card.</li>
-            <li>Abra inscrições ou gestão usando os atalhos de cada evento.</li>
+            <li>Confira datas, responsável e quantidade de vagas diretamente em cada card.</li>
+            <li>Abra a inscrição ou, quando disponível, a área de gestão pelo atalho do evento.</li>
           </ul>
         </>
       }

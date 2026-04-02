@@ -1,5 +1,5 @@
-import { AppShell } from "@/components/shell/app-shell";
 import { EnrollmentPageClient } from "@/components/enrollment/enrollment-page-client";
+import { AppShell } from "@/components/shell/app-shell";
 import { getEnrollmentData } from "@/lib/api/portal";
 
 export const dynamic = "force-dynamic";
@@ -11,11 +11,11 @@ export default async function InscricoesPage() {
     <AppShell
       activeRoute="inscricoes"
       eyebrow="Inscrições"
-      title="Tela de inscrição"
-      description="Escolha uma categoria aberta, confira as vagas disponíveis e registre a sua inscrição."
-      sidebarEyebrow="Portal do participante"
-      sidebarTitle="Inscrições por categoria"
-      sidebarDescription="Selecione uma categoria na lista principal, preencha os dados do participante e confirme a inscrição nesta mesma tela."
+      title="Inscrição em categorias"
+      description="Escolha uma categoria com vagas disponíveis e conclua a inscrição do participante nesta mesma tela."
+      sidebarEyebrow="Como se inscrever"
+      sidebarTitle="Passo a passo"
+      sidebarDescription="Selecione uma categoria na lista principal, confira as informações do evento e preencha os dados solicitados para concluir a inscrição."
     >
       <EnrollmentPageClient initialData={data} />
     </AppShell>

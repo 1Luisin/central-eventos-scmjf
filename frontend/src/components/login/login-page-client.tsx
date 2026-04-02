@@ -8,8 +8,8 @@ import { startTransition, useState } from "react";
 import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
-import { saveLoginSession, type AccessMode } from "@/lib/auth/session";
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import { saveLoginSession, type AccessMode } from "@/lib/auth/session";
 import type {
   ExternalUserLoginPayload,
   ExternalUserResponse,
@@ -59,7 +59,7 @@ export function LoginPageClient({
       };
 
       if (!payload.matricula || !payload.senha) {
-        setFeedback("Informe a matrícula e a senha do MV para continuar.");
+        setFeedback("Informe sua matrícula e senha para continuar.");
         setFeedbackTone("error");
         return;
       }
@@ -163,14 +163,12 @@ export function LoginPageClient({
           </div>
 
           <h1>Central de Eventos</h1>
-          <p>
-            Acesse o painel institucional para consultar eventos, categorias disponíveis e inscrições da Santa Casa.
-          </p>
+          <p>Acesse o sistema para consultar eventos, acompanhar categorias e realizar inscrições na Santa Casa.</p>
 
           <ul className={styles.heroList}>
-            <li>Escolha o perfil de acesso como público interno ou externo.</li>
-            <li>Usuários externos podem criar o próprio cadastro e entrar com e-mail e senha.</li>
-            <li>Usuários internos entram com matrícula e senha do MV, com o papel validado automaticamente.</li>
+            <li>Escolha o tipo de acesso conforme o seu perfil.</li>
+            <li>Participantes externos podem criar o próprio cadastro e entrar com e-mail e senha.</li>
+            <li>Colaboradores internos acessam com matrícula e senha já utilizadas nos sistemas da instituição.</li>
           </ul>
         </section>
 
@@ -181,9 +179,9 @@ export function LoginPageClient({
             </div>
 
             <div>
-              <span className={styles.eyebrow}>Autenticação</span>
-              <h2>Acesse o sistema</h2>
-              <p>Selecione o tipo de acesso e informe os dados desejados para entrar no painel principal.</p>
+              <span className={styles.eyebrow}>Acesso</span>
+              <h2>Entrar no sistema</h2>
+              <p>Selecione o perfil de acesso e informe seus dados para continuar.</p>
             </div>
           </div>
 
@@ -214,7 +212,7 @@ export function LoginPageClient({
               <input
                 autoComplete={accessMode === "interno" ? "username" : "email"}
                 type={accessMode === "interno" ? "text" : "email"}
-                placeholder={accessMode === "interno" ? "Digite a matrícula do MV" : "nome@instituicao.com.br"}
+                placeholder={accessMode === "interno" ? "Digite sua matrícula" : "nome@instituicao.com.br"}
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
               />
@@ -225,7 +223,7 @@ export function LoginPageClient({
               <input
                 autoComplete="current-password"
                 type="password"
-                placeholder={accessMode === "interno" ? "Senha do MV" : "Senha cadastrada"}
+                placeholder="Digite sua senha"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
               />
@@ -233,18 +231,15 @@ export function LoginPageClient({
 
             <p className={styles.helper}>
               {accessMode === "interno"
-                ? "O acesso interno valida matrícula, senha e papel do MV. Se você não tiver os papéis corretos, entre em contato com a TI."
-                : "No acesso externo, o login já usa a API e valida e-mail, senha e status do cadastro."}
+                ? "O acesso interno depende da validação do seu perfil institucional. Em caso de dúvida, procure a equipe de TI."
+                : "O acesso externo é liberado para participantes cadastrados com e-mail e senha próprios."}
             </p>
 
             {accessMode === "externo" ? (
               <div className={styles.registerBox}>
-                <span>Primeiro acesso como participante externo?</span>
-                <Link
-                  className={styles.registerLink}
-                  href={buildExternalRegistrationHref(initialRedirectPath)}
-                >
-                  Cadastrar usuário externo
+                <span>É seu primeiro acesso como participante externo?</span>
+                <Link className={styles.registerLink} href={buildExternalRegistrationHref(initialRedirectPath)}>
+                  Criar cadastro
                 </Link>
               </div>
             ) : null}
@@ -259,7 +254,7 @@ export function LoginPageClient({
             </p>
 
             <button className={styles.submit} disabled={submitting} type="submit">
-              {submitting ? "Validando acesso..." : "Entrar"}
+              {submitting ? "Entrando..." : "Entrar"}
             </button>
           </form>
 

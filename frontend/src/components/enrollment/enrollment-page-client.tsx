@@ -3,8 +3,8 @@
 import { useDeferredValue, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { readLoginSession, type LoginSession } from "@/lib/auth/session";
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import { readLoginSession, type LoginSession } from "@/lib/auth/session";
 import {
   formatBooleanFlag,
   formatCountLabel,
@@ -95,7 +95,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
     : "";
   const selectedCategoryStatusDescription = selectedCategory
     ? externalUser && !categoriaPermiteExterno
-      ? "Esta categoria aceita apenas participantes internos. Faça a inscrição em uma categoria com acesso externo liberado."
+      ? "Esta categoria aceita apenas participantes internos. Escolha uma categoria com acesso externo liberado para continuar."
       : selectedCategory.statusDescription
     : "";
 
@@ -211,13 +211,13 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
         <article className="panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Categorias abertas</span>
+              <span className="eyebrow">Categorias disponíveis</span>
               <h2>Selecione uma categoria</h2>
             </div>
 
             <div className="toolbar">
               <label className="search-field">
-                <span className="search-field__label">Filtrar categorias</span>
+                <span className="search-field__label">Buscar categorias</span>
                 <input
                   type="search"
                   placeholder="Procure por evento ou categoria"
@@ -227,19 +227,19 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
               </label>
 
               <button className="button button--secondary" type="button" onClick={refreshData} disabled={refreshing}>
-                {refreshing ? "Atualizando..." : "Atualizar"}
+                {refreshing ? "Atualizando..." : "Atualizar lista"}
               </button>
             </div>
           </div>
 
           <p className="section-copy">
-            A coluna ao lado mostra o formulário de inscrição da categoria atualmente selecionada.
+            A coluna ao lado apresenta o formulário da categoria atualmente selecionada.
           </p>
 
           {pageFeedback ? <div className="feedback feedback--warning">{pageFeedback}</div> : null}
 
           <div className="section-meta">
-            <span>{formatCountLabel(data.categorias.length, "categoria carregada", "categorias carregadas")}</span>
+            <span>{formatCountLabel(data.categorias.length, "categoria disponível", "categorias disponíveis")}</span>
             <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
           </div>
         </article>
@@ -247,8 +247,8 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
         {visibleEvents.length === 0 ? (
           <article className="panel empty-panel">
             <span className="empty-panel__badge">Nenhuma categoria encontrada</span>
-            <h3>Não existem categorias compatíveis com o filtro atual.</h3>
-            <p>Ajuste a busca ou atualize a listagem para consultar novamente a API.</p>
+            <h3>Não encontramos categorias compatíveis com o filtro informado.</h3>
+            <p>Altere o termo pesquisado ou atualize a lista para tentar novamente.</p>
           </article>
         ) : (
           visibleEvents.map((evento) => (
@@ -369,7 +369,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
 
             {externalUser ? (
               <div className="selection-card">
-                <span className="badge badge--ghost">Acesso autenticado</span>
+                <span className="badge badge--ghost">Participante identificado</span>
                 <h3>{externalUser.nomeCompleto}</h3>
                 <div className="selection-card__meta">
                   <span>E-mail: {externalUser.email}</span>
@@ -379,7 +379,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
               </div>
             ) : internalUser ? (
               <div className="selection-card">
-                <span className="badge badge--ghost">Acesso autenticado</span>
+                <span className="badge badge--ghost">Participante identificado</span>
                 <h3>{internalUser.nomeUsuario}</h3>
                 <div className="selection-card__meta">
                   <span>Matrícula: {internalUser.matricula}</span>
@@ -427,7 +427,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
 
                 <div className="confirmation-card__meta">
                   <span>Registro realizado em {formatDateTime(successNotice.inscricao.dataHoraRegistro)}</span>
-                  <span>As vagas da categoria já foram atualizadas no painel ao lado.</span>
+                  <span>As vagas da categoria já foram atualizadas na listagem ao lado.</span>
                 </div>
               </div>
             ) : null}

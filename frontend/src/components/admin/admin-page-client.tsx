@@ -122,12 +122,12 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     const dataHoraFim = toApiDateTimeFromDate(eventEndDate);
 
     if (!dataHoraInicio || !dataHoraFim) {
-      setEventMessage("Informe a data/hora de início e de fim do evento.");
+      setEventMessage("Informe a data e o horário de início e fim do evento.");
       return;
     }
 
     if (new Date(dataHoraFim).getTime() <= new Date(dataHoraInicio).getTime()) {
-      setEventMessage("Data/hora final deve ser maior que a inicial.");
+      setEventMessage("A data e o horário de término devem ser maiores que o início.");
       return;
     }
 
@@ -183,7 +183,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     setFeedback(null);
 
     if (!selectedEvent) {
-      setCategoryMessage("Cadastre um evento antes de registrar categorias.");
+      setCategoryMessage("Cadastre um evento antes de criar categorias.");
       return;
     }
 
@@ -200,7 +200,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
     };
 
     if (!Number.isFinite(payload.limiteInscricoes) || payload.limiteInscricoes <= 0) {
-      setCategoryMessage("Informe um número de vagas maior que zero.");
+      setCategoryMessage("Informe uma quantidade de vagas maior que zero.");
       return;
     }
 
@@ -215,7 +215,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       });
 
       form.reset();
-      setCategoryMessage(`Categoria criada com sucesso no evento "${selectedEvent.nomeEvento}".`);
+      setCategoryMessage(`Categoria cadastrada com sucesso no evento "${selectedEvent.nomeEvento}".`);
       await refreshData(selectedEvent.id);
     } catch (error) {
       setCategoryMessage(getRequestErrorMessage(error));
@@ -264,24 +264,24 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
       <section className="panel">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Panorama</span>
+            <span className="eyebrow">Resumo</span>
             <h2>Meus eventos</h2>
           </div>
 
           <button className="button button--secondary" type="button" onClick={() => refreshData()} disabled={refreshing}>
-            {refreshing ? "Atualizando..." : "Atualizar dados"}
+            {refreshing ? "Atualizando..." : "Atualizar lista"}
           </button>
         </div>
 
         <p className="section-copy">
-          Apenas os eventos criados por você aparecem nesta área. Selecione um evento seu para editar dados, cadastrar
-          categorias e acompanhar os participantes inscritos.
+          Nesta área aparecem somente os eventos criados por você. Selecione um dos seus eventos para atualizar
+          informações, cadastrar categorias e acompanhar as inscrições.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">
-          <span>{formatCountLabel(data.eventos.length, "evento carregado", "eventos carregados")}</span>
+          <span>{formatCountLabel(data.eventos.length, "evento cadastrado", "eventos cadastrados")}</span>
           <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
         </div>
       </section>
@@ -291,7 +291,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
           <div className="section-heading">
             <div>
               <span className="eyebrow">{editingEventId === null ? "Novo evento" : "Editar evento"}</span>
-              <h2>{editingEventId === null ? "Cadastro principal" : "Atualização do evento selecionado"}</h2>
+              <h2>{editingEventId === null ? "Dados do evento" : "Atualização do evento"}</h2>
             </div>
           </div>
 
@@ -380,7 +380,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               <textarea
                 name="descricao"
                 rows={4}
-                placeholder="Resumo do evento, público-alvo e observações gerais."
+                placeholder="Resumo do evento, público-alvo e orientações gerais."
                 value={eventForm.descricao}
                 onChange={(event) => updateEventFormField(setEventForm, "descricao", event.target.value)}
               />
@@ -418,13 +418,13 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
           <div className="section-heading">
             <div>
               <span className="eyebrow">Nova categoria</span>
-              <h2>Cadastro vinculado ao evento</h2>
+              <h2>Categoria do evento</h2>
             </div>
           </div>
 
           <form className="form-grid" onSubmit={handleCategorySubmit}>
             <label className="field field--full">
-              <span>EVENTO DO CADASTRO</span>
+              <span>EVENTO</span>
               <select
                 name="eventoId"
                 value={selectedEventId}
@@ -474,7 +474,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               <textarea
                 name="descricao"
                 rows={4}
-                placeholder="Descreva formato, público e orientações desta categoria."
+                placeholder="Descreva o formato, o público e as orientações desta categoria."
               />
             </label>
 
@@ -497,22 +497,22 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
         <article className="panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Base disponível</span>
-              <h2>Meus Eventos Cadastrados</h2>
+              <span className="eyebrow">Eventos cadastrados</span>
+              <h2>Meus eventos cadastrados</h2>
             </div>
           </div>
 
           <p className="section-copy">
-            Só aparecem os eventos que você criou. É nessa área que você pode editar os dados do evento, acompanhar as
-            categorias e gerenciar os participantes inscritos.
+            Aqui você acompanha os eventos criados por você, consulta as categorias já cadastradas e gerencia os
+            participantes inscritos em cada uma delas.
           </p>
         </article>
 
         {data.eventos.length === 0 ? (
           <section className="panel empty-panel">
-            <span className="empty-panel__badge">Sem eventos próprios</span>
+            <span className="empty-panel__badge">Nenhum evento cadastrado</span>
             <h3>Você ainda não cadastrou nenhum evento.</h3>
-            <p>Assim que você salvar o primeiro evento, as categorias e os participantes aparecerão nesta área.</p>
+            <p>Assim que o primeiro evento for salvo, ele aparecerá aqui com as categorias e inscrições relacionadas.</p>
           </section>
         ) : (
           data.eventos.map((evento) => (
@@ -555,7 +555,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
               </div>
 
               <p className="event-card__description">
-                {evento.descricao || "Evento sem descrição complementar cadastrada."}
+                {evento.descricao || "Este evento ainda não possui uma descrição complementar."}
               </p>
 
               <div className="card-actions">
@@ -567,13 +567,13 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                   type="button"
                   onClick={() => setSelectedEventId(String(evento.id))}
                 >
-                  {selectedEventId === String(evento.id) ? "Evento selecionado para categoria" : "Usar no cadastro de categoria"}
+                  {selectedEventId === String(evento.id) ? "Selecionado para nova categoria" : "Usar neste cadastro"}
                 </button>
               </div>
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalInscricoes, "inscrição", "inscrições")}</span>
-                <span>{formatCountLabel(evento.totalVagas, "vaga somada nas categorias", "vagas somadas nas categorias")}</span>
+                <span>{formatCountLabel(evento.totalVagas, "vaga distribuída nas categorias", "vagas distribuídas nas categorias")}</span>
               </div>
 
               {evento.categorias.length === 0 ? (
@@ -585,7 +585,7 @@ export function AdminPageClient({ initialData }: AdminPageClientProps) {
                       <div className="category-card__top">
                         <div>
                           <h4>{categoria.nomeCategoria}</h4>
-                          <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
+                          <p>{categoria.descricao || "Esta categoria ainda não possui uma descrição complementar."}</p>
                         </div>
                         <span className={categoria.permiteInscricao ? "badge badge--success" : "badge badge--danger"}>
                           {categoria.statusLabel}

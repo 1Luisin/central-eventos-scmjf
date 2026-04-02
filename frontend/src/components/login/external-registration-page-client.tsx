@@ -106,30 +106,25 @@ export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { i
         <section className={styles.hero}>
           <div className={styles.heroMark}>
             <Image alt="" className={styles.heroIcon} src={brandIcon} />
-            Cadastro externo
+            Cadastro de participante
           </div>
 
-          <h1>Registro de participante externo</h1>
-          <p>
-            Preencha os dados do participante para liberar o acesso externo e permitir futuras inscrições em eventos da
-            Santa Casa.
-          </p>
+          <h1>Crie seu acesso externo</h1>
+          <p>Preencha seus dados para acompanhar eventos e realizar inscrições nas categorias liberadas para o público externo.</p>
 
           <div className={styles.heroSection}>
-            <span className={styles.heroEyebrow}>Campos preenchidos pelo participante</span>
+            <span className={styles.heroEyebrow}>Informações solicitadas</span>
             <ul className={styles.heroList}>
               <li>Nome completo, CPF, e-mail, telefone e data de nascimento.</li>
-              <li>Senha de acesso e aceite LGPD para tratamento dos dados.</li>
+              <li>Senha de acesso e aceite para tratamento dos dados cadastrais.</li>
             </ul>
           </div>
 
           <div className={styles.heroSection}>
-            <span className={styles.heroEyebrow}>Campos controlados automaticamente</span>
+            <span className={styles.heroEyebrow}>Importante</span>
             <ul className={styles.heroList}>
-              <li>ID do usuário externo.</li>
-              <li>Status ativo do cadastro.</li>
-              <li>Datas de cadastro, atualização e último acesso.</li>
-              <li>Hash seguro da senha gerado e armazenado pela API.</li>
+              <li>O CPF e o e-mail devem pertencer ao participante que utilizará o sistema.</li>
+              <li>Mantenha seus dados atualizados para receber orientações sobre inscrições e eventos.</li>
             </ul>
           </div>
         </section>
@@ -141,9 +136,9 @@ export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { i
             </div>
 
             <div>
-              <span className={styles.eyebrow}>Registro</span>
-              <h2>Cadastre seu acesso externo</h2>
-              <p>Os dados abaixo serão enviados para a API da Central de Eventos e gravados no Oracle.</p>
+              <span className={styles.eyebrow}>Cadastro</span>
+              <h2>Informe seus dados</h2>
+              <p>Preencha o formulário abaixo para concluir a criação do seu acesso externo.</p>
             </div>
           </div>
 
@@ -240,15 +235,12 @@ export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { i
                   type="checkbox"
                   onChange={(event) => updateField("aceiteLgpd", event.target.checked)}
                 />
-                <span>
-                  Declaro que li e aceito o tratamento dos meus dados pessoais para cadastro e acesso ao sistema.
-                </span>
+                <span>Declaro que li e aceito o tratamento dos meus dados pessoais para cadastro e acesso ao sistema.</span>
               </label>
             </div>
 
             <div className={styles.systemNote}>
-              <strong>Observação importante:</strong> os campos <code>FL_ATIVO</code>, <code>DT_CADASTRO</code>,{" "}
-              <code>DT_ULTIMA_ATUALIZACAO</code> e <code>DT_ULTIMO_ACESSO</code> são controlados pela API.
+              <strong>Atenção:</strong> confira se o CPF, o e-mail e o telefone informados estão corretos antes de concluir o cadastro.
             </div>
 
             <p className={styles.feedback} aria-live="polite">
@@ -260,7 +252,7 @@ export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { i
                 Voltar ao login
               </Link>
               <button className={styles.submit} disabled={submitting} type="submit">
-                {submitting ? "Registrando..." : "Criar cadastro externo"}
+                {submitting ? "Concluindo..." : "Criar cadastro"}
               </button>
             </div>
           </form>
