@@ -76,7 +76,7 @@ body::before {
 
 .route-transition {
   min-height: 100vh;
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
 }
 
 .route-transition--entering {
@@ -86,21 +86,18 @@ body::before {
 .route-transition--leaving {
   opacity: 0;
   transform: translateY(8px);
-  filter: blur(2px);
-  transition: opacity 0.17s ease, transform 0.17s ease, filter 0.17s ease;
+  transition: opacity 0.17s ease, transform 0.17s ease;
 }
 
 @keyframes route-fade-in {
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(3px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
