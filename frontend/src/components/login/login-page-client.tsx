@@ -185,7 +185,7 @@ export function LoginPageClient({
             </div>
           </div>
 
-          <div className={styles.segment} aria-label="Tipo de acesso">
+          <div className={styles.segment} aria-label="Tipo de acesso" data-mode={accessMode}>
             <button
               className={
                 accessMode === "interno" ? `${styles.segmentButton} ${styles.segmentButtonActive}` : styles.segmentButton
@@ -207,53 +207,52 @@ export function LoginPageClient({
           </div>
 
           <form className={styles.form} onSubmit={handleSubmit}>
-            <label className={styles.field}>
-              <span>{accessMode === "interno" ? "Matrícula" : "E-mail"}</span>
-              <input
-                autoComplete={accessMode === "interno" ? "username" : "email"}
-                type={accessMode === "interno" ? "text" : "email"}
-                placeholder={accessMode === "interno" ? "Digite sua matrícula" : "nome@instituicao.com.br"}
-                value={identifier}
-                onChange={(event) => setIdentifier(event.target.value)}
-              />
-            </label>
+            <div key={accessMode} className={styles.modeSection}>
+              <label className={styles.field}>
+                <span>{accessMode === "interno" ? "Matrícula" : "E-mail"}</span>
+                <input
+                  autoComplete={accessMode === "interno" ? "username" : "email"}
+                  placeholder={accessMode === "interno" ? "Digite sua matrícula" : "nome@instituicao.com.br"}
+                  type={accessMode === "interno" ? "text" : "email"}
+                  value={identifier}
+                  onChange={(event) => setIdentifier(event.target.value)}
+                />
+              </label>
 
-            <label className={styles.field}>
-              <span>Senha</span>
-              <input
-                autoComplete="current-password"
-                type="password"
-                placeholder="Digite sua senha"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
+              <label className={styles.field}>
+                <span>Senha</span>
+                <input
+                  autoComplete="current-password"
+                  placeholder="Digite sua senha"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </label>
 
-            {accessMode === "externo" ? (
-              <div className={styles.formActionRow}>
-                <Link
-                  className={styles.helperLink}
-                  href={buildPasswordRecoveryHref(identifier, initialRedirectPath)}
-                >
-                  Esqueceu a senha?
-                </Link>
-              </div>
-            ) : null}
+              {accessMode === "externo" ? (
+                <div className={styles.formActionRow}>
+                  <Link className={styles.helperLink} href={buildPasswordRecoveryHref(identifier, initialRedirectPath)}>
+                    Esqueceu a senha?
+                  </Link>
+                </div>
+              ) : null}
 
-            <p className={styles.helper}>
-              {accessMode === "interno"
-                ? "O acesso interno depende da validação do seu perfil institucional. Em caso de dúvida, procure a equipe de TI."
-                : "O acesso externo é liberado para participantes cadastrados com e-mail e senha próprios."}
-            </p>
+              <p className={styles.helper}>
+                {accessMode === "interno"
+                  ? "O acesso interno depende da validação do seu perfil institucional. Em caso de dúvida, procure a equipe de TI."
+                  : "O acesso externo é liberado para participantes cadastrados com e-mail e senha próprios."}
+              </p>
 
-            {accessMode === "externo" ? (
-              <div className={styles.registerBox}>
-                <span>É seu primeiro acesso como participante externo?</span>
-                <Link className={styles.registerLink} href={buildExternalRegistrationHref(initialRedirectPath)}>
-                  Criar cadastro
-                </Link>
-              </div>
-            ) : null}
+              {accessMode === "externo" ? (
+                <div className={styles.registerBox}>
+                  <span>É seu primeiro acesso como participante externo?</span>
+                  <Link className={styles.registerLink} href={buildExternalRegistrationHref(initialRedirectPath)}>
+                    Criar cadastro
+                  </Link>
+                </div>
+              ) : null}
+            </div>
 
             <p
               className={
