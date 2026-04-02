@@ -2,11 +2,13 @@ import { cpSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
-import { loadEnvConfig } from "@next/env";
+import nextEnv from "@next/env";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = resolve(__dirname, "..");
+
+const { loadEnvConfig } = nextEnv;
 
 loadEnvConfig(projectRoot);
 
