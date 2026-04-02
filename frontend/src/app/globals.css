@@ -792,11 +792,14 @@ textarea {
 .badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
   font-size: 0.86rem;
   font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .badge--success {
