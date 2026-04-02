@@ -7,6 +7,10 @@ export type ApiErrorResponse = {
   details: string[];
 };
 
+export type MessageResponse = {
+  mensagem: string;
+};
+
 export type EventoResponse = {
   id: number;
   nomeEvento: string;
@@ -101,6 +105,29 @@ export type ExternalUserRegisterPayload = {
 export type ExternalUserLoginPayload = {
   email: string;
   senha: string;
+};
+
+export type ExternalUserPasswordRecoveryPayload = {
+  email: string;
+  cpf: string;
+};
+
+export type ExternalUserPasswordRecoveryValidationPayload = {
+  token: string;
+};
+
+export type ExternalUserPasswordRecoveryValidationResponse = {
+  valido: boolean;
+  emailMascarado: string | null;
+  expiracaoEm: string | null;
+  mensagem: string;
+};
+
+export type ExternalUserPasswordResetPayload = {
+  token: string;
+  codigo: string;
+  novaSenha: string;
+  confirmacaoNovaSenha: string;
 };
 
 export type InternalUserRole = "COMUM" | "ADMINISTRADOR";

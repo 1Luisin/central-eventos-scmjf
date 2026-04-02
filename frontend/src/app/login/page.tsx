@@ -7,6 +7,7 @@ type LoginPageProps = {
   searchParams?: Promise<{
     accessMode?: string;
     identifier?: string;
+    passwordReset?: string;
     registered?: string;
     redirect?: string;
   }>;
@@ -24,15 +25,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? resolvedSearchParams.accessMode
       : "interno";
 
+  const initialFeedback =
+    resolvedSearchParams?.passwordReset === "1"
+      ? "Senha redefinida com sucesso. Entre com o seu e-mail e a nova senha."
+      : resolvedSearchParams?.registered === "1"
+        ? "Cadastro concluído com sucesso. Entre com o e-mail e a senha cadastrados."
+        : "";
+
   return (
     <LoginPageClient
       initialAccessMode={initialAccessMode}
-      initialFeedback={
-        resolvedSearchParams?.registered === "1"
-          ? "Cadastro concluído com sucesso. Entre com o e-mail e a senha cadastrados."
-          : ""
-      }
-      initialFeedbackTone={resolvedSearchParams?.registered === "1" ? "success" : "error"}
+      initialFeedback={initialFeedback}
+      initialFeedbackTone={initialFeedback ? "success" : "error"}
       initialIdentifier={resolvedSearchParams?.identifier ?? ""}
       initialRedirectPath={resolvedSearchParams?.redirect ?? ""}
     />

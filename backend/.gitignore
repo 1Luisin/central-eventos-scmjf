@@ -2,3 +2,5 @@ target/
 .idea/
 .vscode/
 *.iml
+mail-local.properties
+mail-local.properties

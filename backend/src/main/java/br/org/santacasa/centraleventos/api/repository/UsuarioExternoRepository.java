@@ -11,5 +11,9 @@ public interface UsuarioExternoRepository extends JpaRepository<UsuarioExterno, 
 
     boolean existsByDsEmailIgnoreCase(String dsEmail);
 
+    boolean existsByDsEmailIgnoreCaseAndNrCpf(String dsEmail, String nrCpf);
+
     Optional<UsuarioExterno> findByDsEmailIgnoreCase(String dsEmail);
+
+    Optional<UsuarioExterno> findByDsEmailIgnoreCaseAndNrCpf(String dsEmail, String nrCpf);
 }

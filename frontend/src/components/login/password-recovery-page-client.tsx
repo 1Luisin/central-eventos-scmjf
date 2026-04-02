@@ -7,6 +7,8 @@ import { useMemo, useState } from "react";
 import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
+import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import type { ExternalUserPasswordRecoveryPayload, MessageResponse } from "@/types/api";
 import styles from "./password-recovery-page-client.module.css";
 
 type PasswordRecoveryPageClientProps = {
@@ -24,28 +26,47 @@ export function PasswordRecoveryPageClient({
   const [document, setDocument] = useState("");
   const [feedback, setFeedback] = useState("");
   const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("idle");
+  const [submitting, setSubmitting] = useState(false);
 
   const loginHref = useMemo(
     () => buildLoginHref(identifier, initialRedirectPath),
     [identifier, initialRedirectPath]
   );
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const normalizedIdentifier = identifier.trim();
-    const normalizedDocument = document.trim();
+    const payload: ExternalUserPasswordRecoveryPayload = {
+      email: identifier.trim(),
+      cpf: document.trim()
+    };
 
-    if (!normalizedIdentifier || !normalizedDocument) {
+    if (!payload.email || !payload.cpf) {
       setFeedback("Informe o e-mail cadastrado e o CPF para continuar.");
       setFeedbackTone("error");
       return;
     }
 
-    setFeedback(
-      `Solicitação registrada para o e-mail ${normalizedIdentifier}. Na próxima etapa, esta tela será integrada ao envio automático das orientações de redefinição.`
-    );
-    setFeedbackTone("success");
+    try {
+      setSubmitting(true);
+      setFeedback("");
+
+      const response = await requestJson<MessageResponse>("/api/usuarios-externos/recuperacao-senha/solicitar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      setFeedback(response.mensagem);
+      setFeedbackTone("success");
+    } catch (error) {
+      setFeedback(getRequestErrorMessage(error));
+      setFeedbackTone("error");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -76,7 +97,7 @@ export function PasswordRecoveryPageClient({
           <ul className={styles.heroList}>
             <li>Use o e-mail informado no seu cadastro de participante externo.</li>
             <li>Confirme o CPF cadastrado para validar a solicitação.</li>
-            <li>O envio automático da redefinição será conectado na próxima etapa da integração.</li>
+            <li>Você receberá um código e um link seguro para redefinir a senha.</li>
           </ul>
         </section>
 
@@ -89,7 +110,7 @@ export function PasswordRecoveryPageClient({
             <div>
               <span className={styles.eyebrow}>Acesso externo</span>
               <h2>Esqueceu a senha?</h2>
-              <p>Preencha o formulário abaixo para registrar sua solicitação de recuperação.</p>
+              <p>Preencha o formulário abaixo para receber as instruções de redefinição no e-mail cadastrado.</p>
             </div>
           </div>
 
@@ -97,8 +118,9 @@ export function PasswordRecoveryPageClient({
             <label className={styles.field}>
               <span>E-mail cadastrado</span>
               <input
-                type="email"
+                autoComplete="email"
                 placeholder="nome@instituicao.com.br"
+                type="email"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
               />
@@ -107,8 +129,10 @@ export function PasswordRecoveryPageClient({
             <label className={styles.field}>
               <span>CPF</span>
               <input
-                type="text"
+                autoComplete="off"
+                inputMode="numeric"
                 placeholder="Digite o CPF cadastrado"
+                type="text"
                 value={document}
                 onChange={(event) => setDocument(event.target.value)}
               />
@@ -135,8 +159,8 @@ export function PasswordRecoveryPageClient({
               <Link className={styles.secondaryAction} href={loginHref}>
                 Voltar ao login
               </Link>
-              <button className={styles.submit} type="submit">
-                Solicitar recuperação
+              <button className={styles.submit} disabled={submitting} type="submit">
+                {submitting ? "Enviando..." : "Solicitar recuperação"}
               </button>
             </div>
           </form>
