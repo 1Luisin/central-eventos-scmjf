@@ -42,6 +42,10 @@ function sortEventos<T extends EventoResponse>(eventos: T[]): T[] {
   });
 }
 
+function filterActiveEventos<T extends EventoResponse>(eventos: T[]): T[] {
+  return eventos.filter((evento) => evento.ativo === "S");
+}
+
 function toDashboardItem(evento: EventoResponse, categorias: CategoriaResponse[]): EventoDashboardItem {
   const categoriasDecoradas = categorias.map((categoria) => decorateCategoria(evento, categoria));
   const totalVagas = categoriasDecoradas.reduce((accumulator, categoria) => accumulator + categoria.limiteInscricoes, 0);
@@ -87,7 +91,7 @@ function toAdminItem(
 
 export async function getDashboardData(): Promise<DashboardData> {
   try {
-    const eventos = sortEventos(await listarEventos());
+    const eventos = sortEventos(filterActiveEventos(await listarEventos()));
     const itens = await Promise.all(
       eventos.map(async (evento) => toDashboardItem(evento, await listarCategorias(evento.id)))
     );
