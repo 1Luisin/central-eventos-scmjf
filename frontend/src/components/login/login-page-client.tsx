@@ -229,14 +229,16 @@ export function LoginPageClient({
               />
             </label>
 
-            <div className={styles.formActionRow}>
-              <Link
-                className={styles.helperLink}
-                href={buildPasswordRecoveryHref(accessMode, identifier, initialRedirectPath)}
-              >
-                Esqueceu a senha?
-              </Link>
-            </div>
+            {accessMode === "externo" ? (
+              <div className={styles.formActionRow}>
+                <Link
+                  className={styles.helperLink}
+                  href={buildPasswordRecoveryHref(identifier, initialRedirectPath)}
+                >
+                  Esqueceu a senha?
+                </Link>
+              </div>
+            ) : null}
 
             <p className={styles.helper}>
               {accessMode === "interno"
@@ -295,9 +297,9 @@ function buildExternalRegistrationHref(redirectPath: string): string {
     : `/cadastro-externo?redirect=${encodeURIComponent(normalizedRedirect)}`;
 }
 
-function buildPasswordRecoveryHref(accessMode: AccessMode, identifier: string, redirectPath: string): string {
+function buildPasswordRecoveryHref(identifier: string, redirectPath: string): string {
   const params = new URLSearchParams();
-  params.set("accessMode", accessMode);
+  params.set("accessMode", "externo");
 
   if (identifier.trim()) {
     params.set("identifier", identifier.trim());

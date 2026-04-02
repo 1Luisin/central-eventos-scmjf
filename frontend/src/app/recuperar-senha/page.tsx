@@ -2,7 +2,6 @@ import { PasswordRecoveryPageClient } from "@/components/login/password-recovery
 
 type PasswordRecoveryPageProps = {
   searchParams?: Promise<{
-    accessMode?: string;
     identifier?: string;
     redirect?: string;
   }>;
@@ -11,14 +10,8 @@ type PasswordRecoveryPageProps = {
 export default async function PasswordRecoveryPage({ searchParams }: PasswordRecoveryPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
-  const initialAccessMode =
-    resolvedSearchParams?.accessMode === "externo" || resolvedSearchParams?.accessMode === "interno"
-      ? resolvedSearchParams.accessMode
-      : "interno";
-
   return (
     <PasswordRecoveryPageClient
-      initialAccessMode={initialAccessMode}
       initialIdentifier={resolvedSearchParams?.identifier ?? ""}
       initialRedirectPath={resolvedSearchParams?.redirect ?? ""}
     />
