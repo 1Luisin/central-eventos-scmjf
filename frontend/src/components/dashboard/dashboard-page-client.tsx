@@ -148,9 +148,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
                 </div>
               </div>
 
-              <p className="event-card__description">
-                {evento.descricao || "Evento sem descrição complementar."}
-              </p>
+              <p className="event-card__description">{evento.descricao || "Evento sem descrição complementar."}</p>
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalInscricoes, "inscrição registrada", "inscrições registradas")}</span>
@@ -161,62 +159,81 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
                 <div className="inline-empty">Nenhuma categoria foi cadastrada para este evento até o momento.</div>
               ) : (
                 <div className="category-grid">
-                  {evento.categorias.map((categoria) => (
-                    <section className="category-card" key={categoria.id}>
-                      <div className="category-card__top">
-                        <div>
-                          <h4>{categoria.nomeCategoria}</h4>
-                          <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
-                        </div>
+                  {evento.categorias.map((categoria) => {
+                    const badgeClass = categoria.usuarioJaInscrito
+                      ? "badge badge--success"
+                      : categoria.permiteInscricao
+                        ? "badge badge--success"
+                        : "badge badge--danger";
 
-                        <span className={categoria.permiteInscricao ? "badge badge--success" : "badge badge--danger"}>
-                          {categoria.statusLabel}
-                        </span>
-                      </div>
+                    return (
+                      <section className="category-card" key={categoria.id}>
+                        <div className="category-card__top">
+                          <div>
+                            <h4>{categoria.nomeCategoria}</h4>
+                            <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
+                          </div>
 
-                      <div className="badge-row">
-                        <span className="badge badge--ghost">
-                          {formatBooleanFlag(categoria.externo, "Permite público externo", "Exclusiva para público interno")}
-                        </span>
-                        <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
-                          {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
-                        </span>
-                      </div>
-
-                      <div className="occupancy">
-                        <div className="occupancy__track">
-                          <div className="occupancy__value" style={{ width: `${categoria.ocupacaoPercentual}%` }} />
-                        </div>
-                        <div className="occupancy__legend">
-                          <span>
-                            {formatFractionLabel(
-                              categoria.inscricoesRealizadas,
-                              categoria.limiteInscricoes,
-                              "inscrição",
-                              "inscrições"
-                            )}
+                          <span className={badgeClass}>
+                            {categoria.usuarioJaInscrito ? "Inscrição confirmada" : categoria.statusLabel}
                           </span>
-                          <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                         </div>
-                      </div>
 
-                      <p className="category-card__footnote">{categoria.statusDescription}</p>
+                        <div className="badge-row">
+                          <span className="badge badge--ghost">
+                            {formatBooleanFlag(categoria.externo, "Permite público externo", "Exclusiva para público interno")}
+                          </span>
+                          <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
+                            {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
+                          </span>
+                          {categoria.usuarioJaInscrito ? (
+                            <span className="badge badge--success">Você já está inscrito</span>
+                          ) : null}
+                        </div>
 
-                      <div className="card-actions">
-                        <Link
-                          className="button button--primary"
-                          href={`/inscricoes?categoriaId=${categoria.id}&eventoId=${evento.id}`}
-                        >
-                          {categoria.permiteInscricao ? "Realizar inscrição" : "Ver detalhes"}
-                        </Link>
-                        {canManageEvents ? (
-                          <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
-                            Abrir gestão
-                          </Link>
-                        ) : null}
-                      </div>
-                    </section>
-                  ))}
+                        <div className="occupancy">
+                          <div className="occupancy__track">
+                            <div className="occupancy__value" style={{ width: `${categoria.ocupacaoPercentual}%` }} />
+                          </div>
+                          <div className="occupancy__legend">
+                            <span>
+                              {formatFractionLabel(
+                                categoria.inscricoesRealizadas,
+                                categoria.limiteInscricoes,
+                                "inscrição",
+                                "inscrições"
+                              )}
+                            </span>
+                            <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
+                          </div>
+                        </div>
+
+                        <p className="category-card__footnote">
+                          {categoria.usuarioJaInscrito
+                            ? "Sua vaga nesta categoria já está confirmada. Não é necessário realizar uma nova inscrição."
+                            : categoria.statusDescription}
+                        </p>
+
+                        <div className="card-actions">
+                          {categoria.usuarioJaInscrito ? (
+                            <span className="button button--secondary button--static">Inscrição confirmada</span>
+                          ) : (
+                            <Link
+                              className="button button--primary"
+                              href={`/inscricoes?categoriaId=${categoria.id}&eventoId=${evento.id}`}
+                            >
+                              {categoria.permiteInscricao ? "Realizar inscrição" : "Ver detalhes"}
+                            </Link>
+                          )}
+                          {canManageEvents ? (
+                            <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
+                              Abrir gestão
+                            </Link>
+                          ) : null}
+                        </div>
+                      </section>
+                    );
+                  })}
                 </div>
               )}
             </article>

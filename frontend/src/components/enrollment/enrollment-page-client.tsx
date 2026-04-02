@@ -20,12 +20,6 @@ type EnrollmentPageClientProps = {
   sessionContext: SessionUserContext;
 };
 
-type EnrollmentSuccessState = {
-  inscricao: InscricaoResponse;
-  categoriaNome: string;
-  eventoNome: string;
-};
-
 export function EnrollmentPageClient({ initialData, sessionContext }: EnrollmentPageClientProps) {
   const searchParams = useSearchParams();
   const queryCategoryId = searchParams.get("categoriaId");
@@ -36,7 +30,6 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   const [search, setSearch] = useState("");
   const [pageFeedback, setPageFeedback] = useState<string | null>(initialData.erroInicial ?? null);
   const [formFeedback, setFormFeedback] = useState<string | null>(null);
-  const [successNotice, setSuccessNotice] = useState<EnrollmentSuccessState | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const deferredSearch = useDeferredValue(search);
@@ -56,7 +49,10 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     }
 
     if (!selectedCategoryId && data.categorias[0]) {
-      const preferredCategory = data.categorias.find((categoria) => categoria.permiteInscricao) ?? data.categorias[0];
+      const preferredCategory =
+        data.categorias.find((categoria) => !categoria.usuarioJaInscrito && categoria.permiteInscricao) ??
+        data.categorias.find((categoria) => categoria.permiteInscricao) ??
+        data.categorias[0];
       setSelectedCategoryId(String(preferredCategory.id));
     }
   }, [data.categorias, queryCategoryId, queryEventId, selectedCategoryId]);
@@ -82,17 +78,24 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     .filter((evento) => evento.categorias.length > 0);
 
   const selectedCategory = data.categorias.find((categoria) => String(categoria.id) === selectedCategoryId) ?? null;
+  const currentEnrollment = selectedCategory?.inscricaoAtual ?? null;
+  const alreadyEnrolled = currentEnrollment !== null;
   const categoriaPermiteExterno = selectedCategory?.externo === "S";
-  const canCurrentUserEnroll = (selectedCategory?.permiteInscricao ?? false) && (!externalUser || categoriaPermiteExterno);
+  const canCurrentUserEnroll =
+    !alreadyEnrolled && (selectedCategory?.permiteInscricao ?? false) && (!externalUser || categoriaPermiteExterno);
   const selectedCategoryStatusLabel = selectedCategory
-    ? externalUser && !categoriaPermiteExterno
-      ? "Somente público interno"
-      : selectedCategory.statusLabel
+    ? alreadyEnrolled
+      ? "Inscrição confirmada"
+      : externalUser && !categoriaPermiteExterno
+        ? "Somente público interno"
+        : selectedCategory.statusLabel
     : "";
   const selectedCategoryStatusDescription = selectedCategory
-    ? externalUser && !categoriaPermiteExterno
-      ? "Esta categoria aceita apenas participantes internos. Escolha uma categoria com acesso externo liberado para continuar."
-      : selectedCategory.statusDescription
+    ? alreadyEnrolled
+      ? "Sua participação já está confirmada nesta categoria. Não é necessário realizar uma nova inscrição."
+      : externalUser && !categoriaPermiteExterno
+        ? "Esta categoria aceita apenas participantes internos. Escolha uma categoria com acesso externo liberado para continuar."
+        : selectedCategory.statusDescription
     : "";
 
   async function refreshData() {
@@ -106,7 +109,10 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
         return;
       }
 
-      const fallbackCategory = payload.categorias.find((categoria) => categoria.permiteInscricao) ?? payload.categorias[0];
+      const fallbackCategory =
+        payload.categorias.find((categoria) => !categoria.usuarioJaInscrito && categoria.permiteInscricao) ??
+        payload.categorias.find((categoria) => categoria.permiteInscricao) ??
+        payload.categorias[0];
       setSelectedCategoryId(String(fallbackCategory?.id ?? ""));
     } catch (error) {
       setPageFeedback(getRequestErrorMessage(error));
@@ -120,19 +126,21 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
 
     if (!selectedCategory) {
       setFormFeedback("Selecione uma categoria para continuar.");
-      setSuccessNotice(null);
+      return;
+    }
+
+    if (alreadyEnrolled) {
+      setFormFeedback(null);
       return;
     }
 
     if (!selectedCategory.permiteInscricao) {
       setFormFeedback(selectedCategory.statusDescription);
-      setSuccessNotice(null);
       return;
     }
 
     if (externalUser && selectedCategory.externo !== "S") {
       setFormFeedback("Esta categoria aceita apenas participantes internos.");
-      setSuccessNotice(null);
       return;
     }
 
@@ -168,9 +176,8 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     try {
       setSubmitting(true);
       setFormFeedback(null);
-      setSuccessNotice(null);
 
-      const created = await requestJson<InscricaoResponse>("/api/inscricoes", {
+      await requestJson<InscricaoResponse>("/api/inscricoes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -180,14 +187,15 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
 
       form.reset();
       await refreshData();
-      setSuccessNotice({
-        inscricao: created,
-        categoriaNome: selectedCategory.nomeCategoria,
-        eventoNome: selectedCategory.eventoNome
-      });
     } catch (error) {
-      setFormFeedback(getRequestErrorMessage(error));
-      setSuccessNotice(null);
+      const errorMessage = getRequestErrorMessage(error);
+
+      if (errorMessage.toLowerCase().includes("já inscrito")) {
+        await refreshData();
+        setFormFeedback(null);
+      } else {
+        setFormFeedback(errorMessage);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -196,7 +204,6 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   function handleCategorySelect(categoryId: string) {
     setSelectedCategoryId(categoryId);
     setFormFeedback(null);
-    setSuccessNotice(null);
   }
 
   return (
@@ -226,9 +233,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
             </div>
           </div>
 
-          <p className="section-copy">
-            A coluna ao lado apresenta o formulário da categoria atualmente selecionada.
-          </p>
+          <p className="section-copy">A coluna ao lado apresenta o formulário da categoria atualmente selecionada.</p>
 
           {pageFeedback ? <div className="feedback feedback--warning">{pageFeedback}</div> : null}
 
@@ -272,54 +277,65 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
               </div>
 
               <div className="category-grid">
-                {evento.categorias.map((categoria) => (
-                  <button
-                    key={categoria.id}
-                    className={
-                      String(categoria.id) === selectedCategoryId
-                        ? "category-card category-card--selectable category-card--selected"
-                        : "category-card category-card--selectable"
-                    }
-                    type="button"
-                    onClick={() => handleCategorySelect(String(categoria.id))}
-                  >
-                    <div className="category-card__top">
-                      <div>
-                        <h4>{categoria.nomeCategoria}</h4>
-                        <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
-                      </div>
-                      <span className={categoria.permiteInscricao ? "badge badge--success" : "badge badge--danger"}>
-                        {categoria.statusLabel}
-                      </span>
-                    </div>
+                {evento.categorias.map((categoria) => {
+                  const badgeClass = categoria.usuarioJaInscrito
+                    ? "badge badge--success"
+                    : categoria.permiteInscricao
+                      ? "badge badge--success"
+                      : "badge badge--danger";
 
-                    <div className="badge-row">
-                      <span className="badge badge--ghost">
-                        {formatBooleanFlag(categoria.externo, "Aceita público externo", "Somente público interno")}
-                      </span>
-                      <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
-                        {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
-                      </span>
-                    </div>
-
-                    <div className="occupancy">
-                      <div className="occupancy__track">
-                        <div className="occupancy__value" style={{ width: `${categoria.ocupacaoPercentual}%` }} />
-                      </div>
-                      <div className="occupancy__legend">
-                        <span>
-                          {formatFractionLabel(
-                            categoria.inscricoesRealizadas,
-                            categoria.limiteInscricoes,
-                            "inscrição",
-                            "inscrições"
-                          )}
+                  return (
+                    <button
+                      key={categoria.id}
+                      className={
+                        String(categoria.id) === selectedCategoryId
+                          ? "category-card category-card--selectable category-card--selected"
+                          : "category-card category-card--selectable"
+                      }
+                      type="button"
+                      onClick={() => handleCategorySelect(String(categoria.id))}
+                    >
+                      <div className="category-card__top">
+                        <div>
+                          <h4>{categoria.nomeCategoria}</h4>
+                          <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
+                        </div>
+                        <span className={badgeClass}>
+                          {categoria.usuarioJaInscrito ? "Inscrição confirmada" : categoria.statusLabel}
                         </span>
-                        <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
                       </div>
-                    </div>
-                  </button>
-                ))}
+
+                      <div className="badge-row">
+                        <span className="badge badge--ghost">
+                          {formatBooleanFlag(categoria.externo, "Aceita público externo", "Somente público interno")}
+                        </span>
+                        <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
+                          {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
+                        </span>
+                        {categoria.usuarioJaInscrito ? (
+                          <span className="badge badge--success">Você já está inscrito</span>
+                        ) : null}
+                      </div>
+
+                      <div className="occupancy">
+                        <div className="occupancy__track">
+                          <div className="occupancy__value" style={{ width: `${categoria.ocupacaoPercentual}%` }} />
+                        </div>
+                        <div className="occupancy__legend">
+                          <span>
+                            {formatFractionLabel(
+                              categoria.inscricoesRealizadas,
+                              categoria.limiteInscricoes,
+                              "inscrição",
+                              "inscrições"
+                            )}
+                          </span>
+                          <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </article>
           ))
@@ -343,7 +359,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
               <p>{selectedCategory.descricao || "Categoria sem descrição complementar."}</p>
 
               <div className="badge-row">
-                <span className={canCurrentUserEnroll ? "badge badge--success" : "badge badge--danger"}>
+                <span className={alreadyEnrolled || canCurrentUserEnroll ? "badge badge--success" : "badge badge--danger"}>
                   {selectedCategoryStatusLabel}
                 </span>
                 <span className="badge badge--ghost">
@@ -383,129 +399,135 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
               </div>
             ) : null}
 
-            {successNotice ? (
+            {currentEnrollment ? (
               <div className="confirmation-card">
                 <div className="confirmation-card__header">
                   <div>
                     <span className="eyebrow">Inscrição confirmada</span>
-                    <h3>Vaga reservada com sucesso</h3>
+                    <h3>Você já está inscrito nesta categoria</h3>
                   </div>
                   <span className="badge badge--success">Inscrito</span>
                 </div>
 
                 <p>
-                  A inscrição foi registrada na categoria <strong>{successNotice.categoriaNome}</strong>, do evento{" "}
-                  <strong>{successNotice.eventoNome}</strong>.
+                  Sua vaga está reservada na categoria <strong>{selectedCategory.nomeCategoria}</strong>, do evento{" "}
+                  <strong>{selectedCategory.eventoNome}</strong>.
                 </p>
 
                 <div className="confirmation-card__grid">
                   <div className="confirmation-card__item">
                     <span>Participante</span>
-                    <strong>{successNotice.inscricao.nomeUsuario}</strong>
+                    <strong>{currentEnrollment.nomeUsuario}</strong>
                   </div>
                   <div className="confirmation-card__item">
-                    <span>{successNotice.inscricao.tipoParticipante === "EXTERNO" ? "CPF" : "Matrícula"}</span>
-                    <strong>{successNotice.inscricao.matricula}</strong>
+                    <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "CPF" : "Matrícula"}</span>
+                    <strong>{currentEnrollment.matricula}</strong>
                   </div>
                   <div className="confirmation-card__item">
-                    <span>{successNotice.inscricao.tipoParticipante === "EXTERNO" ? "Usuário" : "Setor"}</span>
+                    <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário" : "Setor"}</span>
                     <strong>
-                      {successNotice.inscricao.tipoParticipante === "EXTERNO"
+                      {currentEnrollment.tipoParticipante === "EXTERNO"
                         ? "Usuário externo"
-                        : successNotice.inscricao.nomeSetor}
+                        : currentEnrollment.nomeSetor}
                     </strong>
                   </div>
                   <div className="confirmation-card__item">
                     <span>Contato</span>
-                    <strong>{successNotice.inscricao.numeroContato}</strong>
+                    <strong>{currentEnrollment.numeroContato}</strong>
                   </div>
                 </div>
 
                 <div className="confirmation-card__meta">
-                  <span>Registro realizado em {formatDateTime(successNotice.inscricao.dataHoraRegistro)}</span>
-                  <span>As vagas da categoria já foram atualizadas na listagem ao lado.</span>
+                  <span>Registro realizado em {formatDateTime(currentEnrollment.dataHoraRegistro)}</span>
+                  <span>O sistema bloqueou novas tentativas porque sua inscrição já está confirmada.</span>
                 </div>
               </div>
             ) : null}
 
             {formFeedback ? <div className="feedback feedback--warning">{formFeedback}</div> : null}
 
-            <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
-              {externalUser ? (
-                <>
-                  <label className="field field--full">
-                    <span>NOME DO PARTICIPANTE</span>
-                    <input type="text" value={externalUser.nomeCompleto} disabled />
-                  </label>
-
-                  <label className="field field--full">
-                    <span>CPF</span>
-                    <input type="text" value={externalUser.cpf} disabled />
-                  </label>
-
-                  <label className="field field--full">
-                    <span>CONTATO</span>
-                    <input
-                      name="numeroContato"
-                      type="text"
-                      placeholder="Telefone, celular ou e-mail alternativo"
-                      defaultValue={externalUser.numeroTelefone ?? ""}
-                      required
-                    />
-                  </label>
-                </>
-              ) : internalUser ? (
-                <>
-                  <label className="field field--full">
-                    <span>NOME DO PARTICIPANTE</span>
-                    <input type="text" value={internalUser.nomeUsuario} disabled />
-                  </label>
-
-                  <label className="field">
-                    <span>MATRÍCULA</span>
-                    <input type="text" value={internalUser.matricula} disabled />
-                  </label>
-
-                  <label className="field">
-                    <span>SETOR</span>
-                    <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-                  </label>
-
-                  <label className="field field--full">
-                    <span>CONTATO</span>
-                    <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
-                  </label>
-                </>
-              ) : (
-                <>
-                  <label className="field field--full">
-                    <span>NOME DO PARTICIPANTE</span>
-                    <input name="nomeUsuario" type="text" placeholder="Ex.: João Pereira" required />
-                  </label>
-
-                  <label className="field">
-                    <span>MATRÍCULA</span>
-                    <input name="matricula" type="text" placeholder="Informe a matrícula" required />
-                  </label>
-
-                  <label className="field">
-                    <span>SETOR</span>
-                    <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-                  </label>
-
-                  <label className="field field--full">
-                    <span>CONTATO</span>
-                    <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
-                  </label>
-                </>
-              )}
-
-              <div className="form-actions field field--full">
-                <button className="button button--primary" type="submit" disabled={submitting || !canCurrentUserEnroll}>
-                  {submitting ? "Confirmando..." : "Confirmar inscrição"}
-                </button>
+            {alreadyEnrolled ? (
+              <div className="inline-empty inline-empty--soft">
+                Esta categoria já possui uma inscrição confirmada em seu nome. Se desejar, escolha outra categoria disponível ao lado.
               </div>
-            </form>
+            ) : (
+              <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
+                {externalUser ? (
+                  <>
+                    <label className="field field--full">
+                      <span>NOME DO PARTICIPANTE</span>
+                      <input type="text" value={externalUser.nomeCompleto} disabled />
+                    </label>
+
+                    <label className="field field--full">
+                      <span>CPF</span>
+                      <input type="text" value={externalUser.cpf} disabled />
+                    </label>
+
+                    <label className="field field--full">
+                      <span>CONTATO</span>
+                      <input
+                        name="numeroContato"
+                        type="text"
+                        placeholder="Telefone, celular ou e-mail alternativo"
+                        defaultValue={externalUser.numeroTelefone ?? ""}
+                        required
+                      />
+                    </label>
+                  </>
+                ) : internalUser ? (
+                  <>
+                    <label className="field field--full">
+                      <span>NOME DO PARTICIPANTE</span>
+                      <input type="text" value={internalUser.nomeUsuario} disabled />
+                    </label>
+
+                    <label className="field">
+                      <span>MATRÍCULA</span>
+                      <input type="text" value={internalUser.matricula} disabled />
+                    </label>
+
+                    <label className="field">
+                      <span>SETOR</span>
+                      <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
+                    </label>
+
+                    <label className="field field--full">
+                      <span>CONTATO</span>
+                      <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <label className="field field--full">
+                      <span>NOME DO PARTICIPANTE</span>
+                      <input name="nomeUsuario" type="text" placeholder="Ex.: João Pereira" required />
+                    </label>
+
+                    <label className="field">
+                      <span>MATRÍCULA</span>
+                      <input name="matricula" type="text" placeholder="Informe a matrícula" required />
+                    </label>
+
+                    <label className="field">
+                      <span>SETOR</span>
+                      <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
+                    </label>
+
+                    <label className="field field--full">
+                      <span>CONTATO</span>
+                      <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
+                    </label>
+                  </>
+                )}
+
+                <div className="form-actions field field--full">
+                  <button className="button button--primary" type="submit" disabled={submitting || !canCurrentUserEnroll}>
+                    {submitting ? "Confirmando..." : "Confirmar inscrição"}
+                  </button>
+                </div>
+              </form>
+            )}
           </>
         ) : (
           <div className="inline-empty">

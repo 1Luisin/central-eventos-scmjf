@@ -56,6 +56,11 @@ public class InscricaoController {
         return inscricaoService.listarPorEvento(eventoId, resolveUsuario(servletRequest));
     }
 
+    @GetMapping("/minhas")
+    public List<InscricaoResponse> listarMinhasInscricoes(HttpServletRequest servletRequest) {
+        return inscricaoService.listarMinhasInscricoes(resolveUsuario(servletRequest));
+    }
+
     private UsuarioOperacaoContext resolveUsuario(HttpServletRequest servletRequest) {
         return UsuarioOperacaoContext.fromAuthenticatedUser(AuthenticatedRequest.require(servletRequest));
     }

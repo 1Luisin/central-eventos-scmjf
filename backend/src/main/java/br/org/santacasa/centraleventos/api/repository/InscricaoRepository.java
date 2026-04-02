@@ -24,6 +24,30 @@ public interface InscricaoRepository extends JpaRepository<Inscricao, Long> {
             join fetch i.evento
             join fetch i.categoria
             left join fetch i.usuarioExterno
+            where upper(i.matricula) = upper(:matricula)
+            order by i.dhRegistro desc
+            """)
+    List<Inscricao> findByMatriculaDetalhadaOrderByDhRegistroDesc(@Param("matricula") String matricula);
+
+    @Query("""
+            select i
+            from Inscricao i
+            join fetch i.evento
+            join fetch i.categoria
+            left join fetch i.usuarioExterno
+            where i.usuarioExterno.id = :usuarioExternoId
+            order by i.dhRegistro desc
+            """)
+    List<Inscricao> findByUsuarioExternoIdDetalhadaOrderByDhRegistroDesc(
+            @Param("usuarioExternoId") Long usuarioExternoId
+    );
+
+    @Query("""
+            select i
+            from Inscricao i
+            join fetch i.evento
+            join fetch i.categoria
+            left join fetch i.usuarioExterno
             where i.id = :inscricaoId
             """)
     Optional<Inscricao> findDetalhadaById(@Param("inscricaoId") Long inscricaoId);

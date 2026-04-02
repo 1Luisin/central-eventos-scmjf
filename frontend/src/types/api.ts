@@ -171,6 +171,8 @@ export type CategoriaViewModel = CategoriaResponse & {
   statusDescription: string;
   permiteInscricao: boolean;
   ocupacaoPercentual: number;
+  usuarioJaInscrito: boolean;
+  inscricaoAtual: InscricaoResponse | null;
 };
 
 export type EventoDashboardItem = EventoResponse & {

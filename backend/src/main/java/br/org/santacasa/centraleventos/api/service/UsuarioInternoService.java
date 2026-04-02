@@ -188,10 +188,11 @@ public class UsuarioInternoService {
             return true;
         }
 
-        return MARCADORES_SENHA_INVALIDA.stream().noneMatch(normalizada::contains)
-                && SITUACOES_SENHA_VALIDAS.stream()
-                .filter(status -> status.length() > 1)
-                .anyMatch(normalizada::contains);
+        if (MARCADORES_SENHA_INVALIDA.stream().anyMatch(normalizada::contains)) {
+            return false;
+        }
+
+        return true;
     }
 
     private String normalizarMatricula(String matricula) {

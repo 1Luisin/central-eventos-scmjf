@@ -124,7 +124,9 @@ export function decorateCategoria(evento: EventoResponse, categoria: CategoriaRe
     statusLabel,
     statusDescription,
     permiteInscricao,
-    ocupacaoPercentual
+    ocupacaoPercentual,
+    usuarioJaInscrito: false,
+    inscricaoAtual: null
   };
 }
 

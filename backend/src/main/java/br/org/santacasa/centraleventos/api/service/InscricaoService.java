@@ -128,6 +128,33 @@ public class InscricaoService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<InscricaoResponse> listarMinhasInscricoes(UsuarioOperacaoContext usuario) {
+        if (usuario.isExterno()) {
+            if (usuario.idUsuarioExterno() == null) {
+                throw new AccessDeniedException("Sessão externa inválida. Faça login novamente para continuar.");
+            }
+
+            return inscricaoRepository.findByUsuarioExternoIdDetalhadaOrderByDhRegistroDesc(usuario.idUsuarioExterno())
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
+
+        if (usuario.isInterno()) {
+            if (usuario.usuarioLog() == null || usuario.usuarioLog().isBlank()) {
+                throw new AccessDeniedException("Sessão interna inválida. Faça login novamente para continuar.");
+            }
+
+            return inscricaoRepository.findByMatriculaDetalhadaOrderByDhRegistroDesc(usuario.usuarioLog())
+                    .stream()
+                    .map(this::toResponse)
+                    .toList();
+        }
+
+        throw new AccessDeniedException("Sessão inválida. Faça login novamente para continuar.");
+    }
+
     private void validarVinculoEventoCategoria(Evento evento, Categoria categoria) {
         if (!categoria.getEvento().getId().equals(evento.getId())) {
             throw new BusinessRuleException("Categoria não pertence ao evento informado");

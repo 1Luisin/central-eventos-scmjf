@@ -39,6 +39,12 @@ async function listarInscricoes(eventoId: number): Promise<InscricaoResponse[]> 
   });
 }
 
+async function listarMinhasInscricoes(headers: Headers): Promise<InscricaoResponse[]> {
+  return fetchBackendJson<InscricaoResponse[]>("/inscricoes/minhas", {
+    headers
+  });
+}
+
 function sortEventos<T extends EventoResponse>(eventos: T[]): T[] {
   return [...eventos].sort((left, right) => {
     const leftDate = new Date(left.dataHoraInicio).getTime();
@@ -62,7 +68,8 @@ function filterVisibleCategorias(categorias: CategoriaResponse[], isExternalUser
 function toDashboardItem(
   evento: EventoResponse,
   categorias: CategoriaResponse[],
-  isExternalUser: boolean
+  isExternalUser: boolean,
+  inscricoesPorCategoria: Map<number, InscricaoResponse>
 ): EventoDashboardItem | null {
   const categoriasVisiveis = filterVisibleCategorias(categorias, isExternalUser);
 
@@ -70,7 +77,14 @@ function toDashboardItem(
     return null;
   }
 
-  const categoriasDecoradas = categoriasVisiveis.map((categoria) => decorateCategoria(evento, categoria));
+  const categoriasDecoradas = categoriasVisiveis.map((categoria) => {
+    const inscricaoAtual = inscricoesPorCategoria.get(categoria.id) ?? null;
+    return {
+      ...decorateCategoria(evento, categoria),
+      usuarioJaInscrito: inscricaoAtual !== null,
+      inscricaoAtual
+    };
+  });
   const totalVagas = categoriasDecoradas.reduce((accumulator, categoria) => accumulator + categoria.limiteInscricoes, 0);
   const totalInscricoes = categoriasDecoradas.reduce(
     (accumulator, categoria) => accumulator + categoria.inscricoesRealizadas,
@@ -117,10 +131,24 @@ export async function getDashboardData(): Promise<DashboardData> {
     const sessionContext = await getServerSessionUserContext();
     const isExternalUser = sessionContext?.accessMode === "externo";
     const headers = sessionContext ? await buildSessionJsonHeaders() : undefined;
-    const eventos = sortEventos(filterActiveEventos(await listarEventos(headers)));
+    const [eventosRaw, minhasInscricoes] = await Promise.all([
+      listarEventos(headers),
+      headers ? listarMinhasInscricoes(headers) : Promise.resolve<InscricaoResponse[]>([])
+    ]);
+    const eventos = sortEventos(filterActiveEventos(eventosRaw));
+    const inscricoesPorCategoria = new Map<number, InscricaoResponse>(
+      minhasInscricoes.map((inscricao) => [inscricao.categoriaId, inscricao])
+    );
     const itens = (
       await Promise.all(
-        eventos.map(async (evento) => toDashboardItem(evento, await listarCategorias(evento.id, headers), isExternalUser))
+        eventos.map(async (evento) =>
+          toDashboardItem(
+            evento,
+            await listarCategorias(evento.id, headers),
+            isExternalUser,
+            inscricoesPorCategoria
+          )
+        )
       )
     ).filter((evento): evento is EventoDashboardItem => evento !== null);
 
