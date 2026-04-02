@@ -374,7 +374,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                 <div className="selection-card__meta">
                   <span>E-mail: {externalUser.email}</span>
                   <span>CPF: {externalUser.cpf}</span>
-                  <span>Perfil: participante externo</span>
+                  <span>Usuário externo</span>
                 </div>
               </div>
             ) : internalUser ? (
@@ -384,9 +384,7 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                 <div className="selection-card__meta">
                   <span>Matrícula: {internalUser.matricula}</span>
                   <span>E-mail: {internalUser.email || "Não informado"}</span>
-                  <span>
-                    Perfil: {internalUser.tipoUsuario === "ADMINISTRADOR" ? "administrador" : "usuário interno"}
-                  </span>
+                  <span>Usuário interno</span>
                 </div>
               </div>
             ) : null}
@@ -416,8 +414,12 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                     <strong>{successNotice.inscricao.matricula}</strong>
                   </div>
                   <div className="confirmation-card__item">
-                    <span>{successNotice.inscricao.tipoParticipante === "EXTERNO" ? "Origem" : "Setor"}</span>
-                    <strong>{successNotice.inscricao.nomeSetor}</strong>
+                    <span>{successNotice.inscricao.tipoParticipante === "EXTERNO" ? "Usuário" : "Setor"}</span>
+                    <strong>
+                      {successNotice.inscricao.tipoParticipante === "EXTERNO"
+                        ? "Usuário externo"
+                        : successNotice.inscricao.nomeSetor}
+                    </strong>
                   </div>
                   <div className="confirmation-card__item">
                     <span>Contato</span>
@@ -442,14 +444,9 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                     <input type="text" value={externalUser.nomeCompleto} disabled />
                   </label>
 
-                  <label className="field">
+                  <label className="field field--full">
                     <span>CPF</span>
                     <input type="text" value={externalUser.cpf} disabled />
-                  </label>
-
-                  <label className="field">
-                    <span>ORIGEM DO ACESSO</span>
-                    <input type="text" value="Público externo" disabled />
                   </label>
 
                   <label className="field field--full">
@@ -473,15 +470,6 @@ export function EnrollmentPageClient({ initialData }: EnrollmentPageClientProps)
                   <label className="field">
                     <span>MATRÍCULA</span>
                     <input type="text" value={internalUser.matricula} disabled />
-                  </label>
-
-                  <label className="field">
-                    <span>TIPO DE ACESSO</span>
-                    <input
-                      type="text"
-                      value={internalUser.tipoUsuario === "ADMINISTRADOR" ? "Administrador" : "Usuário interno"}
-                      disabled
-                    />
                   </label>
 
                   <label className="field">
