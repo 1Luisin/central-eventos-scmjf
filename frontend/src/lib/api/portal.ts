@@ -1,6 +1,7 @@
 import "server-only";
 
 import { buildSessionJsonHeaders, fetchBackendJson, ProxyAuthorizationError } from "@/lib/api/backend";
+import { getServerSessionUserContext } from "@/lib/auth/server-session";
 import { decorateCategoria } from "@/lib/formatters";
 import type {
   AdminData,
@@ -46,8 +47,26 @@ function filterActiveEventos<T extends EventoResponse>(eventos: T[]): T[] {
   return eventos.filter((evento) => evento.ativo === "S");
 }
 
-function toDashboardItem(evento: EventoResponse, categorias: CategoriaResponse[]): EventoDashboardItem {
-  const categoriasDecoradas = categorias.map((categoria) => decorateCategoria(evento, categoria));
+function filterVisibleCategorias(categorias: CategoriaResponse[], isExternalUser: boolean): CategoriaResponse[] {
+  if (!isExternalUser) {
+    return categorias;
+  }
+
+  return categorias.filter((categoria) => categoria.externo?.toUpperCase() === "S");
+}
+
+function toDashboardItem(
+  evento: EventoResponse,
+  categorias: CategoriaResponse[],
+  isExternalUser: boolean
+): EventoDashboardItem | null {
+  const categoriasVisiveis = filterVisibleCategorias(categorias, isExternalUser);
+
+  if (categoriasVisiveis.length === 0) {
+    return null;
+  }
+
+  const categoriasDecoradas = categoriasVisiveis.map((categoria) => decorateCategoria(evento, categoria));
   const totalVagas = categoriasDecoradas.reduce((accumulator, categoria) => accumulator + categoria.limiteInscricoes, 0);
   const totalInscricoes = categoriasDecoradas.reduce(
     (accumulator, categoria) => accumulator + categoria.inscricoesRealizadas,
@@ -91,10 +110,14 @@ function toAdminItem(
 
 export async function getDashboardData(): Promise<DashboardData> {
   try {
+    const sessionContext = await getServerSessionUserContext();
+    const isExternalUser = sessionContext?.accessMode === "externo";
     const eventos = sortEventos(filterActiveEventos(await listarEventos()));
-    const itens = await Promise.all(
-      eventos.map(async (evento) => toDashboardItem(evento, await listarCategorias(evento.id)))
-    );
+    const itens = (
+      await Promise.all(
+        eventos.map(async (evento) => toDashboardItem(evento, await listarCategorias(evento.id), isExternalUser))
+      )
+    ).filter((evento): evento is EventoDashboardItem => evento !== null);
 
     return {
       eventos: itens,
