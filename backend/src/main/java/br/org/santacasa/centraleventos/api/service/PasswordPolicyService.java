@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 public class PasswordPolicyService {
 
     public void validateOrThrow(String rawPassword) {
-        String password = rawPassword == null ? "" : rawPassword.trim();
+        String password = rawPassword == null ? "" : rawPassword;
 
         if (password.length() < 8 || password.length() > 120) {
             throw new BusinessRuleException("A senha deve ter entre 8 e 120 caracteres.");

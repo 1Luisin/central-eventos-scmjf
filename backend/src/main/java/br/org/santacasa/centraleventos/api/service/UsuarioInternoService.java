@@ -9,6 +9,8 @@ import br.org.santacasa.centraleventos.api.exception.AccessDeniedException;
 import br.org.santacasa.centraleventos.api.exception.AuthenticationFailedException;
 import br.org.santacasa.centraleventos.api.repository.UsuarioInternoRepository;
 import br.org.santacasa.centraleventos.api.repository.UsuarioInternoRepository.UsuarioInternoAutenticacaoRow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,8 @@ import java.util.Set;
 
 @Service
 public class UsuarioInternoService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UsuarioInternoService.class);
 
     private static final String TIPO_USUARIO_COMUM = "COMUM";
     private static final String TIPO_USUARIO_ADMINISTRADOR = "ADMINISTRADOR";
@@ -73,7 +77,7 @@ public class UsuarioInternoService {
     @Transactional
     public AuthLoginResponse<UsuarioInternoResponse> autenticar(UsuarioInternoLoginRequest request) {
         String matricula = normalizarMatricula(request.matricula());
-        String senha = normalizarObrigatorio(request.senha(), "Senha é obrigatória");
+        String senha = normalizarSenhaObrigatoria(request.senha());
 
         authenticationAttemptService.assertCanAttempt(LOGIN_SCOPE, matricula);
 
@@ -83,10 +87,16 @@ public class UsuarioInternoService {
                     .orElseThrow(() -> new AuthenticationFailedException("Matrícula ou senha inválidos"));
 
             if (!isAtivo(usuarioInterno.ativo())) {
+                LOGGER.warn("Login interno negado para matricula {} porque o usuário está inativo.", matricula);
                 throw new AuthenticationFailedException("Matrícula ou senha inválidos");
             }
 
             if (!senhaValida(usuarioInterno.situacao())) {
+                LOGGER.warn(
+                        "Login interno negado para matricula {} com retorno de situação da MV: {}",
+                        matricula,
+                        usuarioInterno.situacao()
+                );
                 throw new AuthenticationFailedException("Matrícula ou senha inválidos");
             }
 
@@ -193,6 +203,13 @@ public class UsuarioInternoService {
             throw new AuthenticationFailedException(mensagemErro);
         }
         return valor.trim();
+    }
+
+    private String normalizarSenhaObrigatoria(String senha) {
+        if (senha == null || senha.isEmpty()) {
+            throw new AuthenticationFailedException("Senha é obrigatória");
+        }
+        return senha;
     }
 
     private boolean isAtivo(String ativo) {

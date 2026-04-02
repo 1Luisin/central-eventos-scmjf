@@ -67,7 +67,7 @@ public class UsuarioExternoService {
             throw new BusinessRuleException("Já existe um usuário externo cadastrado com este e-mail");
         }
 
-        String senha = normalizarObrigatorio(request.senha(), "Senha é obrigatória");
+        String senha = normalizarSenhaObrigatoria(request.senha());
         passwordPolicyService.validateOrThrow(senha);
 
         LocalDateTime agora = LocalDateTime.now();
@@ -100,7 +100,7 @@ public class UsuarioExternoService {
     @Transactional
     public AuthLoginResponse<UsuarioExternoResponse> autenticar(UsuarioExternoLoginRequest request) {
         String email = normalizarEmail(request.email());
-        String senha = normalizarObrigatorio(request.senha(), "Senha é obrigatória");
+        String senha = normalizarSenhaObrigatoria(request.senha());
 
         authenticationAttemptService.assertCanAttempt(LOGIN_SCOPE, email);
 
@@ -189,6 +189,13 @@ public class UsuarioExternoService {
             throw new BusinessRuleException(mensagemErro);
         }
         return valor.trim();
+    }
+
+    private String normalizarSenhaObrigatoria(String senha) {
+        if (senha == null || senha.isEmpty()) {
+            throw new BusinessRuleException("Senha é obrigatória");
+        }
+        return senha;
     }
 
     private String normalizarOpcional(String valor) {

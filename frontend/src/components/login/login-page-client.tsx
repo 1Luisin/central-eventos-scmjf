@@ -50,10 +50,10 @@ export function LoginPageClient({
     if (accessMode === "interno") {
       const payload: InternalUserLoginPayload = {
         matricula: identifier.trim().toUpperCase(),
-        senha: password.trim()
+        senha: password
       };
 
-      if (!payload.matricula || !payload.senha) {
+      if (!payload.matricula || password.length === 0) {
         setFeedback("Informe sua matrícula e senha para continuar.");
         setFeedbackTone("error");
         return;
@@ -84,10 +84,10 @@ export function LoginPageClient({
 
     const payload: ExternalUserLoginPayload = {
       email: identifier.trim(),
-      senha: password.trim()
+      senha: password
     };
 
-    if (!payload.email || !payload.senha) {
+    if (!payload.email || password.length === 0) {
       setFeedback("Informe o e-mail cadastrado e a senha de acesso.");
       setFeedbackTone("error");
       return;

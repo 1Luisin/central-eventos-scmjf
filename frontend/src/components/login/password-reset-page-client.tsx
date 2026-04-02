@@ -104,7 +104,7 @@ export function PasswordResetPageClient({
       return;
     }
 
-    if (novaSenha.trim() !== confirmacaoSenha.trim()) {
+    if (novaSenha !== confirmacaoSenha) {
       setFeedback("A confirmação da nova senha deve ser igual à senha informada.");
       setFeedbackTone("error");
       return;
@@ -113,8 +113,8 @@ export function PasswordResetPageClient({
     const payload: ExternalUserPasswordResetPayload = {
       token,
       codigo: codigo.trim(),
-      novaSenha: novaSenha.trim(),
-      confirmacaoNovaSenha: confirmacaoSenha.trim()
+      novaSenha,
+      confirmacaoNovaSenha: confirmacaoSenha
     };
 
     try {

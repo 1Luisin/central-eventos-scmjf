@@ -59,7 +59,7 @@ export function ExternalRegistrationPageClient({ initialRedirectPath = "" }: { i
       nomeCompleto: form.nomeCompleto.trim(),
       cpf: form.cpf.trim(),
       email: form.email.trim(),
-      senha: form.senha.trim(),
+      senha: form.senha,
       numeroTelefone: form.numeroTelefone.trim() || undefined,
       dataNascimento: form.dataNascimento || undefined,
       aceiteLgpd: form.aceiteLgpd

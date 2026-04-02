@@ -15,8 +15,10 @@ import type {
   InscricaoResponse
 } from "@/types/api";
 
-async function listarEventos(): Promise<EventoResponse[]> {
-  return fetchBackendJson<EventoResponse[]>("/eventos");
+async function listarEventos(headers?: Headers): Promise<EventoResponse[]> {
+  return fetchBackendJson<EventoResponse[]>("/eventos", {
+    headers
+  });
 }
 
 async function listarMeusEventos(): Promise<EventoResponse[]> {
@@ -25,8 +27,10 @@ async function listarMeusEventos(): Promise<EventoResponse[]> {
   });
 }
 
-async function listarCategorias(eventoId: number): Promise<CategoriaResponse[]> {
-  return fetchBackendJson<CategoriaResponse[]>(`/categorias/evento/${eventoId}`);
+async function listarCategorias(eventoId: number, headers?: Headers): Promise<CategoriaResponse[]> {
+  return fetchBackendJson<CategoriaResponse[]>(`/categorias/evento/${eventoId}`, {
+    headers
+  });
 }
 
 async function listarInscricoes(eventoId: number): Promise<InscricaoResponse[]> {
@@ -112,10 +116,11 @@ export async function getDashboardData(): Promise<DashboardData> {
   try {
     const sessionContext = await getServerSessionUserContext();
     const isExternalUser = sessionContext?.accessMode === "externo";
-    const eventos = sortEventos(filterActiveEventos(await listarEventos()));
+    const headers = sessionContext ? await buildSessionJsonHeaders() : undefined;
+    const eventos = sortEventos(filterActiveEventos(await listarEventos(headers)));
     const itens = (
       await Promise.all(
-        eventos.map(async (evento) => toDashboardItem(evento, await listarCategorias(evento.id), isExternalUser))
+        eventos.map(async (evento) => toDashboardItem(evento, await listarCategorias(evento.id, headers), isExternalUser))
       )
     ).filter((evento): evento is EventoDashboardItem => evento !== null);
 
@@ -135,10 +140,11 @@ export async function getDashboardData(): Promise<DashboardData> {
 export async function getAdminData(): Promise<AdminData> {
   try {
     const eventos = sortEventos(await listarMeusEventos());
+    const headers = await buildSessionJsonHeaders({ requireInternalAdmin: true });
     const itens = await Promise.all(
       eventos.map(async (evento) => {
         const [categorias, inscricoes] = await Promise.all([
-          listarCategorias(evento.id),
+          listarCategorias(evento.id, headers),
           listarInscricoes(evento.id)
         ]);
 

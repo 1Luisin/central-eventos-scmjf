@@ -157,11 +157,11 @@ public class UsuarioExternoRecuperacaoSenhaService {
             UsuarioExternoRecuperacaoSenhaRedefinicaoRequest request,
             String ipSolicitante
     ) {
-        if (!request.novaSenha().trim().equals(request.confirmacaoNovaSenha().trim())) {
+        if (!request.novaSenha().equals(request.confirmacaoNovaSenha())) {
             throw new BusinessRuleException("A confirmação da nova senha deve ser igual à senha informada.");
         }
 
-        passwordPolicyService.validateOrThrow(request.novaSenha().trim());
+        passwordPolicyService.validateOrThrow(request.novaSenha());
 
         RecupSenhaUsrExt solicitacao = buscarSolicitacaoAtivaObrigatoria(request.token());
         LocalDateTime agora = LocalDateTime.now();
@@ -199,7 +199,7 @@ public class UsuarioExternoRecuperacaoSenhaService {
             throw new BusinessRuleException("O cadastro externo está inativo. Entre em contato com a equipe responsável.");
         }
 
-        usuarioExterno.setDsSenhaHash(passwordEncoder.encode(request.novaSenha().trim()));
+        usuarioExterno.setDsSenhaHash(passwordEncoder.encode(request.novaSenha()));
         usuarioExterno.setDtUltimaAtualizacao(agora);
         usuarioExternoRepository.save(usuarioExterno);
 
