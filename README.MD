@@ -87,6 +87,58 @@ npm run start
 
 O frontend sobe em `0.0.0.0:3000`.
 
+## Publicacao no servidor 172.18.2.246
+
+Estrutura esperada no servidor:
+
+- API Java em `http://172.18.2.246:8080`
+- Frontend Next.js em `http://172.18.2.246:3000`
+
+### Backend
+
+Dentro de `backend/`, crie:
+
+- `datasource-local.properties`
+- `auth-local.properties`
+- `mail-local.properties`
+
+Depois rode:
+
+```powershell
+cd backend
+.\start-server.ps1
+```
+
+O script gera o `.jar` se necessario e sobe a API.
+
+### Frontend
+
+Dentro de `frontend/`, crie `.env.local` com base em `.env.example`.
+
+Depois rode:
+
+```powershell
+cd frontend
+npm install
+.\start-server.ps1
+```
+
+### PM2 para o frontend
+
+O arquivo `frontend/ecosystem.config.cjs` ja esta alinhado para:
+
+- `HOSTNAME=172.18.2.246`
+- `PORT=3000`
+- `BACKEND_API_BASE_URL=http://172.18.2.246:8080`
+
+Exemplo:
+
+```powershell
+cd frontend
+pm2 start ecosystem.config.cjs
+pm2 save
+```
+
 ## Configuracao segura
 
 ### Backend

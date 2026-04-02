@@ -47,7 +47,7 @@ cp .env.example .env.local
 Conteudo esperado:
 
 ```env
-BACKEND_API_BASE_URL=http://127.0.0.1:8080
+BACKEND_API_BASE_URL=http://172.18.2.246:8080
 FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
 ```
 
@@ -84,6 +84,24 @@ npm run start
 
 O script `start` sobe a aplicacao em `0.0.0.0:3000`.
 
+## Subida no servidor 172.18.2.246
+
+Para o servidor institucional, use `.env.local` com:
+
+```env
+BACKEND_API_BASE_URL=http://172.18.2.246:8080
+FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
+```
+
+Depois rode:
+
+```powershell
+npm install
+.\start-server.ps1
+```
+
+O script faz o build e sobe o frontend em `http://172.18.2.246:3000`.
+
 ## PM2
 
 O projeto inclui `ecosystem.config.cjs`.
@@ -94,6 +112,12 @@ Exemplo:
 pm2 start ecosystem.config.cjs
 pm2 save
 ```
+
+O `ecosystem.config.cjs` ja esta preparado para:
+
+- `HOSTNAME=172.18.2.246`
+- `PORT=3000`
+- `BACKEND_API_BASE_URL=http://172.18.2.246:8080`
 
 ## Telas implementadas
 

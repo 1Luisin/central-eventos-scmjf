@@ -7,7 +7,9 @@ module.exports = {
       args: "run start",
       env: {
         NODE_ENV: "production",
-        BACKEND_API_BASE_URL: "http://127.0.0.1:8080",
+        HOSTNAME: "172.18.2.246",
+        PORT: "3000",
+        BACKEND_API_BASE_URL: "http://172.18.2.246:8080",
         FRONTEND_SESSION_SECRET: process.env.FRONTEND_SESSION_SECRET
       }
     }
