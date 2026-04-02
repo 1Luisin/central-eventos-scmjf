@@ -208,6 +208,16 @@ function decodeBase64Url(value: string): string {
 }
 
 function shouldUseSecureCookies(): boolean {
+  const configuredValue = process.env.FRONTEND_SESSION_SECURE?.trim().toLowerCase();
+
+  if (configuredValue === "true") {
+    return true;
+  }
+
+  if (configuredValue === "false") {
+    return false;
+  }
+
   return process.env.NODE_ENV === "production";
 }
 

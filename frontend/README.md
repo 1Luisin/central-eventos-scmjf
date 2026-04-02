@@ -49,12 +49,14 @@ Conteudo esperado:
 ```env
 BACKEND_API_BASE_URL=http://172.18.2.246:8080
 FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
+FRONTEND_SESSION_SECURE=false
 ```
 
 Importante:
 
 - `BACKEND_API_BASE_URL` define para onde o proxy do frontend envia as requisicoes
 - `FRONTEND_SESSION_SECRET` assina a sessao HTTP-only do usuario
+- `FRONTEND_SESSION_SECURE=false` deve ser usado quando o acesso ao frontend for via `http://` interno sem HTTPS
 
 ## Execucao local
 
@@ -91,6 +93,7 @@ Para o servidor institucional, use `.env.local` com:
 ```env
 BACKEND_API_BASE_URL=http://172.18.2.246:8080
 FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
+FRONTEND_SESSION_SECURE=false
 ```
 
 Depois rode:
