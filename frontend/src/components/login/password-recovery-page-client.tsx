@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import backgroundImage from "../../../imgs/background-page.jpg";
 import brandIcon from "../../../imgs/logo-santa-casa.png";
 import brandLogo from "../../../imgs/logo-santa-casa2.png";
-import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
+import { requestJson } from "@/lib/api/client";
 import type { ExternalUserPasswordRecoveryPayload, MessageResponse } from "@/types/api";
 import styles from "./password-recovery-page-client.module.css";
 
@@ -18,6 +18,9 @@ type PasswordRecoveryPageClientProps = {
 
 type FeedbackTone = "idle" | "success" | "error";
 
+const GENERIC_RECOVERY_MESSAGE =
+  "Se os dados informados estiverem corretos, você receberá as instruções de redefinição por e-mail.";
+
 export function PasswordRecoveryPageClient({
   initialIdentifier = "",
   initialRedirectPath = ""
@@ -26,7 +29,7 @@ export function PasswordRecoveryPageClient({
   const [document, setDocument] = useState("");
   const [feedback, setFeedback] = useState("");
   const [feedbackTone, setFeedbackTone] = useState<FeedbackTone>("idle");
-  const [submitting, setSubmitting] = useState(false);
+  const recoveryRequestInFlightRef = useRef(false);
 
   const loginHref = useMemo(
     () => buildLoginHref(identifier, initialRedirectPath),
@@ -35,6 +38,10 @@ export function PasswordRecoveryPageClient({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (recoveryRequestInFlightRef.current) {
+      return;
+    }
 
     const payload: ExternalUserPasswordRecoveryPayload = {
       email: identifier.trim(),
@@ -47,26 +54,28 @@ export function PasswordRecoveryPageClient({
       return;
     }
 
-    try {
-      setSubmitting(true);
-      setFeedback("");
+    setFeedback(GENERIC_RECOVERY_MESSAGE);
+    setFeedbackTone("success");
+    recoveryRequestInFlightRef.current = true;
 
-      const response = await requestJson<MessageResponse>("/api/usuarios-externos/recuperacao-senha/solicitar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+    void requestJson<MessageResponse>("/api/usuarios-externos/recuperacao-senha/solicitar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    })
+      .then((response) => {
+        if (response.mensagem?.trim()) {
+          setFeedback(response.mensagem);
+        }
+      })
+      .catch((error) => {
+        console.error("Falha ao processar a solicitação de recuperação de senha.", error);
+      })
+      .finally(() => {
+        recoveryRequestInFlightRef.current = false;
       });
-
-      setFeedback(response.mensagem);
-      setFeedbackTone("success");
-    } catch (error) {
-      setFeedback(getRequestErrorMessage(error));
-      setFeedbackTone("error");
-    } finally {
-      setSubmitting(false);
-    }
   }
 
   return (
@@ -159,8 +168,8 @@ export function PasswordRecoveryPageClient({
               <Link className={styles.secondaryAction} href={loginHref}>
                 Voltar ao login
               </Link>
-              <button className={styles.submit} disabled={submitting} type="submit">
-                {submitting ? "Enviando..." : "Solicitar recuperação"}
+              <button className={styles.submit} type="submit">
+                Solicitar recuperação
               </button>
             </div>
           </form>
