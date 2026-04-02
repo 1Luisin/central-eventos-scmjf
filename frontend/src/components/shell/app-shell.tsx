@@ -7,7 +7,7 @@ import { LogoutButton } from "@/components/shell/logout-button";
 import type { SessionUserContext } from "@/lib/auth/session";
 
 type AppShellProps = {
-  activeRoute: "dashboard" | "cadastros" | "inscricoes";
+  activeRoute: "dashboard" | "cadastros" | "inscricoes" | "minhas-inscricoes";
   eyebrow: string;
   title: string;
   description: string;

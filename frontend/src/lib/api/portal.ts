@@ -11,6 +11,9 @@ import type {
   EnrollmentData,
   EventoAdminItem,
   EventoDashboardItem,
+  MyEnrollmentCategoryItem,
+  MyEnrollmentEventItem,
+  MyEnrollmentsData,
   EventoResponse,
   InscricaoResponse
 } from "@/types/api";
@@ -126,6 +129,50 @@ function toAdminItem(
   };
 }
 
+function buildFallbackEvento(inscricao: InscricaoResponse): EventoResponse {
+  return {
+    id: inscricao.eventoId,
+    nomeEvento: `Evento #${inscricao.eventoId}`,
+    dataHoraInicio: "",
+    dataHoraFim: "",
+    nomeResponsavel: "Não informado",
+    nomeSetor: inscricao.nomeSetor || "Não informado",
+    numeroContato: inscricao.numeroContato || "Não informado",
+    ativo: "N",
+    descricao: null
+  };
+}
+
+function buildFallbackCategoria(inscricao: InscricaoResponse): CategoriaResponse {
+  return {
+    id: inscricao.categoriaId,
+    eventoId: inscricao.eventoId,
+    nomeCategoria: `Categoria #${inscricao.categoriaId}`,
+    externo: inscricao.tipoParticipante === "EXTERNO" ? "S" : "N",
+    descricao: null,
+    ativo: "N",
+    limiteInscricoes: 0,
+    inscricoesRealizadas: 0,
+    vagasDisponiveis: 0
+  };
+}
+
+function toMyEnrollmentEventItem(
+  evento: EventoResponse,
+  categoriasInscritas: MyEnrollmentCategoryItem[]
+): MyEnrollmentEventItem {
+  const dataUltimaInscricao = [...categoriasInscritas]
+    .sort((left, right) => new Date(right.inscricao.dataHoraRegistro).getTime() - new Date(left.inscricao.dataHoraRegistro).getTime())[0]
+    ?.inscricao.dataHoraRegistro ?? "";
+
+  return {
+    ...evento,
+    categoriasInscritas,
+    totalCategoriasInscritas: categoriasInscritas.length,
+    dataUltimaInscricao
+  };
+}
+
 export async function getDashboardData(): Promise<DashboardData> {
   try {
     const sessionContext = await getServerSessionUserContext();
@@ -207,4 +254,80 @@ export async function getEnrollmentData(): Promise<EnrollmentData> {
     atualizadoEm: dashboard.atualizadoEm,
     erroInicial: dashboard.erroInicial
   };
+}
+
+export async function getMyEnrollmentsData(): Promise<MyEnrollmentsData> {
+  try {
+    const headers = await buildSessionJsonHeaders();
+    const minhasInscricoes = await listarMinhasInscricoes(headers);
+
+    if (minhasInscricoes.length === 0) {
+      return {
+        eventos: [],
+        atualizadoEm: new Date().toISOString()
+      };
+    }
+
+    const eventos = await listarEventos(headers);
+    const eventosPorId = new Map<number, EventoResponse>(eventos.map((evento) => [evento.id, evento]));
+    const eventoIds = [...new Set(minhasInscricoes.map((inscricao) => inscricao.eventoId))];
+    const categoriasPorEvento = new Map<number, CategoriaResponse[]>(
+      await Promise.all(
+        eventoIds.map(async (eventoId) => [eventoId, await listarCategorias(eventoId, headers)] as const)
+      )
+    );
+
+    const agrupado = new Map<number, MyEnrollmentCategoryItem[]>();
+
+    for (const inscricao of minhasInscricoes) {
+      const evento = eventosPorId.get(inscricao.eventoId) ?? buildFallbackEvento(inscricao);
+      const categoriaBase =
+        categoriasPorEvento.get(inscricao.eventoId)?.find((categoria) => categoria.id === inscricao.categoriaId) ??
+        buildFallbackCategoria(inscricao);
+
+      const categoria = {
+        ...decorateCategoria(evento, categoriaBase),
+        usuarioJaInscrito: true,
+        inscricaoAtual: inscricao,
+        inscricao
+      } satisfies MyEnrollmentCategoryItem;
+
+      const categoriasExistentes = agrupado.get(evento.id) ?? [];
+      categoriasExistentes.push(categoria);
+      agrupado.set(evento.id, categoriasExistentes);
+      eventosPorId.set(evento.id, evento);
+    }
+
+    const itens = [...agrupado.entries()]
+      .map(([eventoId, categoriasInscritas]) =>
+        toMyEnrollmentEventItem(
+          eventosPorId.get(eventoId) ?? buildFallbackEvento(categoriasInscritas[0].inscricao),
+          [...categoriasInscritas].sort(
+            (left, right) =>
+              new Date(right.inscricao.dataHoraRegistro).getTime() - new Date(left.inscricao.dataHoraRegistro).getTime()
+          )
+        )
+      )
+      .sort((left, right) => {
+        const leftDate = new Date(left.dataHoraInicio || left.dataUltimaInscricao).getTime();
+        const rightDate = new Date(right.dataHoraInicio || right.dataUltimaInscricao).getTime();
+        return leftDate - rightDate;
+      });
+
+    return {
+      eventos: itens,
+      atualizadoEm: new Date().toISOString()
+    };
+  } catch (error) {
+    return {
+      eventos: [],
+      atualizadoEm: new Date().toISOString(),
+      erroInicial:
+        error instanceof ProxyAuthorizationError
+          ? error.message
+          : error instanceof Error
+            ? error.message
+            : "Não foi possível carregar suas inscrições no momento."
+    };
+  }
 }

@@ -212,3 +212,19 @@ export type EnrollmentData = {
   atualizadoEm: string;
   erroInicial?: string;
 };
+
+export type MyEnrollmentCategoryItem = CategoriaViewModel & {
+  inscricao: InscricaoResponse;
+};
+
+export type MyEnrollmentEventItem = EventoResponse & {
+  categoriasInscritas: MyEnrollmentCategoryItem[];
+  totalCategoriasInscritas: number;
+  dataUltimaInscricao: string;
+};
+
+export type MyEnrollmentsData = {
+  eventos: MyEnrollmentEventItem[];
+  atualizadoEm: string;
+  erroInicial?: string;
+};
