@@ -229,6 +229,15 @@ export function LoginPageClient({
               />
             </label>
 
+            <div className={styles.formActionRow}>
+              <Link
+                className={styles.helperLink}
+                href={buildPasswordRecoveryHref(accessMode, identifier, initialRedirectPath)}
+              >
+                Esqueceu a senha?
+              </Link>
+            </div>
+
             <p className={styles.helper}>
               {accessMode === "interno"
                 ? "O acesso interno depende da validação do seu perfil institucional. Em caso de dúvida, procure a equipe de TI."
@@ -284,4 +293,20 @@ function buildExternalRegistrationHref(redirectPath: string): string {
   return normalizedRedirect === "/dashboard"
     ? "/cadastro-externo"
     : `/cadastro-externo?redirect=${encodeURIComponent(normalizedRedirect)}`;
+}
+
+function buildPasswordRecoveryHref(accessMode: AccessMode, identifier: string, redirectPath: string): string {
+  const params = new URLSearchParams();
+  params.set("accessMode", accessMode);
+
+  if (identifier.trim()) {
+    params.set("identifier", identifier.trim());
+  }
+
+  const normalizedRedirect = resolvePostLoginRoute(redirectPath);
+  if (normalizedRedirect !== "/dashboard") {
+    params.set("redirect", normalizedRedirect);
+  }
+
+  return `/recuperar-senha?${params.toString()}`;
 }
