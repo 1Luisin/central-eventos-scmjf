@@ -1112,7 +1112,232 @@ textarea {
   font-size: 0.94rem;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1600px) {
+  .app-shell {
+    grid-template-columns: 276px minmax(0, 1fr);
+    gap: 22px;
+    width: min(calc(100% - 28px), 1380px);
+    padding: 20px 0 28px;
+  }
+
+  .topbar__inner {
+    width: min(calc(100% - 28px), 1380px);
+    padding: 16px 20px;
+  }
+
+  .brand-card,
+  .sidebar-note,
+  .nav-card {
+    padding: 20px;
+  }
+
+  .brand-card strong {
+    font-size: 1.75rem;
+  }
+
+  .page-hero,
+  .panel {
+    padding: 24px;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(2rem, 3vw, 3.2rem);
+  }
+
+  .section-heading h2 {
+    font-size: clamp(1.45rem, 1.8vw, 2.1rem);
+  }
+
+  .event-card,
+  .event-admin-card {
+    padding: 22px;
+  }
+
+  .event-card h3,
+  .event-admin-card h2 {
+    font-size: clamp(1.35rem, 1.8vw, 1.8rem);
+  }
+
+  .meta-grid {
+    gap: 12px;
+  }
+
+  .meta-pill {
+    padding: 12px 14px;
+  }
+
+  .category-card {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 1366px) {
+  :root {
+    --topbar-offset: 102px;
+  }
+
+  .app-shell {
+    grid-template-columns: 248px minmax(0, 1fr);
+    gap: 18px;
+    width: min(calc(100% - 24px), 1260px);
+    padding: 16px 0 22px;
+  }
+
+  .topbar__inner {
+    width: min(calc(100% - 24px), 1260px);
+    padding: 14px 18px;
+  }
+
+  .topbar__brand {
+    gap: 12px;
+  }
+
+  .topbar__logo-wrap {
+    min-width: 72px;
+    min-height: 52px;
+    padding: 8px 12px;
+  }
+
+  .topbar__logo {
+    max-width: 136px;
+    height: 30px;
+  }
+
+  .topbar__copy {
+    gap: 4px;
+  }
+
+  .topbar__copy strong {
+    font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+  }
+
+  .brand-card,
+  .sidebar-note,
+  .nav-card {
+    padding: 18px;
+  }
+
+  .brand-card strong {
+    font-size: 1.6rem;
+  }
+
+  .nav-link {
+    padding: 11px 12px;
+  }
+
+  .sidebar-note h2 {
+    font-size: 1.75rem;
+  }
+
+  .sidebar-note__list {
+    gap: 6px;
+  }
+
+  .page-hero,
+  .panel {
+    padding: 20px;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(1.85rem, 2.6vw, 2.8rem);
+  }
+
+  .page-hero p,
+  .section-copy,
+  .event-card__description,
+  .category-card p,
+  .selection-card p,
+  .sidebar-note p {
+    line-height: 1.55;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(1.35rem, 1.7vw, 1.9rem);
+  }
+
+  .toolbar {
+    gap: 10px;
+  }
+
+  .search-field__label,
+  .field > span,
+  .eyebrow {
+    font-size: 0.74rem;
+  }
+
+  .button {
+    min-height: 44px;
+    padding: 0 16px;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 12px 14px;
+  }
+
+  .date-time-picker__trigger {
+    min-height: 48px;
+    padding: 12px 44px 12px 14px;
+  }
+
+  .event-card,
+  .event-admin-card {
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .event-card__header,
+  .section-heading {
+    gap: 14px;
+  }
+
+  .event-card h3,
+  .event-admin-card h2 {
+    font-size: clamp(1.25rem, 1.6vw, 1.65rem);
+  }
+
+  .meta-grid {
+    margin-top: 16px;
+  }
+
+  .summary-strip {
+    margin-top: 16px;
+    padding-top: 16px;
+    gap: 10px;
+  }
+
+  .category-grid,
+  .admin-category-grid {
+    margin-top: 18px;
+  }
+
+  .category-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+
+  .admin-category-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+
+  .category-card {
+    gap: 14px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .category-card h4 {
+    font-size: 1.08rem;
+  }
+
+  .badge {
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 1060px) {
   .app-shell {
     grid-template-columns: 1fr;
   }
