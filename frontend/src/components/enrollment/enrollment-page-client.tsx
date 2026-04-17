@@ -23,6 +23,8 @@ type EnrollmentPageClientProps = {
 
 type PageFeedbackTone = "warning" | "info";
 
+type CategoryState = "confirmed" | "full" | "internal-only" | "inactive" | "unavailable" | "available";
+
 export function EnrollmentPageClient({ initialData, sessionContext }: EnrollmentPageClientProps) {
   const searchParams = useSearchParams();
   const queryCategoryId = searchParams.get("categoriaId");
@@ -31,10 +33,11 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   const [data, setData] = useState(initialData);
   const [search, setSearch] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState(queryCategoryId || "");
-  const [isModalOpen, setIsModalOpen] = useState(Boolean(queryCategoryId));
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [pageFeedback, setPageFeedback] = useState<string | null>(initialData.erroInicial ?? null);
   const [pageFeedbackTone, setPageFeedbackTone] = useState<PageFeedbackTone>(initialData.erroInicial ? "warning" : "info");
   const [modalFeedback, setModalFeedback] = useState<string | null>(null);
+  const [modalSuccess, setModalSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
@@ -65,10 +68,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
       .filter((evento) => evento.categorias.length > 0);
   }, [data.eventos, normalizedSearch, queryEventId]);
 
-  const visibleCategories = useMemo(
-    () => visibleEvents.flatMap((evento) => evento.categorias),
-    [visibleEvents]
-  );
+  const visibleCategories = useMemo(() => visibleEvents.flatMap((evento) => evento.categorias), [visibleEvents]);
 
   const selectedEvent = useMemo(
     () => (queryEventId ? data.eventos.find((evento) => String(evento.id) === queryEventId) ?? null : null),
@@ -82,9 +82,57 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   const canCurrentUserEnroll =
     !alreadyEnrolled &&
     (activeCategory?.permiteInscricao ?? false) &&
-    (!externalUser || categoriaPermiteExterno);
+    (!externalUser || categoriaPermiteExterno) &&
+    (activeCategory?.vagasDisponiveis ?? 0) > 0 &&
+    activeCategory?.ativo === "S";
 
   const visibleCategoryCount = visibleCategories.length;
+
+  function isCategoryFull(category: CategoriaViewModel) {
+    return category.vagasDisponiveis <= 0;
+  }
+
+  function getCategoryState(category: CategoriaViewModel): CategoryState {
+    if (category.inscricaoAtual) {
+      return "confirmed";
+    }
+
+    if (isCategoryFull(category)) {
+      return "full";
+    }
+
+    if (externalUser && category.externo !== "S") {
+      return "internal-only";
+    }
+
+    if (category.ativo !== "S") {
+      return "inactive";
+    }
+
+    if (!category.permiteInscricao) {
+      return "unavailable";
+    }
+
+    return "available";
+  }
+
+  function getCategoryFootnote(category: CategoriaViewModel) {
+    const state = getCategoryState(category);
+
+    if (state === "confirmed") {
+      return "Sua vaga nesta categoria já está confirmada. Não é necessário realizar uma nova inscrição.";
+    }
+
+    if (state === "full") {
+      return "As vagas desta categoria já foram preenchidas no momento.";
+    }
+
+    if (state === "internal-only") {
+      return "Esta categoria aceita apenas participantes internos. Escolha outra opção para continuar.";
+    }
+
+    return category.statusDescription;
+  }
 
   useEffect(() => {
     setPortalReady(true);
@@ -108,10 +156,21 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
       return;
     }
 
-    if (visibleCategories.some((categoria) => String(categoria.id) === queryCategoryId)) {
-      setActiveCategoryId(queryCategoryId);
-      setIsModalOpen(true);
+    const queryCategory = visibleCategories.find((categoria) => String(categoria.id) === queryCategoryId);
+    if (!queryCategory) {
+      return;
     }
+
+    if (getCategoryState(queryCategory) === "available") {
+      setActiveCategoryId(queryCategoryId);
+      setModalFeedback(null);
+      setModalSuccess(null);
+      setIsModalOpen(true);
+      return;
+    }
+
+    setPageFeedback(`A categoria ${queryCategory.nomeCategoria} não está disponível para inscrição no momento.`);
+    setPageFeedbackTone("warning");
   }, [queryCategoryId, visibleCategories]);
 
   useEffect(() => {
@@ -124,6 +183,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
       setActiveCategoryId("");
       setIsModalOpen(false);
       setModalFeedback(null);
+      setModalSuccess(null);
     }
   }, [activeCategoryId, visibleCategories]);
 
@@ -154,11 +214,17 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     }
 
     if (alreadyEnrolled) {
+      setModalSuccess(`Sua inscrição em ${activeCategory.nomeCategoria} já está confirmada.`);
       setModalFeedback(null);
       return;
     }
 
-    if (!activeCategory.permiteInscricao) {
+    if (isCategoryFull(activeCategory)) {
+      setModalFeedback("Vagas cheias para esta categoria.");
+      return;
+    }
+
+    if (!activeCategory.permiteInscricao || activeCategory.ativo !== "S") {
       setModalFeedback(activeCategory.statusDescription);
       return;
     }
@@ -200,6 +266,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     try {
       setSubmitting(true);
       setModalFeedback(null);
+      setModalSuccess(null);
 
       await requestJson<InscricaoResponse>("/api/inscricoes", {
         method: "POST",
@@ -209,20 +276,25 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
         body: JSON.stringify(payload)
       });
 
-      form.reset();
       await refreshData();
-      setIsModalOpen(false);
+      setModalSuccess(`Inscrição realizada com sucesso em ${activeCategory.nomeCategoria}.`);
       setPageFeedback(`Inscrição confirmada com sucesso em ${activeCategory.nomeCategoria}.`);
       setPageFeedbackTone("info");
+      setModalFeedback(null);
     } catch (error) {
       const errorMessage = getRequestErrorMessage(error);
 
       if (errorMessage.toLowerCase().includes("já inscrito")) {
         await refreshData();
-        setIsModalOpen(false);
+        setModalSuccess(`Sua inscrição em ${activeCategory.nomeCategoria} já estava confirmada.`);
         setPageFeedback(`Sua inscrição em ${activeCategory.nomeCategoria} já estava confirmada.`);
         setPageFeedbackTone("info");
         setModalFeedback(null);
+      } else if (errorMessage.toLowerCase().includes("vaga") || errorMessage.toLowerCase().includes("lotad")) {
+        await refreshData();
+        setModalFeedback("Vagas cheias para esta categoria.");
+        setPageFeedback(`As vagas da categoria ${activeCategory.nomeCategoria} já foram preenchidas.`);
+        setPageFeedbackTone("warning");
       } else {
         setModalFeedback(errorMessage);
       }
@@ -231,36 +303,80 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     }
   }
 
-  function openEnrollmentModal(categoryId: number) {
-    setActiveCategoryId(String(categoryId));
+  function openEnrollmentModal(category: CategoriaViewModel) {
+    const state = getCategoryState(category);
+
+    if (state === "full") {
+      setPageFeedback(`Vagas cheias para a categoria ${category.nomeCategoria}.`);
+      setPageFeedbackTone("warning");
+      return;
+    }
+
+    if (state === "internal-only") {
+      setPageFeedback(`A categoria ${category.nomeCategoria} aceita apenas participantes internos.`);
+      setPageFeedbackTone("warning");
+      return;
+    }
+
+    if (state === "inactive" || state === "unavailable") {
+      setPageFeedback(`A categoria ${category.nomeCategoria} não está disponível para inscrição no momento.`);
+      setPageFeedbackTone("warning");
+      return;
+    }
+
+    setActiveCategoryId(String(category.id));
     setModalFeedback(null);
+    setModalSuccess(null);
     setIsModalOpen(true);
   }
 
   function closeEnrollmentModal() {
     setIsModalOpen(false);
     setModalFeedback(null);
+    setModalSuccess(null);
   }
 
   function renderCategoryAction(category: CategoriaViewModel) {
-    const isAlreadyEnrolled = category.inscricaoAtual !== null;
-    const canEnrollInCategory =
-      !isAlreadyEnrolled && category.permiteInscricao && (!externalUser || category.externo === "S");
+    const state = getCategoryState(category);
 
-    if (isAlreadyEnrolled) {
+    if (state === "confirmed") {
       return <span className="button button--secondary button--static">Inscrição confirmada</span>;
     }
 
-    if (!canEnrollInCategory) {
+    if (state === "full") {
+      return <span className="button button--danger button--static">Vagas cheias</span>;
+    }
+
+    if (state === "internal-only") {
+      return <span className="button button--secondary button--static">Somente interno</span>;
+    }
+
+    if (state === "inactive" || state === "unavailable") {
       return <span className="button button--secondary button--static">Indisponível</span>;
     }
 
     return (
-      <button className="button button--primary" type="button" onClick={() => openEnrollmentModal(category.id)}>
+      <button className="button button--primary" type="button" onClick={() => openEnrollmentModal(category)}>
         Realizar inscrição
       </button>
     );
   }
+
+  const participantSummary = externalUser
+    ? {
+        title: externalUser.nomeCompleto,
+        subtitle: `CPF ${externalUser.cpf}`,
+        contactLabel: "Contato",
+        contactValue: externalUser.numeroTelefone ?? ""
+      }
+    : internalUser
+      ? {
+          title: internalUser.nomeUsuario,
+          subtitle: `Matrícula ${internalUser.matricula}`,
+          contactLabel: "Contato",
+          contactValue: ""
+        }
+      : null;
 
   return (
     <div className="stack-xl">
@@ -345,10 +461,9 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
 
               <div className="category-grid">
                 {evento.categorias.map((categoria) => {
-                  const isAlreadyEnrolled = categoria.inscricaoAtual !== null;
-                  const badgeClass = isAlreadyEnrolled
-                    ? "badge badge--success"
-                    : categoria.permiteInscricao
+                  const categoryState = getCategoryState(categoria);
+                  const badgeClass =
+                    categoryState === "confirmed" || categoryState === "available"
                       ? "badge badge--success"
                       : "badge badge--danger";
 
@@ -359,7 +474,13 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                           <h4>{categoria.nomeCategoria}</h4>
                           <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
                         </div>
-                        <span className={badgeClass}>{isAlreadyEnrolled ? "Inscrição confirmada" : categoria.statusLabel}</span>
+                        <span className={badgeClass}>
+                          {categoryState === "confirmed"
+                            ? "Inscrição confirmada"
+                            : categoryState === "full"
+                              ? "Vagas cheias"
+                              : categoria.statusLabel}
+                        </span>
                       </div>
 
                       <div className="badge-row">
@@ -369,7 +490,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                         <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
                           {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
                         </span>
-                        {isAlreadyEnrolled ? <span className="badge badge--success">Você já está inscrito</span> : null}
+                        {categoryState === "confirmed" ? <span className="badge badge--success">Você já está inscrito</span> : null}
                       </div>
 
                       <div className="occupancy">
@@ -389,13 +510,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                         </div>
                       </div>
 
-                      <p className="category-card__footnote">
-                        {isAlreadyEnrolled
-                          ? "Sua vaga nesta categoria já está confirmada. Não é necessário realizar uma nova inscrição."
-                          : externalUser && categoria.externo !== "S"
-                            ? "Esta categoria aceita apenas participantes internos. Escolha outra opção para continuar."
-                            : categoria.statusDescription}
-                      </p>
+                      <p className="category-card__footnote">{getCategoryFootnote(categoria)}</p>
 
                       <div className="card-actions">{renderCategoryAction(categoria)}</div>
                     </section>
@@ -419,7 +534,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
               >
                 <div className="modal-card__header">
                   <div>
-                    <span className="eyebrow">Formulário de inscrição</span>
+                    <span className="eyebrow">Inscrição</span>
                     <h3 id="enrollment-modal-title">{activeCategory.nomeCategoria}</h3>
                     <p>{activeCategory.eventoNome}</p>
                   </div>
@@ -430,150 +545,76 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                 </div>
 
                 <div className="modal-card__body">
-                  <div className="selection-card">
-                    <span className="badge badge--ghost">Seleção atual</span>
-                    <div className="badge-row">
-                      <span className={alreadyEnrolled || canCurrentUserEnroll ? "badge badge--success" : "badge badge--danger"}>
-                        {alreadyEnrolled
-                          ? "Inscrição confirmada"
-                          : externalUser && !categoriaPermiteExterno
-                            ? "Somente público interno"
-                            : activeCategory.statusLabel}
-                      </span>
-                      <span className="badge badge--ghost">
-                        {formatBooleanFlag(activeCategory.externo, "Inscrição externa permitida", "Somente público interno")}
-                      </span>
-                    </div>
-
-                    <p>{activeCategory.descricao || "Categoria sem descrição complementar."}</p>
-
-                    <div className="selection-card__meta">
-                      <span>
-                        Período: {formatDateTime(activeCategory.eventoInicio)} até {formatDateTime(activeCategory.eventoFim)}
-                      </span>
-                      <span>{formatCountLabel(activeCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}</span>
-                    </div>
-
-                    <p className="category-card__footnote">
-                      {alreadyEnrolled
-                        ? "Sua participação já está confirmada nesta categoria."
-                        : externalUser && !categoriaPermiteExterno
-                          ? "Esta categoria aceita apenas participantes internos."
-                          : activeCategory.statusDescription}
+                  <div className="modal-copy">
+                    <p>
+                      <strong>Período:</strong> {formatDateTime(activeCategory.eventoInicio)} até {formatDateTime(activeCategory.eventoFim)}
                     </p>
+                    <p>
+                      <strong>Situação:</strong> {formatCountLabel(activeCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}
+                    </p>
+                    <p>{activeCategory.descricao || "Confirme os dados abaixo para concluir a inscrição nesta categoria."}</p>
                   </div>
 
-                  {externalUser ? (
-                    <div className="selection-card modal-card__section">
-                      <span className="badge badge--ghost">Participante identificado</span>
-                      <h3>{externalUser.nomeCompleto}</h3>
-                      <div className="selection-card__meta">
-                        <span>E-mail: {externalUser.email}</span>
-                        <span>CPF: {externalUser.cpf}</span>
-                        <span>Usuário externo</span>
-                      </div>
-                    </div>
-                  ) : internalUser ? (
-                    <div className="selection-card modal-card__section">
-                      <span className="badge badge--ghost">Participante identificado</span>
-                      <h3>{internalUser.nomeUsuario}</h3>
-                      <div className="selection-card__meta">
-                        <span>Matrícula: {internalUser.matricula}</span>
-                        <span>E-mail: {internalUser.email || "Não informado"}</span>
-                        <span>Usuário interno</span>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {currentEnrollment ? (
-                    <div className="confirmation-card modal-card__section">
-                      <div className="confirmation-card__header">
-                        <div>
-                          <span className="eyebrow">Inscrição confirmada</span>
-                          <h3>Você já está inscrito nesta categoria</h3>
-                        </div>
-                        <span className="badge badge--success">Inscrito</span>
-                      </div>
-
-                      <p>
-                        Sua vaga está reservada na categoria <strong>{activeCategory.nomeCategoria}</strong>, do evento <strong>{activeCategory.eventoNome}</strong>.
-                      </p>
-
-                      <div className="confirmation-card__grid">
-                        <div className="confirmation-card__item">
-                          <span>Participante</span>
-                          <strong>{currentEnrollment.nomeUsuario}</strong>
-                        </div>
-                        <div className="confirmation-card__item">
-                          <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "CPF" : "Matrícula"}</span>
-                          <strong>{currentEnrollment.matricula}</strong>
-                        </div>
-                        <div className="confirmation-card__item">
-                          <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário" : "Setor"}</span>
-                          <strong>
-                            {currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário externo" : currentEnrollment.nomeSetor}
-                          </strong>
-                        </div>
-                        <div className="confirmation-card__item">
-                          <span>Contato</span>
-                          <strong>{currentEnrollment.numeroContato}</strong>
-                        </div>
-                      </div>
-
-                      <div className="confirmation-card__meta">
-                        <span>Registro realizado em {formatDateTime(currentEnrollment.dataHoraRegistro)}</span>
-                        <span>O sistema bloqueou novas tentativas porque sua inscrição já está confirmada.</span>
-                      </div>
+                  {participantSummary ? (
+                    <div className="modal-copy modal-copy--participant">
+                      <strong>{participantSummary.title}</strong>
+                      <span>{participantSummary.subtitle}</span>
                     </div>
                   ) : null}
 
                   {modalFeedback ? <div className="feedback feedback--warning">{modalFeedback}</div> : null}
 
-                  {alreadyEnrolled ? null : (
-                    <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
+                  {modalSuccess ? (
+                    <div className="modal-success">
+                      <span className="badge badge--success">Inscrição confirmada</span>
+                      <h4>Tudo certo</h4>
+                      <p>{modalSuccess}</p>
+                      <div className="modal-success__actions">
+                        <button className="button button--primary" type="button" onClick={closeEnrollmentModal}>
+                          Concluir
+                        </button>
+                      </div>
+                    </div>
+                  ) : currentEnrollment ? (
+                    <div className="modal-success">
+                      <span className="badge badge--success">Inscrição confirmada</span>
+                      <h4>Você já está inscrito</h4>
+                      <p>Sua vaga nesta categoria já está reservada. Não é necessário realizar uma nova inscrição.</p>
+                      <div className="modal-success__actions">
+                        <button className="button button--primary" type="button" onClick={closeEnrollmentModal}>
+                          Fechar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <form className="form-grid modal-form" onSubmit={handleEnrollmentSubmit}>
                       {externalUser ? (
-                        <>
-                          <label className="field field--full">
-                            <span>Nome do participante</span>
-                            <input type="text" value={externalUser.nomeCompleto} disabled />
-                          </label>
-
-                          <label className="field field--full">
-                            <span>CPF</span>
-                            <input type="text" value={externalUser.cpf} disabled />
-                          </label>
-
-                          <label className="field field--full">
-                            <span>Contato</span>
-                            <input
-                              name="numeroContato"
-                              type="text"
-                              placeholder="Telefone, celular ou e-mail alternativo"
-                              defaultValue={externalUser.numeroTelefone ?? ""}
-                              required
-                            />
-                          </label>
-                        </>
+                        <label className="field field--full">
+                          <span>Contato</span>
+                          <input
+                            name="numeroContato"
+                            type="text"
+                            placeholder="Telefone, celular ou e-mail alternativo"
+                            defaultValue={participantSummary?.contactValue ?? ""}
+                            required
+                          />
+                        </label>
                       ) : internalUser ? (
                         <>
-                          <label className="field field--full">
-                            <span>Nome do participante</span>
-                            <input type="text" value={internalUser.nomeUsuario} disabled />
-                          </label>
-
-                          <label className="field">
-                            <span>Matrícula</span>
-                            <input type="text" value={internalUser.matricula} disabled />
-                          </label>
-
                           <label className="field">
                             <span>Setor</span>
                             <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
                           </label>
 
-                          <label className="field field--full">
+                          <label className="field">
                             <span>Contato</span>
-                            <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
+                            <input
+                              name="numeroContato"
+                              type="text"
+                              placeholder="Telefone, ramal ou e-mail"
+                              defaultValue={participantSummary?.contactValue ?? ""}
+                              required
+                            />
                           </label>
                         </>
                       ) : (

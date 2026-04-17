@@ -1799,3 +1799,61 @@ textarea {
     width: 100%;
   }
 }
+
+.modal-copy {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 251, 249, 0.9), rgba(247, 235, 232, 0.72));
+  color: var(--text-soft);
+}
+
+.modal-copy p,
+.modal-copy span,
+.modal-copy strong {
+  margin: 0;
+}
+
+.modal-copy strong {
+  color: var(--text);
+}
+
+.modal-copy--participant {
+  gap: 6px;
+}
+
+.modal-form {
+  margin-top: 4px;
+}
+
+.modal-success {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid rgba(139, 90, 61, 0.18);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(252, 247, 242, 0.96), rgba(245, 235, 228, 0.82));
+}
+
+.modal-success h4,
+.modal-success p {
+  margin: 0;
+}
+
+.modal-success h4 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.modal-success p {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.modal-success__actions {
+  display: flex;
+  justify-content: flex-end;
+}
