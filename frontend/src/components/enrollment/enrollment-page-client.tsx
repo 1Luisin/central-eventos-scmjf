@@ -2,6 +2,7 @@
 
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { createPortal } from "react-dom";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
 import type { SessionUserContext } from "@/lib/auth/session";
@@ -36,6 +37,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   const [modalFeedback, setModalFeedback] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const deferredSearch = useDeferredValue(search);
 
   const externalUser = sessionContext.accessMode === "externo" ? sessionContext.externalUser ?? null : null;
@@ -83,6 +85,10 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     (!externalUser || categoriaPermiteExterno);
 
   const visibleCategoryCount = visibleCategories.length;
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -401,212 +407,215 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
         </section>
       )}
 
-      {isModalOpen && activeCategory ? (
-        <div className="modal-overlay" role="presentation" onClick={closeEnrollmentModal}>
-          <div
-            className="modal-card"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="enrollment-modal-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="modal-card__header">
-              <div>
-                <span className="eyebrow">Formulário de inscrição</span>
-                <h3 id="enrollment-modal-title">{activeCategory.nomeCategoria}</h3>
-                <p>{activeCategory.eventoNome}</p>
-              </div>
-
-              <button className="modal-card__close" type="button" onClick={closeEnrollmentModal} aria-label="Fechar inscrição">
-                Fechar
-              </button>
-            </div>
-
-            <div className="modal-card__body">
-              <div className="selection-card">
-                <span className="badge badge--ghost">Seleção atual</span>
-                <div className="badge-row">
-                  <span className={alreadyEnrolled || canCurrentUserEnroll ? "badge badge--success" : "badge badge--danger"}>
-                    {alreadyEnrolled
-                      ? "Inscrição confirmada"
-                      : externalUser && !categoriaPermiteExterno
-                        ? "Somente público interno"
-                        : activeCategory.statusLabel}
-                  </span>
-                  <span className="badge badge--ghost">
-                    {formatBooleanFlag(activeCategory.externo, "Inscrição externa permitida", "Somente público interno")}
-                  </span>
-                </div>
-
-                <p>{activeCategory.descricao || "Categoria sem descrição complementar."}</p>
-
-                <div className="selection-card__meta">
-                  <span>
-                    Período: {formatDateTime(activeCategory.eventoInicio)} até {formatDateTime(activeCategory.eventoFim)}
-                  </span>
-                  <span>{formatCountLabel(activeCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}</span>
-                </div>
-
-                <p className="category-card__footnote">
-                  {alreadyEnrolled
-                    ? "Sua participação já está confirmada nesta categoria."
-                    : externalUser && !categoriaPermiteExterno
-                      ? "Esta categoria aceita apenas participantes internos."
-                      : activeCategory.statusDescription}
-                </p>
-              </div>
-
-              {externalUser ? (
-                <div className="selection-card modal-card__section">
-                  <span className="badge badge--ghost">Participante identificado</span>
-                  <h3>{externalUser.nomeCompleto}</h3>
-                  <div className="selection-card__meta">
-                    <span>E-mail: {externalUser.email}</span>
-                    <span>CPF: {externalUser.cpf}</span>
-                    <span>Usuário externo</span>
-                  </div>
-                </div>
-              ) : internalUser ? (
-                <div className="selection-card modal-card__section">
-                  <span className="badge badge--ghost">Participante identificado</span>
-                  <h3>{internalUser.nomeUsuario}</h3>
-                  <div className="selection-card__meta">
-                    <span>Matrícula: {internalUser.matricula}</span>
-                    <span>E-mail: {internalUser.email || "Não informado"}</span>
-                    <span>Usuário interno</span>
-                  </div>
-                </div>
-              ) : null}
-
-              {currentEnrollment ? (
-                <div className="confirmation-card modal-card__section">
-                  <div className="confirmation-card__header">
-                    <div>
-                      <span className="eyebrow">Inscrição confirmada</span>
-                      <h3>Você já está inscrito nesta categoria</h3>
-                    </div>
-                    <span className="badge badge--success">Inscrito</span>
+      {portalReady && isModalOpen && activeCategory
+        ? createPortal(
+            <div className="modal-overlay" role="presentation" onClick={closeEnrollmentModal}>
+              <div
+                className="modal-card"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="enrollment-modal-title"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="modal-card__header">
+                  <div>
+                    <span className="eyebrow">Formulário de inscrição</span>
+                    <h3 id="enrollment-modal-title">{activeCategory.nomeCategoria}</h3>
+                    <p>{activeCategory.eventoNome}</p>
                   </div>
 
-                  <p>
-                    Sua vaga está reservada na categoria <strong>{activeCategory.nomeCategoria}</strong>, do evento <strong>{activeCategory.eventoNome}</strong>.
-                  </p>
-
-                  <div className="confirmation-card__grid">
-                    <div className="confirmation-card__item">
-                      <span>Participante</span>
-                      <strong>{currentEnrollment.nomeUsuario}</strong>
-                    </div>
-                    <div className="confirmation-card__item">
-                      <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "CPF" : "Matrícula"}</span>
-                      <strong>{currentEnrollment.matricula}</strong>
-                    </div>
-                    <div className="confirmation-card__item">
-                      <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário" : "Setor"}</span>
-                      <strong>
-                        {currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário externo" : currentEnrollment.nomeSetor}
-                      </strong>
-                    </div>
-                    <div className="confirmation-card__item">
-                      <span>Contato</span>
-                      <strong>{currentEnrollment.numeroContato}</strong>
-                    </div>
-                  </div>
-
-                  <div className="confirmation-card__meta">
-                    <span>Registro realizado em {formatDateTime(currentEnrollment.dataHoraRegistro)}</span>
-                    <span>O sistema bloqueou novas tentativas porque sua inscrição já está confirmada.</span>
-                  </div>
+                  <button className="modal-card__close" type="button" onClick={closeEnrollmentModal} aria-label="Fechar inscrição">
+                    Fechar
+                  </button>
                 </div>
-              ) : null}
 
-              {modalFeedback ? <div className="feedback feedback--warning">{modalFeedback}</div> : null}
+                <div className="modal-card__body">
+                  <div className="selection-card">
+                    <span className="badge badge--ghost">Seleção atual</span>
+                    <div className="badge-row">
+                      <span className={alreadyEnrolled || canCurrentUserEnroll ? "badge badge--success" : "badge badge--danger"}>
+                        {alreadyEnrolled
+                          ? "Inscrição confirmada"
+                          : externalUser && !categoriaPermiteExterno
+                            ? "Somente público interno"
+                            : activeCategory.statusLabel}
+                      </span>
+                      <span className="badge badge--ghost">
+                        {formatBooleanFlag(activeCategory.externo, "Inscrição externa permitida", "Somente público interno")}
+                      </span>
+                    </div>
 
-              {alreadyEnrolled ? null : (
-                <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
+                    <p>{activeCategory.descricao || "Categoria sem descrição complementar."}</p>
+
+                    <div className="selection-card__meta">
+                      <span>
+                        Período: {formatDateTime(activeCategory.eventoInicio)} até {formatDateTime(activeCategory.eventoFim)}
+                      </span>
+                      <span>{formatCountLabel(activeCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}</span>
+                    </div>
+
+                    <p className="category-card__footnote">
+                      {alreadyEnrolled
+                        ? "Sua participação já está confirmada nesta categoria."
+                        : externalUser && !categoriaPermiteExterno
+                          ? "Esta categoria aceita apenas participantes internos."
+                          : activeCategory.statusDescription}
+                    </p>
+                  </div>
+
                   {externalUser ? (
-                    <>
-                      <label className="field field--full">
-                        <span>Nome do participante</span>
-                        <input type="text" value={externalUser.nomeCompleto} disabled />
-                      </label>
-
-                      <label className="field field--full">
-                        <span>CPF</span>
-                        <input type="text" value={externalUser.cpf} disabled />
-                      </label>
-
-                      <label className="field field--full">
-                        <span>Contato</span>
-                        <input
-                          name="numeroContato"
-                          type="text"
-                          placeholder="Telefone, celular ou e-mail alternativo"
-                          defaultValue={externalUser.numeroTelefone ?? ""}
-                          required
-                        />
-                      </label>
-                    </>
+                    <div className="selection-card modal-card__section">
+                      <span className="badge badge--ghost">Participante identificado</span>
+                      <h3>{externalUser.nomeCompleto}</h3>
+                      <div className="selection-card__meta">
+                        <span>E-mail: {externalUser.email}</span>
+                        <span>CPF: {externalUser.cpf}</span>
+                        <span>Usuário externo</span>
+                      </div>
+                    </div>
                   ) : internalUser ? (
-                    <>
-                      <label className="field field--full">
-                        <span>Nome do participante</span>
-                        <input type="text" value={internalUser.nomeUsuario} disabled />
-                      </label>
+                    <div className="selection-card modal-card__section">
+                      <span className="badge badge--ghost">Participante identificado</span>
+                      <h3>{internalUser.nomeUsuario}</h3>
+                      <div className="selection-card__meta">
+                        <span>Matrícula: {internalUser.matricula}</span>
+                        <span>E-mail: {internalUser.email || "Não informado"}</span>
+                        <span>Usuário interno</span>
+                      </div>
+                    </div>
+                  ) : null}
 
-                      <label className="field">
-                        <span>Matrícula</span>
-                        <input type="text" value={internalUser.matricula} disabled />
-                      </label>
+                  {currentEnrollment ? (
+                    <div className="confirmation-card modal-card__section">
+                      <div className="confirmation-card__header">
+                        <div>
+                          <span className="eyebrow">Inscrição confirmada</span>
+                          <h3>Você já está inscrito nesta categoria</h3>
+                        </div>
+                        <span className="badge badge--success">Inscrito</span>
+                      </div>
 
-                      <label className="field">
-                        <span>Setor</span>
-                        <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-                      </label>
+                      <p>
+                        Sua vaga está reservada na categoria <strong>{activeCategory.nomeCategoria}</strong>, do evento <strong>{activeCategory.eventoNome}</strong>.
+                      </p>
 
-                      <label className="field field--full">
-                        <span>Contato</span>
-                        <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
-                      </label>
-                    </>
-                  ) : (
-                    <>
-                      <label className="field field--full">
-                        <span>Nome do participante</span>
-                        <input name="nomeUsuario" type="text" placeholder="Ex.: João Pereira" required />
-                      </label>
+                      <div className="confirmation-card__grid">
+                        <div className="confirmation-card__item">
+                          <span>Participante</span>
+                          <strong>{currentEnrollment.nomeUsuario}</strong>
+                        </div>
+                        <div className="confirmation-card__item">
+                          <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "CPF" : "Matrícula"}</span>
+                          <strong>{currentEnrollment.matricula}</strong>
+                        </div>
+                        <div className="confirmation-card__item">
+                          <span>{currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário" : "Setor"}</span>
+                          <strong>
+                            {currentEnrollment.tipoParticipante === "EXTERNO" ? "Usuário externo" : currentEnrollment.nomeSetor}
+                          </strong>
+                        </div>
+                        <div className="confirmation-card__item">
+                          <span>Contato</span>
+                          <strong>{currentEnrollment.numeroContato}</strong>
+                        </div>
+                      </div>
 
-                      <label className="field">
-                        <span>Matrícula</span>
-                        <input name="matricula" type="text" placeholder="Informe a matrícula" required />
-                      </label>
+                      <div className="confirmation-card__meta">
+                        <span>Registro realizado em {formatDateTime(currentEnrollment.dataHoraRegistro)}</span>
+                        <span>O sistema bloqueou novas tentativas porque sua inscrição já está confirmada.</span>
+                      </div>
+                    </div>
+                  ) : null}
 
-                      <label className="field">
-                        <span>Setor</span>
-                        <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-                      </label>
+                  {modalFeedback ? <div className="feedback feedback--warning">{modalFeedback}</div> : null}
 
-                      <label className="field field--full">
-                        <span>Contato</span>
-                        <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
-                      </label>
-                    </>
+                  {alreadyEnrolled ? null : (
+                    <form className="form-grid" onSubmit={handleEnrollmentSubmit}>
+                      {externalUser ? (
+                        <>
+                          <label className="field field--full">
+                            <span>Nome do participante</span>
+                            <input type="text" value={externalUser.nomeCompleto} disabled />
+                          </label>
+
+                          <label className="field field--full">
+                            <span>CPF</span>
+                            <input type="text" value={externalUser.cpf} disabled />
+                          </label>
+
+                          <label className="field field--full">
+                            <span>Contato</span>
+                            <input
+                              name="numeroContato"
+                              type="text"
+                              placeholder="Telefone, celular ou e-mail alternativo"
+                              defaultValue={externalUser.numeroTelefone ?? ""}
+                              required
+                            />
+                          </label>
+                        </>
+                      ) : internalUser ? (
+                        <>
+                          <label className="field field--full">
+                            <span>Nome do participante</span>
+                            <input type="text" value={internalUser.nomeUsuario} disabled />
+                          </label>
+
+                          <label className="field">
+                            <span>Matrícula</span>
+                            <input type="text" value={internalUser.matricula} disabled />
+                          </label>
+
+                          <label className="field">
+                            <span>Setor</span>
+                            <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
+                          </label>
+
+                          <label className="field field--full">
+                            <span>Contato</span>
+                            <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
+                          </label>
+                        </>
+                      ) : (
+                        <>
+                          <label className="field field--full">
+                            <span>Nome do participante</span>
+                            <input name="nomeUsuario" type="text" placeholder="Ex.: João Pereira" required />
+                          </label>
+
+                          <label className="field">
+                            <span>Matrícula</span>
+                            <input name="matricula" type="text" placeholder="Informe a matrícula" required />
+                          </label>
+
+                          <label className="field">
+                            <span>Setor</span>
+                            <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
+                          </label>
+
+                          <label className="field field--full">
+                            <span>Contato</span>
+                            <input name="numeroContato" type="text" placeholder="Telefone, ramal ou e-mail" required />
+                          </label>
+                        </>
+                      )}
+
+                      <div className="form-actions field field--full">
+                        <button className="button button--secondary" type="button" onClick={closeEnrollmentModal}>
+                          Cancelar
+                        </button>
+                        <button className="button button--primary" type="submit" disabled={submitting || !canCurrentUserEnroll}>
+                          {submitting ? "Confirmando..." : "Confirmar inscrição"}
+                        </button>
+                      </div>
+                    </form>
                   )}
-
-                  <div className="form-actions field field--full">
-                    <button className="button button--secondary" type="button" onClick={closeEnrollmentModal}>
-                      Cancelar
-                    </button>
-                    <button className="button button--primary" type="submit" disabled={submitting || !canCurrentUserEnroll}>
-                      {submitting ? "Confirmando..." : "Confirmar inscrição"}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      ) : null}
+                </div>
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }
