@@ -5,13 +5,7 @@ import { useDeferredValue, useState } from "react";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
 import type { SessionUserContext } from "@/lib/auth/session";
-import {
-  formatBooleanFlag,
-  formatCountLabel,
-  formatDateTime,
-  formatFractionLabel,
-  toTitleCaseFlag
-} from "@/lib/formatters";
+import { formatCountLabel, formatDateTime, toTitleCaseFlag } from "@/lib/formatters";
 import type { DashboardData } from "@/types/api";
 
 type DashboardPageClientProps = {
@@ -37,12 +31,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
       evento.nomeEvento,
       evento.nomeResponsavel,
       evento.nomeSetor,
-      evento.descricao ?? "",
-      ...evento.categorias.flatMap((categoria) => [
-        categoria.nomeCategoria,
-        categoria.descricao ?? "",
-        categoria.statusLabel
-      ])
+      evento.descricao ?? ""
     ]
       .join(" ")
       .toLowerCase();
@@ -69,7 +58,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
         <div className="section-heading section-heading--compact">
           <div>
             <span className="eyebrow">Eventos cadastrados</span>
-            <h2>Eventos e categorias</h2>
+            <h2>Eventos</h2>
           </div>
 
           <div className="toolbar">
@@ -77,7 +66,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
               <span className="search-field__label">Buscar eventos</span>
               <input
                 type="search"
-                placeholder="Procure por evento, setor ou categoria"
+                placeholder="Procure por evento, setor ou responsável"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
@@ -90,7 +79,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
         </div>
 
         <p className="section-copy">
-          Cada card apresenta as principais informações do evento, as categorias disponíveis e os atalhos para inscrição ou gestão.
+          Cada card apresenta as principais informações do evento e o atalho para visualizar suas categorias na tela de inscrições.
         </p>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
@@ -158,83 +147,22 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
               {evento.categorias.length === 0 ? (
                 <div className="inline-empty">Nenhuma categoria foi cadastrada para este evento até o momento.</div>
               ) : (
-                <div className="category-grid">
-                  {evento.categorias.map((categoria) => {
-                    const badgeClass = categoria.usuarioJaInscrito
-                      ? "badge badge--success"
-                      : categoria.permiteInscricao
-                        ? "badge badge--success"
-                        : "badge badge--danger";
+                <>
+                  <p className="event-card__description event-card__description--secondary">
+                    As categorias deste evento estão disponíveis na tela de inscrições. Clique em <strong>Veja mais</strong> para consultar as opções e realizar a inscrição.
+                  </p>
 
-                    return (
-                      <section className="category-card" key={categoria.id}>
-                        <div className="category-card__top">
-                          <div>
-                            <h4>{categoria.nomeCategoria}</h4>
-                            <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
-                          </div>
-
-                          <span className={badgeClass}>
-                            {categoria.usuarioJaInscrito ? "Inscrição confirmada" : categoria.statusLabel}
-                          </span>
-                        </div>
-
-                        <div className="badge-row">
-                          <span className="badge badge--ghost">
-                            {formatBooleanFlag(categoria.externo, "Permite público externo", "Exclusiva para público interno")}
-                          </span>
-                          <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
-                            {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
-                          </span>
-                          {categoria.usuarioJaInscrito ? (
-                            <span className="badge badge--success">Você já está inscrito</span>
-                          ) : null}
-                        </div>
-
-                        <div className="occupancy">
-                          <div className="occupancy__track">
-                            <div className="occupancy__value" style={{ width: `${categoria.ocupacaoPercentual}%` }} />
-                          </div>
-                          <div className="occupancy__legend">
-                            <span>
-                              {formatFractionLabel(
-                                categoria.inscricoesRealizadas,
-                                categoria.limiteInscricoes,
-                                "inscrição",
-                                "inscrições"
-                              )}
-                            </span>
-                            <strong>{formatCountLabel(categoria.vagasDisponiveis, "vaga restante", "vagas restantes")}</strong>
-                          </div>
-                        </div>
-
-                        <p className="category-card__footnote">
-                          {categoria.usuarioJaInscrito
-                            ? "Sua vaga nesta categoria já está confirmada. Não é necessário realizar uma nova inscrição."
-                            : categoria.statusDescription}
-                        </p>
-
-                        <div className="card-actions">
-                          {categoria.usuarioJaInscrito ? (
-                            <span className="button button--secondary button--static">Inscrição confirmada</span>
-                          ) : (
-                            <Link
-                              className="button button--primary"
-                              href={`/inscricoes?categoriaId=${categoria.id}&eventoId=${evento.id}`}
-                            >
-                              {categoria.permiteInscricao ? "Realizar inscrição" : "Ver detalhes"}
-                            </Link>
-                          )}
-                          {canManageEvents ? (
-                            <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
-                              Abrir gestão
-                            </Link>
-                          ) : null}
-                        </div>
-                      </section>
-                    );
-                  })}
-                </div>
+                  <div className="card-actions">
+                    <Link className="button button--primary" href={`/inscricoes?eventoId=${evento.id}`}>
+                      Veja mais
+                    </Link>
+                    {canManageEvents ? (
+                      <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
+                        Abrir gestão
+                      </Link>
+                    ) : null}
+                  </div>
+                </>
               )}
             </article>
           ))}

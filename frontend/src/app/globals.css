@@ -1683,3 +1683,119 @@ textarea {
     animation: none !important;
   }
 }
+
+.event-card__description--secondary {
+  margin-top: 14px;
+}
+
+.panel--enrollment-board {
+  overflow: hidden;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(69, 37, 44, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.modal-card {
+  width: min(100%, 760px);
+  max-height: min(88vh, 940px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 250, 0.98), rgba(248, 239, 236, 0.96)),
+    rgba(255, 255, 255, 0.96);
+  box-shadow: 0 32px 70px rgba(55, 24, 31, 0.24);
+}
+
+.modal-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-card__header h3 {
+  margin: 0;
+  font-family: var(--font-event-title);
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 500;
+  line-height: 1.04;
+}
+
+.modal-card__header p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.modal-card__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(145, 70, 81, 0.18);
+  border-radius: 14px;
+  color: var(--primary-strong);
+  background: rgba(255, 255, 255, 0.88);
+  font-weight: 800;
+}
+
+.modal-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 24px 24px;
+  overflow-y: auto;
+}
+
+.modal-card__section {
+  margin-bottom: 0;
+}
+
+.modal-card .selection-card,
+.modal-card .confirmation-card {
+  margin-bottom: 0;
+}
+
+.modal-card .form-grid {
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .modal-overlay {
+    padding: 14px;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: min(92vh, 100%);
+    border-radius: 24px 24px 0 0;
+  }
+
+  .modal-card__header,
+  .modal-card__body {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .modal-card__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-card__close {
+    width: 100%;
+  }
+}
