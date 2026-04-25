@@ -193,7 +193,7 @@ export function LoginPageClient({
                 <span>{accessMode === "interno" ? "Matrícula" : "E-mail"}</span>
                 <input
                   autoComplete={accessMode === "interno" ? "username" : "email"}
-                  placeholder={accessMode === "interno" ? "Digite sua matrícula" : "nome@instituicao.com.br"}
+                  placeholder={accessMode === "interno" ? "Digite sua matrícula" : "seuemail@mail.com"}
                   type={accessMode === "interno" ? "text" : "email"}
                   value={identifier}
                   onChange={(event) => setIdentifier(event.target.value)}

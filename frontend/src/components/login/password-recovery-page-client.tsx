@@ -128,7 +128,7 @@ export function PasswordRecoveryPageClient({
               <span>E-mail cadastrado</span>
               <input
                 autoComplete="email"
-                placeholder="nome@instituicao.com.br"
+                placeholder="seuemail@mail.com"
                 type="email"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
