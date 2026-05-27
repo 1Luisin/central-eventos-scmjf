@@ -23,7 +23,7 @@ export class ProxyAuthorizationError extends Error {
 }
 
 function getBackendBaseUrl(): string {
-  return process.env.BACKEND_API_BASE_URL?.trim() || "http://127.0.0.1:8080";
+  return process.env.BACKEND_API_BASE_URL?.trim() || "http://127.0.0.1:8006";
 }
 
 function buildBackendUrl(path: string): string {

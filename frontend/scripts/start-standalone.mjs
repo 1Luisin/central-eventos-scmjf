@@ -41,7 +41,7 @@ const child = spawn(process.execPath, [standaloneServer], {
   env: {
     ...process.env,
     HOSTNAME: process.env.HOSTNAME || "0.0.0.0",
-    PORT: process.env.PORT || "3000"
+    PORT: process.env.PORT || "4006"
   },
   stdio: "inherit"
 });

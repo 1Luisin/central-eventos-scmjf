@@ -51,7 +51,7 @@ Regras principais:
 
 ### `frontend/`
 
-Frontend oficial em Next.js com App Router, rodando em Node na porta `3000`.
+Frontend oficial em Next.js com App Router, rodando em Node na porta `4006`.
 
 Caracteristicas:
 
@@ -74,7 +74,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-Por padrao, a API sobe em `0.0.0.0:8080`.
+Por padrao, a API sobe em `0.0.0.0:8006`.
 
 ### Frontend
 
@@ -85,14 +85,22 @@ npm run build
 npm run start
 ```
 
-O frontend sobe em `0.0.0.0:3000`.
+O frontend sobe em `0.0.0.0:4006`.
 
-## Publicacao no servidor 172.18.2.246
+## Publicacao em servidor Linux
 
 Estrutura esperada no servidor:
 
-- API Java em `http://172.18.2.246:8080`
-- Frontend Next.js em `http://172.18.2.246:3000`
+- API Java em `http://SEU_IP_OU_DOMINIO:8006`
+- Frontend Next.js em `http://SEU_IP_OU_DOMINIO:4006`
+
+### Tecnologias necessarias no servidor
+
+- Java 17 ou superior
+- Maven 3.8+ para gerar o `.jar` da API
+- Node.js 20.9+ e npm para build/start do frontend
+- acesso de rede ao banco Oracle configurado em `backend/datasource-local.properties`
+- PM2 ou systemd para manter os processos ativos em producao
 
 ### Backend
 
@@ -104,12 +112,19 @@ Dentro de `backend/`, crie:
 
 Depois rode:
 
-```powershell
+```bash
 cd backend
-.\start-server.ps1
+cp datasource-local.example.properties datasource-local.properties
+cp auth-local.example.properties auth-local.properties
+cp mail-local.example.properties mail-local.properties
+nano datasource-local.properties
+nano auth-local.properties
+nano mail-local.properties
+chmod +x start-server.sh
+FRONTEND_BASE_URL=http://SEU_IP_OU_DOMINIO:4006 ./start-server.sh
 ```
 
-O script gera o `.jar` se necessario e sobe a API.
+O script gera o `.jar` se necessario e sobe a API em `0.0.0.0:8006`.
 
 ### Frontend
 
@@ -117,24 +132,38 @@ Dentro de `frontend/`, crie `.env.local` com base em `.env.example`.
 
 Depois rode:
 
-```powershell
+```bash
 cd frontend
-npm install
-.\start-server.ps1
+npm ci
+cp .env.example .env.local
+nano .env.local
+chmod +x start-server.sh
+./start-server.sh
+```
+
+O `.env.local` deve apontar para a API:
+
+```env
+HOSTNAME=0.0.0.0
+PORT=4006
+BACKEND_API_BASE_URL=http://127.0.0.1:8006
+FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
+FRONTEND_SESSION_SECURE=false
 ```
 
 ### PM2 para o frontend
 
 O arquivo `frontend/ecosystem.config.cjs` ja esta alinhado para:
 
-- `HOSTNAME=172.18.2.246`
-- `PORT=3000`
-- `BACKEND_API_BASE_URL=http://172.18.2.246:8080`
+- `HOSTNAME=0.0.0.0`
+- `PORT=4006`
+- `BACKEND_API_BASE_URL=http://127.0.0.1:8006`
 
 Exemplo:
 
-```powershell
+```bash
 cd frontend
+export FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
 pm2 start ecosystem.config.cjs
 pm2 save
 ```
@@ -163,6 +192,8 @@ Esses arquivos sao carregados automaticamente por `spring.config.import`.
 
 Copie `frontend/.env.example` para `frontend/.env.local` e preencha:
 
+- `HOSTNAME`
+- `PORT`
 - `BACKEND_API_BASE_URL`
 - `FRONTEND_SESSION_SECRET`
 

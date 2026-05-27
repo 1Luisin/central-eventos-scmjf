@@ -4,7 +4,7 @@ Aplicacao oficial da Central de Eventos da Santa Casa, construida em Next.js par
 
 ## Objetivo
 
-Rodar em producao no servidor `172.18.2.246`, escutando na porta `3000`, enquanto o backend atende na porta `8080`.
+Rodar em producao em servidor Linux, escutando na porta `4006`, enquanto o backend atende na porta `8006`.
 
 ## Arquitetura
 
@@ -23,12 +23,12 @@ O navegador nao chama a API Java diretamente.
 
 Fluxo:
 
-1. o usuario acessa o frontend em `http://172.18.2.246:3000`
+1. o usuario acessa o frontend em `http://SEU_IP_OU_DOMINIO:4006`
 2. o Next.js expoe rotas internas em `src/app/api/`
 3. as rotas internas fazem o proxy para o backend Spring Boot
 4. a interface recebe os dados ja normalizados
 
-Essa abordagem evita dependencia de configuracao de CORS entre as portas `3000` e `8080`.
+Essa abordagem evita dependencia de configuracao de CORS entre as portas `4006` e `8006`.
 
 ## Pre-requisitos
 
@@ -47,13 +47,17 @@ cp .env.example .env.local
 Conteudo esperado:
 
 ```env
-BACKEND_API_BASE_URL=http://172.18.2.246:8080
+HOSTNAME=0.0.0.0
+PORT=4006
+BACKEND_API_BASE_URL=http://127.0.0.1:8006
 FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
 FRONTEND_SESSION_SECURE=false
 ```
 
 Importante:
 
+- `HOSTNAME=0.0.0.0` faz o Next.js escutar em todas as interfaces do servidor
+- `PORT=4006` define a porta publica do frontend
 - `BACKEND_API_BASE_URL` define para onde o proxy do frontend envia as requisicoes
 - `FRONTEND_SESSION_SECRET` assina a sessao HTTP-only do usuario
 - `FRONTEND_SESSION_SECURE=false` deve ser usado quando o acesso ao frontend for via `http://` interno sem HTTPS
@@ -74,7 +78,7 @@ npm install
 npm run dev
 ```
 
-Aplicacao disponivel em `http://localhost:3000`.
+Aplicacao disponivel em `http://localhost:4006`.
 
 ## Build para servidor
 
@@ -84,26 +88,29 @@ npm run build
 npm run start
 ```
 
-O script `start` sobe a aplicacao em `0.0.0.0:3000`.
+O script `start` sobe a aplicacao em `0.0.0.0:4006`.
 
-## Subida no servidor 172.18.2.246
+## Subida no servidor Linux
 
-Para o servidor institucional, use `.env.local` com:
+Use `.env.local` com:
 
 ```env
-BACKEND_API_BASE_URL=http://172.18.2.246:8080
+HOSTNAME=0.0.0.0
+PORT=4006
+BACKEND_API_BASE_URL=http://127.0.0.1:8006
 FRONTEND_SESSION_SECRET=defina-uma-chave-longa-e-exclusiva-para-o-frontend
 FRONTEND_SESSION_SECURE=false
 ```
 
 Depois rode:
 
-```powershell
-npm install
-.\start-server.ps1
+```bash
+npm ci
+chmod +x start-server.sh
+./start-server.sh
 ```
 
-O script faz o build e sobe o frontend em `http://172.18.2.246:3000`.
+O script faz o build e sobe o frontend em `0.0.0.0:4006`.
 
 ## PM2
 
@@ -118,9 +125,9 @@ pm2 save
 
 O `ecosystem.config.cjs` ja esta preparado para:
 
-- `HOSTNAME=172.18.2.246`
-- `PORT=3000`
-- `BACKEND_API_BASE_URL=http://172.18.2.246:8080`
+- `HOSTNAME=0.0.0.0`
+- `PORT=4006`
+- `BACKEND_API_BASE_URL=http://127.0.0.1:8006`
 
 ## Telas implementadas
 

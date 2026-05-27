@@ -8,11 +8,11 @@ if (!(Test-Path -LiteralPath $envFile)) {
 }
 
 if (-not $env:HOSTNAME) {
-  $env:HOSTNAME = "172.18.2.246"
+  $env:HOSTNAME = "0.0.0.0"
 }
 
 if (-not $env:PORT) {
-  $env:PORT = "3000"
+  $env:PORT = "4006"
 }
 
 Write-Host "Gerando build do frontend..."

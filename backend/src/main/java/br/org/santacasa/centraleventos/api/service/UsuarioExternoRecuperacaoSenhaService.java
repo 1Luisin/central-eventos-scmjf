@@ -49,7 +49,7 @@ public class UsuarioExternoRecuperacaoSenhaService {
             PasswordPolicyService passwordPolicyService,
             @Value("${app.security.password-recovery.expiration-minutes:15}") long expiracaoMinutos,
             @Value("${app.security.password-recovery.max-attempts:5}") int maxTentativas,
-            @Value("${app.frontend.base-url:http://127.0.0.1:3000}") String frontendBaseUrl
+            @Value("${app.frontend.base-url:http://127.0.0.1:4006}") String frontendBaseUrl
     ) {
         this.usuarioExternoRepository = usuarioExternoRepository;
         this.recupSenhaUsrExtRepository = recupSenhaUsrExtRepository;
@@ -59,7 +59,7 @@ public class UsuarioExternoRecuperacaoSenhaService {
         this.passwordPolicyService = passwordPolicyService;
         this.expiracaoMinutos = expiracaoMinutos;
         this.maxTentativas = maxTentativas;
-        this.frontendBaseUrl = frontendBaseUrl == null ? "http://127.0.0.1:3000" : frontendBaseUrl.trim();
+        this.frontendBaseUrl = frontendBaseUrl == null ? "http://127.0.0.1:4006" : frontendBaseUrl.trim();
     }
 
     @Transactional

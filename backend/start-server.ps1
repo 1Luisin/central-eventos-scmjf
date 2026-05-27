@@ -24,11 +24,11 @@ if (-not $env:SERVER_ADDRESS) {
 }
 
 if (-not $env:SERVER_PORT) {
-  $env:SERVER_PORT = "8080"
+  $env:SERVER_PORT = "8006"
 }
 
 if (-not $env:FRONTEND_BASE_URL) {
-  $env:FRONTEND_BASE_URL = "http://172.18.2.246:3000"
+  $env:FRONTEND_BASE_URL = "http://127.0.0.1:4006"
 }
 
 Write-Host "Iniciando API em $($env:SERVER_ADDRESS):$($env:SERVER_PORT)..."
