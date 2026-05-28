@@ -1697,6 +1697,33 @@ textarea {
   overflow: hidden;
 }
 
+.panel--enrollment-board .section-heading {
+  align-items: flex-start;
+}
+
+.panel--enrollment-board .toolbar {
+  align-items: flex-end;
+  flex-wrap: nowrap;
+}
+
+.panel--enrollment-board .search-field {
+  min-width: min(100%, 220px);
+}
+
+.section-meta--enrollment-board {
+  margin-top: 4px;
+}
+
+@media (max-width: 900px) {
+  .panel--enrollment-board .toolbar {
+    flex-wrap: wrap;
+  }
+
+  .panel--enrollment-board .search-field {
+    min-width: 100%;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;

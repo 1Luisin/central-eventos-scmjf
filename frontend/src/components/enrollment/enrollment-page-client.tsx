@@ -452,6 +452,10 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
           <div>
             <span className="eyebrow">Categorias disponíveis</span>
             <h2>{selectedEvent ? "Categorias do evento selecionado" : "Categorias abertas para inscrição"}</h2>
+            <div className="section-meta section-meta--enrollment-board">
+              <span>{formatCountLabel(visibleCategoryCount, "categoria disponível", "categorias disponíveis")}</span>
+              <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
+            </div>
           </div>
 
           <div className="toolbar">
@@ -472,11 +476,6 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
         </div>
 
         {pageFeedback ? <div className={`feedback feedback--${pageFeedbackTone}`}>{pageFeedback}</div> : null}
-
-        <div className="section-meta">
-          <span>{formatCountLabel(visibleCategoryCount, "categoria disponível", "categorias disponíveis")}</span>
-          <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
-        </div>
       </article>
 
       {visibleEvents.length === 0 ? (
