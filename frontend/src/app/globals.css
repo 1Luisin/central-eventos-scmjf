@@ -992,7 +992,8 @@ textarea {
 
 .summary-strip + .inline-empty,
 .summary-strip + .category-grid,
-.summary-strip + .admin-category-grid {
+.summary-strip + .admin-category-grid,
+.summary-strip + .card-actions {
   margin-top: 18px;
 }
 
@@ -1602,6 +1603,10 @@ textarea {
 
   .card-actions {
     gap: 8px;
+  }
+
+  .summary-strip + .card-actions {
+    margin-top: 14px;
   }
 }
 
