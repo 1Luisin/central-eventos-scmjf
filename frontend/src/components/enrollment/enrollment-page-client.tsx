@@ -41,6 +41,9 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [portalReady, setPortalReady] = useState(false);
+  const [setores, setSetores] = useState<string[]>([]);
+  const [setoresFeedback, setSetoresFeedback] = useState<string | null>(null);
+  const [loadingSetores, setLoadingSetores] = useState(false);
   const deferredSearch = useDeferredValue(search);
 
   const externalUser = sessionContext.accessMode === "externo" ? sessionContext.externalUser ?? null : null;
@@ -85,6 +88,8 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     (!externalUser || categoriaPermiteExterno) &&
     (activeCategory?.vagasDisponiveis ?? 0) > 0 &&
     activeCategory?.ativo === "S";
+  const requiresSetorSelection = !externalUser;
+  const setorSelectionUnavailable = requiresSetorSelection && (loadingSetores || setores.length === 0);
 
   const visibleCategoryCount = visibleCategories.length;
 
@@ -150,6 +155,44 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
       document.body.style.overflow = originalOverflow;
     };
   }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isModalOpen || externalUser || currentEnrollment || modalSuccess || setores.length > 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadSetores() {
+      try {
+        setLoadingSetores(true);
+        setSetoresFeedback(null);
+
+        const payload = await requestJson<string[]>("/api/setores");
+
+        if (cancelled) {
+          return;
+        }
+
+        setSetores(payload);
+        setSetoresFeedback(payload.length === 0 ? "Nenhum setor foi encontrado para seleção." : null);
+      } catch (error) {
+        if (!cancelled) {
+          setSetoresFeedback(getRequestErrorMessage(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingSetores(false);
+        }
+      }
+    }
+
+    void loadSetores();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isModalOpen, externalUser, currentEnrollment, modalSuccess, setores.length]);
 
   useEffect(() => {
     if (!queryCategoryId) {
@@ -362,6 +405,30 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     );
   }
 
+  function renderSetorField() {
+    const placeholder = loadingSetores
+      ? "Carregando setores..."
+      : setores.length === 0
+        ? "Nenhum setor disponível"
+        : "Selecione o setor";
+
+    return (
+      <label className="field">
+        <span>Setor</span>
+        <select name="nomeSetor" required defaultValue="" disabled={loadingSetores || setores.length === 0}>
+          <option value="" disabled>
+            {placeholder}
+          </option>
+          {setores.map((setor) => (
+            <option key={setor} value={setor}>
+              {setor}
+            </option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
   const participantSummary = externalUser
     ? {
         title: externalUser.nomeCompleto,
@@ -403,12 +470,6 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
             </button>
           </div>
         </div>
-
-        <p className="section-copy">
-          {selectedEvent
-            ? `Visualizando apenas as categorias do evento ${selectedEvent.nomeEvento}. Clique em uma categoria para abrir o pop-up de inscrição.`
-            : "Escolha um evento e clique em uma categoria para abrir o pop-up de inscrição do participante."}
-        </p>
 
         {pageFeedback ? <div className={`feedback feedback--${pageFeedbackTone}`}>{pageFeedback}</div> : null}
 
@@ -563,6 +624,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                   ) : null}
 
                   {modalFeedback ? <div className="feedback feedback--warning">{modalFeedback}</div> : null}
+                  {!externalUser && setoresFeedback ? <div className="feedback feedback--warning">{setoresFeedback}</div> : null}
 
                   {modalSuccess ? (
                     <div className="modal-success">
@@ -601,10 +663,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                         </label>
                       ) : internalUser ? (
                         <>
-                          <label className="field">
-                            <span>Setor</span>
-                            <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-                          </label>
+                          {renderSetorField()}
 
                           <label className="field">
                             <span>Contato</span>
@@ -629,10 +688,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                             <input name="matricula" type="text" placeholder="Informe a matrícula" required />
                           </label>
 
-                          <label className="field">
-                            <span>Setor</span>
-                            <input name="nomeSetor" type="text" placeholder="Informe o setor" required />
-                          </label>
+                          {renderSetorField()}
 
                           <label className="field field--full">
                             <span>Contato</span>
@@ -645,7 +701,11 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                         <button className="button button--secondary" type="button" onClick={closeEnrollmentModal}>
                           Cancelar
                         </button>
-                        <button className="button button--primary" type="submit" disabled={submitting || !canCurrentUserEnroll}>
+                        <button
+                          className="button button--primary"
+                          type="submit"
+                          disabled={submitting || !canCurrentUserEnroll || setorSelectionUnavailable}
+                        >
                           {submitting ? "Confirmando..." : "Confirmar inscrição"}
                         </button>
                       </div>
