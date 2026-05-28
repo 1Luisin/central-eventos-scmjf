@@ -1707,6 +1707,7 @@ textarea {
   padding: 24px;
   background: rgba(69, 37, 44, 0.42);
   backdrop-filter: blur(8px);
+  animation: modal-overlay-in 0.18s ease-out both;
 }
 
 .modal-card {
@@ -1719,6 +1720,30 @@ textarea {
     linear-gradient(180deg, rgba(255, 252, 250, 0.98), rgba(248, 239, 236, 0.96)),
     rgba(255, 255, 255, 0.96);
   box-shadow: 0 32px 70px rgba(55, 24, 31, 0.24);
+  transform-origin: center;
+  animation: modal-card-in 0.24s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+@keyframes modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-card__header {
