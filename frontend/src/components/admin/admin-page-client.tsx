@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import ScmjfSelect from "@scmjf/select-component";
 
 import { DateTimePickerField } from "@/components/forms/date-time-picker-field";
 import { getRequestErrorMessage, requestJson, requestVoid } from "@/lib/api/client";
@@ -409,29 +410,32 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
               />
             </label>
 
-            <label className="field">
+            <div className="field">
               <span>SETOR RESPONSÁVEL</span>
-              <select
+              <ScmjfSelect
+                aria-label="Setor responsável"
                 name="nomeSetor"
                 required
                 value={eventForm.nomeSetor}
                 onChange={(event) => updateEventFormField(setEventForm, "nomeSetor", event.target.value)}
                 disabled={setorSelectDisabled}
-              >
-                <option value="" disabled>
-                  {loadingSetores
+                placeholder={
+                  loadingSetores
                     ? "Carregando setores..."
                     : setorOptions.length === 0
                       ? "Nenhum setor disponível"
-                      : "Selecione o setor"}
-                </option>
+                      : "Selecione o setor"
+                }
+                searchPlaceholder="Buscar setor..."
+                emptyMessage="Nenhum setor encontrado"
+              >
                 {setorOptions.map((setor) => (
                   <option key={setor} value={setor}>
                     {setor}
                   </option>
                 ))}
-              </select>
-            </label>
+              </ScmjfSelect>
+            </div>
 
             <label className="field">
               <span>CONTATO</span>
@@ -445,17 +449,19 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
               />
             </label>
 
-            <label className="field">
+            <div className="field">
               <span>SITUAÇÃO DO EVENTO</span>
-              <select
+              <ScmjfSelect
+                aria-label="Situação do evento"
                 name="ativo"
                 value={eventForm.ativo}
                 onChange={(event) => updateEventFormField(setEventForm, "ativo", event.target.value as "S" | "N")}
+                searchable={false}
               >
                 <option value="S">Ativo</option>
                 <option value="N">Inativo</option>
-              </select>
-            </label>
+              </ScmjfSelect>
+            </div>
 
             <label className="field field--full">
               <span>DESCRIÇÃO</span>
@@ -507,13 +513,17 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
           </div>
 
           <form className="form-grid" onSubmit={handleCategorySubmit}>
-            <label className="field field--full">
+            <div className="field field--full">
               <span>EVENTO</span>
-              <select
+              <ScmjfSelect
+                aria-label="Evento"
                 name="eventoId"
                 value={selectedEventId}
                 onChange={(event) => setSelectedEventId(event.target.value)}
-                  disabled={data.eventos.length === 0 || editingCategoryId !== null}
+                disabled={data.eventos.length === 0 || editingCategoryId !== null}
+                placeholder={data.eventos.length === 0 ? "Cadastre um evento primeiro" : "Selecione o evento"}
+                searchPlaceholder="Buscar evento..."
+                emptyMessage="Nenhum evento encontrado"
               >
                 {data.eventos.length === 0 ? (
                   <option value="">Cadastre um evento primeiro</option>
@@ -524,8 +534,8 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
                     </option>
                   ))
                 )}
-              </select>
-            </label>
+              </ScmjfSelect>
+            </div>
 
             <label className="field field--full">
               <span>NOME DA CATEGORIA</span>
@@ -553,29 +563,33 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
               />
             </label>
 
-            <label className="field">
+            <div className="field">
               <span>INSCRIÇÃO EXTERNA</span>
-              <select
+              <ScmjfSelect
+                aria-label="Inscrição externa"
                 name="externo"
                 value={categoryForm.externo}
                 onChange={(event) => updateCategoryFormField(setCategoryForm, "externo", event.target.value as "S" | "N")}
+                searchable={false}
               >
                 <option value="N">Não permite</option>
                 <option value="S">Permite</option>
-              </select>
-            </label>
+              </ScmjfSelect>
+            </div>
 
-            <label className="field">
+            <div className="field">
               <span>SITUAÇÃO DA CATEGORIA</span>
-              <select
+              <ScmjfSelect
+                aria-label="Situação da categoria"
                 name="ativo"
                 value={categoryForm.ativo}
                 onChange={(event) => updateCategoryFormField(setCategoryForm, "ativo", event.target.value as "S" | "N")}
+                searchable={false}
               >
                 <option value="S">Ativa</option>
                 <option value="N">Inativa</option>
-              </select>
-            </label>
+              </ScmjfSelect>
+            </div>
 
             <label className="field field--full">
               <span>DESCRIÇÃO DA CATEGORIA</span>

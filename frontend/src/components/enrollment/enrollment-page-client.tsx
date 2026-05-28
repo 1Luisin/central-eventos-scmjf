@@ -3,6 +3,7 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
+import ScmjfSelect from "@scmjf/select-component";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
 import type { SessionUserContext } from "@/lib/auth/session";
@@ -44,6 +45,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
   const [setores, setSetores] = useState<string[]>([]);
   const [setoresFeedback, setSetoresFeedback] = useState<string | null>(null);
   const [loadingSetores, setLoadingSetores] = useState(false);
+  const [selectedSetor, setSelectedSetor] = useState("");
   const deferredSearch = useDeferredValue(search);
 
   const externalUser = sessionContext.accessMode === "externo" ? sessionContext.externalUser ?? null : null;
@@ -368,6 +370,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     }
 
     setActiveCategoryId(String(category.id));
+    setSelectedSetor("");
     setModalFeedback(null);
     setModalSuccess(null);
     setIsModalOpen(true);
@@ -375,6 +378,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
 
   function closeEnrollmentModal() {
     setIsModalOpen(false);
+    setSelectedSetor("");
     setModalFeedback(null);
     setModalSuccess(null);
   }
@@ -413,19 +417,26 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
         : "Selecione o setor";
 
     return (
-      <label className="field">
+      <div className="field">
         <span>Setor</span>
-        <select name="nomeSetor" required defaultValue="" disabled={loadingSetores || setores.length === 0}>
-          <option value="" disabled>
-            {placeholder}
-          </option>
+        <ScmjfSelect
+          aria-label="Setor"
+          name="nomeSetor"
+          required
+          value={selectedSetor}
+          onChange={(event) => setSelectedSetor(event.target.value)}
+          disabled={loadingSetores || setores.length === 0}
+          placeholder={placeholder}
+          searchPlaceholder="Buscar setor..."
+          emptyMessage="Nenhum setor encontrado"
+        >
           {setores.map((setor) => (
             <option key={setor} value={setor}>
               {setor}
             </option>
           ))}
-        </select>
-      </label>
+        </ScmjfSelect>
+      </div>
     );
   }
 

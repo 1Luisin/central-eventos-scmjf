@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { RouteTransition } from "@/components/shell/route-transition";
 import "react-datepicker/dist/react-datepicker.css";
+import "@scmjf/select-component/styles.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
