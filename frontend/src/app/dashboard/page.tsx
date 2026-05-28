@@ -21,7 +21,7 @@ export default async function DashboardPage() {
       activeRoute="dashboard"
       eyebrow="Eventos"
       title="Agenda de eventos"
-      description="Consulte os eventos da Santa Casa, acompanhe as categorias disponíveis e encontre rapidamente a inscrição desejada."
+      description=""
       sessionContext={sessionContext}
       sidebarEyebrow="Consulta rápida"
       sidebarTitle="Orientações"
