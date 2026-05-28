@@ -66,6 +66,9 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(createDefaultCategoryForm());
   const [eventStartDate, setEventStartDate] = useState<Date | null>(null);
   const [eventEndDate, setEventEndDate] = useState<Date | null>(null);
+  const [setores, setSetores] = useState<string[]>([]);
+  const [setoresFeedback, setSetoresFeedback] = useState<string | null>(null);
+  const [loadingSetores, setLoadingSetores] = useState(false);
 
   useEffect(() => {
     if (requestedEventId && data.eventos.some((evento) => String(evento.id) === requestedEventId)) {
@@ -77,6 +80,40 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
       setSelectedEventId(String(data.eventos[0].id));
     }
   }, [data.eventos, requestedEventId, selectedEventId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSetores() {
+      try {
+        setLoadingSetores(true);
+        setSetoresFeedback(null);
+
+        const payload = await requestJson<string[]>("/api/setores");
+
+        if (cancelled) {
+          return;
+        }
+
+        setSetores(payload);
+        setSetoresFeedback(payload.length === 0 ? "Nenhum setor foi encontrado para seleção." : null);
+      } catch (error) {
+        if (!cancelled) {
+          setSetoresFeedback(getRequestErrorMessage(error));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingSetores(false);
+        }
+      }
+    }
+
+    void loadSetores();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (editingEventId === null) {
@@ -112,6 +149,9 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
   }, [data, editingCategoryId]);
 
   const selectedEvent = data.eventos.find((evento) => String(evento.id) === selectedEventId) ?? null;
+  const setorOptions =
+    eventForm.nomeSetor && !setores.includes(eventForm.nomeSetor) ? [eventForm.nomeSetor, ...setores] : setores;
+  const setorSelectDisabled = loadingSetores || setorOptions.length === 0;
 
   async function refreshData(preferredEventId?: number) {
     try {
@@ -147,6 +187,11 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
 
     if (new Date(dataHoraFim).getTime() <= new Date(dataHoraInicio).getTime()) {
       setEventMessage("A data e o horário de término devem ser maiores que o início.");
+      return;
+    }
+
+    if (setorSelectDisabled || !eventForm.nomeSetor.trim()) {
+      setEventMessage(setoresFeedback || "Selecione o setor responsável.");
       return;
     }
 
@@ -365,14 +410,26 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
 
             <label className="field">
               <span>SETOR RESPONSÁVEL</span>
-              <input
+              <select
                 name="nomeSetor"
-                type="text"
-                placeholder="Ex.: Educação Continuada"
                 required
                 value={eventForm.nomeSetor}
                 onChange={(event) => updateEventFormField(setEventForm, "nomeSetor", event.target.value)}
-              />
+                disabled={setorSelectDisabled}
+              >
+                <option value="" disabled>
+                  {loadingSetores
+                    ? "Carregando setores..."
+                    : setorOptions.length === 0
+                      ? "Nenhum setor disponível"
+                      : "Selecione o setor"}
+                </option>
+                {setorOptions.map((setor) => (
+                  <option key={setor} value={setor}>
+                    {setor}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="field">
@@ -410,10 +467,11 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
               />
             </label>
 
+            {setoresFeedback ? <div className="feedback feedback--warning field field--full">{setoresFeedback}</div> : null}
             {eventMessage ? <div className="feedback feedback--info field field--full">{eventMessage}</div> : null}
 
             <div className="form-actions field field--full">
-              <button className="button button--primary" type="submit" disabled={eventSubmitting}>
+              <button className="button button--primary" type="submit" disabled={eventSubmitting || setorSelectDisabled}>
                 {eventSubmitting
                   ? editingEventId === null
                     ? "Salvando..."
