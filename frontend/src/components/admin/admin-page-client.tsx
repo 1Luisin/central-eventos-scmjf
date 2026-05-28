@@ -339,7 +339,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
         <div className="section-heading">
           <div>
             <span className="eyebrow">Resumo</span>
-            <h2>Meus eventos</h2>
+            <h2>Cadastrar eventos</h2>
           </div>
 
           <button className="button button--secondary" type="button" onClick={() => refreshData()} disabled={refreshing}>
