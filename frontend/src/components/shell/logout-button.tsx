@@ -25,7 +25,7 @@ export function LogoutButton() {
 
   return (
     <button className="button button--secondary topbar__logout" type="button" onClick={handleClick}>
-      Logoff
+      sair
     </button>
   );
 }
