@@ -136,7 +136,6 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
               {evento.descricao ? <p className="event-card__description">{evento.descricao}</p> : null}
 
               <div className="summary-strip">
-                <span>{formatCountLabel(evento.totalInscricoes, "inscrição registrada", "inscrições registradas")}</span>
                 <span>{formatCountLabel(evento.totalVagas, "vaga disponível nas categorias", "vagas disponíveis nas categorias")}</span>
               </div>
 
