@@ -89,10 +89,6 @@ export function MyEnrollmentsPageClient({ initialData }: MyEnrollmentsPageClient
           </div>
         </div>
 
-        <p className="section-copy">
-          Consulte aqui todas as suas inscrições confirmadas, com os dados do evento, categoria e registro realizado.
-        </p>
-
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">

@@ -10,7 +10,7 @@ type AppShellProps = {
   activeRoute: "dashboard" | "cadastros" | "inscricoes" | "minhas-inscricoes";
   eyebrow: string;
   title: string;
-  description: string;
+  description?: string;
   sidebarEyebrow: string;
   sidebarTitle: string;
   sidebarDescription: ReactNode;
@@ -80,7 +80,7 @@ export function AppShell({
             <div>
               <span className="eyebrow">{eyebrow}</span>
               <h1>{title}</h1>
-              <p>{description}</p>
+              {description ? <p>{description}</p> : null}
             </div>
           </header>
 

@@ -302,11 +302,6 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
           </button>
         </div>
 
-        <p className="section-copy">
-          Nesta área aparecem somente os eventos criados por você. Selecione um dos seus eventos para atualizar
-          informações, cadastrar categorias e acompanhar as inscrições.
-        </p>
-
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">
@@ -573,10 +568,6 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
             </div>
           </div>
 
-          <p className="section-copy">
-            Aqui você acompanha os eventos criados por você, consulta as categorias já cadastradas e gerencia os
-            participantes inscritos em cada uma delas.
-          </p>
         </article>
 
         {data.eventos.length === 0 ? (

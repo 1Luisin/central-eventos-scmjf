@@ -27,7 +27,6 @@ export default async function CadastrosPage() {
       activeRoute="cadastros"
       eyebrow="Cadastros"
       title="Eventos e categorias"
-      description="Cadastre novos eventos, atualize as informações dos eventos criados por você e inclua as categorias necessárias."
       sessionContext={sessionContext}
       sidebarEyebrow="Gestão"
       sidebarTitle="Eventos do responsável"

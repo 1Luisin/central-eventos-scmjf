@@ -90,7 +90,7 @@ export function getCategoryStatus(eventoAtivo: string, categoriaAtiva: string, v
     return {
       status: "lotada",
       statusLabel: "Categoria lotada",
-      statusDescription: "Não há vagas disponíveis para novas inscrições.",
+      statusDescription: "",
       permiteInscricao: false
     };
   }

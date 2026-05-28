@@ -21,7 +21,6 @@ export default async function MinhasInscricoesPage() {
       activeRoute="minhas-inscricoes"
       eyebrow="Minhas inscrições"
       title="Acompanhamento das suas inscrições"
-      description="Veja em quais eventos e categorias sua participação já foi confirmada e acompanhe os dados registrados."
       sessionContext={sessionContext}
       sidebarEyebrow="Acompanhamento"
       sidebarTitle="Como consultar"

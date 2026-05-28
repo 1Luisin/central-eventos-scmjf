@@ -78,10 +78,6 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
           </div>
         </div>
 
-        <p className="section-copy">
-          Cada card apresenta as principais informações do evento e o atalho para visualizar suas categorias na tela de inscrições.
-        </p>
-
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
         <div className="section-meta">
@@ -147,22 +143,16 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
               {evento.categorias.length === 0 ? (
                 <div className="inline-empty">Nenhuma categoria foi cadastrada para este evento até o momento.</div>
               ) : (
-                <>
-                  <p className="event-card__description event-card__description--secondary">
-                    As categorias deste evento estão disponíveis na tela de inscrições. Clique em <strong>Veja mais</strong> para consultar as opções e realizar a inscrição.
-                  </p>
-
-                  <div className="card-actions">
-                    <Link className="button button--primary" href={`/inscricoes?eventoId=${evento.id}`}>
-                      Veja mais
+                <div className="card-actions">
+                  <Link className="button button--primary" href={`/inscricoes?eventoId=${evento.id}`}>
+                    Veja mais
+                  </Link>
+                  {canManageEvents ? (
+                    <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
+                      Abrir gestão
                     </Link>
-                    {canManageEvents ? (
-                      <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
-                        Abrir gestão
-                      </Link>
-                    ) : null}
-                  </div>
-                </>
+                  ) : null}
+                </div>
               )}
             </article>
           ))}
