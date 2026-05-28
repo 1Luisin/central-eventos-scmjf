@@ -532,7 +532,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                       <div className="category-card__top">
                         <div>
                           <h4>{categoria.nomeCategoria}</h4>
-                          <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
+                          {categoria.descricao ? <p>{categoria.descricao}</p> : null}
                         </div>
                         <span className={badgeClass}>
                           {categoryState === "confirmed"

@@ -23,15 +23,15 @@ export default async function DashboardPage() {
       title="Agenda de eventos"
       description=""
       sessionContext={sessionContext}
-      sidebarEyebrow="Consulta rápida"
-      sidebarTitle="Orientações"
+      sidebarEyebrow="Caminho rápido"
+      sidebarTitle="Eventos e inscrições"
       sidebarDescription={
         <>
-          <p>Use esta tela para localizar eventos, conferir vagas e orientar o participante para a categoria correta.</p>
+          <p>Localize o evento, confira as vagas e abra as categorias para iniciar uma inscrição.</p>
           <ul className="sidebar-note__list">
             <li>Use a busca para localizar por evento, setor ou categoria.</li>
-            <li>Confira datas, responsável e quantidade de vagas diretamente em cada card.</li>
-            <li>Abra a inscrição ou, quando disponível, a área de gestão pelo atalho do evento.</li>
+            <li>O botão principal abre as categorias do evento.</li>
+            <li>Administradores podem ir direto para a gestão.</li>
           </ul>
         </>
       }

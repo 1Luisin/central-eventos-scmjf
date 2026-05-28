@@ -29,8 +29,8 @@ export default async function CadastrosPage() {
       title="Eventos e categorias"
       sessionContext={sessionContext}
       sidebarEyebrow="Gestão"
-      sidebarTitle="Eventos do responsável"
-      sidebarDescription="Nesta área você acompanha apenas os eventos que criou, podendo atualizar dados, cadastrar categorias e acompanhar os participantes inscritos."
+      sidebarTitle="Cadastro em etapas"
+      sidebarDescription="Cadastre o evento, selecione-o e depois crie as categorias."
     >
       <AdminAccessGate isAllowed={sessionContext.isInternalAdmin}>
         <AdminPageClient initialData={data} sessionContext={sessionContext} />

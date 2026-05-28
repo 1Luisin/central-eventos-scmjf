@@ -58,7 +58,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
         <div className="section-heading section-heading--compact">
           <div>
             <span className="eyebrow">Eventos cadastrados</span>
-            <h2>Eventos</h2>
+            <h2>Encontrar evento</h2>
           </div>
 
           <div className="toolbar">
@@ -133,7 +133,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
                 </div>
               </div>
 
-              <p className="event-card__description">{evento.descricao || "Evento sem descrição complementar."}</p>
+              {evento.descricao ? <p className="event-card__description">{evento.descricao}</p> : null}
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalInscricoes, "inscrição registrada", "inscrições registradas")}</span>
@@ -145,11 +145,11 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
               ) : (
                 <div className="card-actions">
                   <Link className="button button--primary" href={`/inscricoes?eventoId=${evento.id}`}>
-                    Veja mais
+                    Ver categorias
                   </Link>
                   {canManageEvents ? (
                     <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
-                      Abrir gestão
+                      Gerenciar evento
                     </Link>
                   ) : null}
                 </div>

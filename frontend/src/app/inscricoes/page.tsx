@@ -21,11 +21,11 @@ export default async function InscricoesPage() {
       activeRoute="inscricoes"
       eyebrow="Inscrições"
       title="Inscrição em categorias"
-      description="Selecione um evento, consulte as categorias disponíveis e conclua a inscrição do participante em um pop-up rápido e objetivo."
+      description=""
       sessionContext={sessionContext}
-      sidebarEyebrow="Como se inscrever"
-      sidebarTitle="Passo a passo"
-      sidebarDescription="Use o atalho Veja mais na lista principal, escolha a categoria desejada e confirme a inscrição pelo pop-up da própria página."
+      sidebarEyebrow="Fluxo"
+      sidebarTitle="Inscrição"
+      sidebarDescription="Escolha uma categoria disponível e confirme os dados no pop-up."
     >
       <EnrollmentPageClient initialData={data} sessionContext={sessionContext} />
     </AppShell>

@@ -68,8 +68,8 @@ export function MyEnrollmentsPageClient({ initialData }: MyEnrollmentsPageClient
       <section className="panel">
         <div className="section-heading section-heading--compact">
           <div>
-            <span className="eyebrow">Acompanhamento pessoal</span>
-            <h2>Eventos em que você está inscrito</h2>
+            <span className="eyebrow">Acompanhamento</span>
+            <h2>Inscrições confirmadas</h2>
           </div>
 
           <div className="toolbar">
@@ -144,7 +144,7 @@ export function MyEnrollmentsPageClient({ initialData }: MyEnrollmentsPageClient
                 </div>
               </div>
 
-              <p className="event-card__description">{evento.descricao || "Evento sem descrição complementar."}</p>
+              {evento.descricao ? <p className="event-card__description">{evento.descricao}</p> : null}
 
               <div className="summary-strip">
                 <span>{formatCountLabel(evento.totalCategoriasInscritas, "inscrição confirmada", "inscrições confirmadas")}</span>
@@ -157,7 +157,7 @@ export function MyEnrollmentsPageClient({ initialData }: MyEnrollmentsPageClient
                     <div className="category-card__top">
                       <div>
                         <h4>{categoria.nomeCategoria}</h4>
-                        <p>{categoria.descricao || "Categoria sem descrição complementar."}</p>
+                        {categoria.descricao ? <p>{categoria.descricao}</p> : null}
                       </div>
 
                       <span className="badge badge--success">Inscrição confirmada</span>

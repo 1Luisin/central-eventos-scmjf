@@ -55,11 +55,6 @@ export function AppShell({
 
       <div className="app-shell">
         <aside className="sidebar">
-          <div className="brand-card">
-            <span className="eyebrow">Hospital Santa Casa de Misericórdia</span>
-            <strong>Central de Eventos</strong>
-          </div>
-
           <AppNavigation activeRoute={activeRoute} sessionContext={sessionContext} />
 
           <div className="sidebar-note">

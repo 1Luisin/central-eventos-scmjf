@@ -357,7 +357,8 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
 
       <section className="two-column">
         <article className="panel">
-          <div className="section-heading">
+          <div className="section-heading section-heading--with-step">
+            <span className="step-badge">1</span>
             <div>
               <span className="eyebrow">{editingEventId === null ? "Novo evento" : "Editar evento"}</span>
               <h2>{editingEventId === null ? "Dados do evento" : "Atualização do evento"}</h2>
@@ -497,7 +498,8 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
         </article>
 
         <article className="panel">
-          <div className="section-heading">
+          <div className="section-heading section-heading--with-step">
+            <span className="step-badge">2</span>
             <div>
               <span className="eyebrow">{editingCategoryId === null ? "Nova categoria" : "Editar categoria"}</span>
               <h2>{editingCategoryId === null ? "Categoria do evento" : "Atualização da categoria"}</h2>
@@ -618,15 +620,12 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
       </section>
 
       <section className="stack-lg">
-        <article className="panel">
-          <div className="section-heading">
-            <div>
-              <span className="eyebrow">Eventos cadastrados</span>
-              <h2>Meus eventos cadastrados</h2>
-            </div>
+        <div className="list-heading">
+          <div>
+            <span className="eyebrow">Eventos cadastrados</span>
+            <h2>Meus eventos cadastrados</h2>
           </div>
-
-        </article>
+        </div>
 
         {data.eventos.length === 0 ? (
           <section className="panel empty-panel">
@@ -674,20 +673,18 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
                 </div>
               </div>
 
-              <p className="event-card__description">
-                {evento.descricao || "Este evento ainda não possui uma descrição complementar."}
-              </p>
+              {evento.descricao ? <p className="event-card__description">{evento.descricao}</p> : null}
 
               <div className="card-actions">
                 <button className="button button--secondary" type="button" onClick={() => startEditingEvent(evento)}>
                   {editingEventId === evento.id ? "Editando este evento" : "Editar evento"}
                 </button>
                 <button
-                  className="button button--secondary"
+                  className={selectedEventId === String(evento.id) ? "button button--primary" : "button button--secondary"}
                   type="button"
                   onClick={() => setSelectedEventId(String(evento.id))}
                 >
-                  {selectedEventId === String(evento.id) ? "Selecionado para nova categoria" : "Usar neste cadastro"}
+                  {selectedEventId === String(evento.id) ? "Selecionado para categoria" : "Criar categoria neste evento"}
                 </button>
               </div>
 
@@ -705,7 +702,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
                       <div className="category-card__top">
                         <div>
                           <h4>{categoria.nomeCategoria}</h4>
-                          <p>{categoria.descricao || "Esta categoria ainda não possui uma descrição complementar."}</p>
+                          {categoria.descricao ? <p>{categoria.descricao}</p> : null}
                         </div>
                         <span className={categoria.permiteInscricao ? "badge badge--success" : "badge badge--danger"}>
                           {categoria.statusLabel}

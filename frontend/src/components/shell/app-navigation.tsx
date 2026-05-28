@@ -8,9 +8,9 @@ type AppNavigationProps = {
 };
 
 const navigation = [
-  { href: "/dashboard", key: "dashboard", label: "Todos os Eventos", adminOnly: false },
-  { href: "/cadastros", key: "cadastros", label: "Cadastros", adminOnly: true },
-  { href: "/inscricoes", key: "inscricoes", label: "Nova inscrição", adminOnly: false },
+  { href: "/dashboard", key: "dashboard", label: "Eventos", adminOnly: false },
+  { href: "/cadastros", key: "cadastros", label: "Cadastrar eventos", adminOnly: true },
+  { href: "/inscricoes", key: "inscricoes", label: "Inscrever participante", adminOnly: false },
   { href: "/minhas-inscricoes", key: "minhas-inscricoes", label: "Minhas inscrições", adminOnly: false }
 ] as const;
 
