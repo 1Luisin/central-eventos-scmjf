@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ScmjfSelect from "@scmjf/select-component";
 
@@ -28,6 +29,7 @@ import type {
 type AdminPageClientProps = {
   initialData: AdminData;
   sessionContext: SessionUserContext;
+  mode?: "cadastro" | "gestao";
 };
 
 type EventFormState = {
@@ -47,9 +49,13 @@ type CategoryFormState = {
   descricao: string;
 };
 
-export function AdminPageClient({ initialData, sessionContext }: AdminPageClientProps) {
+export function AdminPageClient({ initialData, sessionContext, mode = "cadastro" }: AdminPageClientProps) {
   const searchParams = useSearchParams();
   const requestedEventId = searchParams.get("eventoId");
+  const initialEditingEventId =
+    mode === "gestao" && requestedEventId && initialData.eventos.some((evento) => String(evento.id) === requestedEventId)
+      ? Number(requestedEventId)
+      : null;
   const loggedAdminName = sessionContext.internalUser?.nomeUsuario ?? sessionContext.displayName ?? "";
 
   const [data, setData] = useState(initialData);
@@ -61,7 +67,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [cancelingEnrollmentId, setCancelingEnrollmentId] = useState<number | null>(null);
-  const [editingEventId, setEditingEventId] = useState<number | null>(null);
+  const [editingEventId, setEditingEventId] = useState<number | null>(initialEditingEventId);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [eventForm, setEventForm] = useState<EventFormState>(createDefaultEventForm(loggedAdminName));
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(createDefaultCategoryForm());
@@ -157,6 +163,11 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
   const setorOptions =
     eventForm.nomeSetor && !setores.includes(eventForm.nomeSetor) ? [eventForm.nomeSetor, ...setores] : setores;
   const setorSelectDisabled = loadingSetores || setorOptions.length === 0;
+  const isManageMode = mode === "gestao";
+  const showEventForm = !isManageMode || editingEventId !== null;
+  const showCategoryForm = !isManageMode || editingCategoryId !== null;
+  const showForms = showEventForm || showCategoryForm;
+  const formsClassName = showEventForm && showCategoryForm ? "two-column" : "two-column two-column--single";
 
   async function refreshData(preferredEventId?: number) {
     try {
@@ -321,6 +332,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
 
   function startEditingEvent(evento: EventoResponse) {
     setEditingEventId(evento.id);
+    setEditingCategoryId(null);
     setSelectedEventId(String(evento.id));
     setEventForm(mapEventToForm(evento));
     setEventStartDate(new Date(evento.dataHoraInicio));
@@ -332,6 +344,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
 
   function startEditingCategory(categoria: CategoriaAdminItem) {
     setEditingCategoryId(categoria.id);
+    setEditingEventId(null);
     setSelectedEventId(String(categoria.eventoId));
     setCategoryForm(mapCategoryToForm(categoria));
     setCategoryEnrollmentEndDate(categoria.dataHoraFimInscricao ? new Date(categoria.dataHoraFimInscricao) : null);
@@ -346,7 +359,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
         <div className="section-heading">
           <div>
             <span className="eyebrow">Resumo</span>
-            <h2>Cadastrar eventos</h2>
+            <h2>{isManageMode ? "Gerenciar eventos" : "Cadastrar eventos"}</h2>
           </div>
 
           <button className="button button--secondary" type="button" onClick={() => refreshData()} disabled={refreshing}>
@@ -362,7 +375,9 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
         </div>
       </section>
 
-      <section className="two-column">
+      {showForms ? (
+      <section className={formsClassName}>
+        {showEventForm ? (
         <article className="panel">
           <div className="section-heading section-heading--with-step">
             <span className="step-badge">1</span>
@@ -508,7 +523,9 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
             </div>
           </form>
         </article>
+        ) : null}
 
+        {showCategoryForm ? (
         <article className="panel">
           <div className="section-heading section-heading--with-step">
             <span className="step-badge">2</span>
@@ -651,8 +668,11 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
             </div>
           </form>
         </article>
+        ) : null}
       </section>
+      ) : null}
 
+      {isManageMode ? (
       <section className="stack-lg">
         <div className="list-heading">
           <div>
@@ -713,13 +733,9 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
                 <button className="button button--secondary" type="button" onClick={() => startEditingEvent(evento)}>
                   {editingEventId === evento.id ? "Editando este evento" : "Editar evento"}
                 </button>
-                <button
-                  className={selectedEventId === String(evento.id) ? "button button--primary" : "button button--secondary"}
-                  type="button"
-                  onClick={() => setSelectedEventId(String(evento.id))}
-                >
-                  {selectedEventId === String(evento.id) ? "Selecionado para categoria" : "Criar categoria neste evento"}
-                </button>
+                <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
+                  Cadastrar categoria
+                </Link>
               </div>
 
               <div className="summary-strip">
@@ -834,6 +850,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
           ))
         )}
       </section>
+      ) : null}
     </div>
   );
 }

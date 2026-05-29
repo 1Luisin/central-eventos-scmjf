@@ -147,7 +147,7 @@ export function DashboardPageClient({ initialData, sessionContext }: DashboardPa
                     Ver categorias
                   </Link>
                   {canManageEvents ? (
-                    <Link className="button button--secondary" href={`/cadastros?eventoId=${evento.id}`}>
+                    <Link className="button button--secondary" href={`/gestao-eventos?eventoId=${evento.id}`}>
                       Gerenciar evento
                     </Link>
                   ) : null}

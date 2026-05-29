@@ -8,11 +8,11 @@ import { getServerSessionUserContext } from "@/lib/auth/server-session";
 
 export const dynamic = "force-dynamic";
 
-export default async function CadastrosPage() {
+export default async function GestaoEventosPage() {
   const sessionContext = await getServerSessionUserContext();
 
   if (!sessionContext) {
-    redirect("/login?redirect=%2Fcadastros");
+    redirect("/login?redirect=%2Fgestao-eventos");
   }
 
   const data = sessionContext.isInternalAdmin
@@ -24,16 +24,16 @@ export default async function CadastrosPage() {
 
   return (
     <AppShell
-      activeRoute="cadastros"
+      activeRoute="gestao-eventos"
       eyebrow="Área administrativa"
-      title="Cadastrar eventos"
+      title="Gerenciar eventos"
       sessionContext={sessionContext}
       sidebarEyebrow="Gestão"
-      sidebarTitle="Cadastro em etapas"
-      sidebarDescription="Cadastre o evento, selecione-o e depois crie as categorias."
+      sidebarTitle="Eventos cadastrados"
+      sidebarDescription="Edite eventos e categorias já existentes."
     >
       <AdminAccessGate isAllowed={sessionContext.isInternalAdmin}>
-        <AdminPageClient initialData={data} sessionContext={sessionContext} mode="cadastro" />
+        <AdminPageClient initialData={data} sessionContext={sessionContext} mode="gestao" />
       </AdminAccessGate>
     </AppShell>
   );

@@ -241,6 +241,32 @@ textarea {
   gap: 8px;
 }
 
+.nav-section {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-section--admin {
+  margin: 2px 0;
+  padding: 10px 0 8px;
+  border-top: 1px solid rgba(120, 65, 73, 0.14);
+  border-bottom: 1px solid rgba(120, 65, 73, 0.14);
+}
+
+.nav-section__title {
+  padding: 0 8px 2px;
+  color: var(--primary-strong);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nav-section--admin .nav-link {
+  min-height: 42px;
+  background: rgba(179, 92, 104, 0.07);
+}
+
 .nav-link {
   display: flex;
   align-items: center;
@@ -572,6 +598,10 @@ textarea {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
+}
+
+.two-column--single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .form-grid {

@@ -2,12 +2,12 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 
 import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
-import { AppNavigation } from "@/components/shell/app-navigation";
+import { AppNavigation, type AppRouteKey } from "@/components/shell/app-navigation";
 import { LogoutButton } from "@/components/shell/logout-button";
 import type { SessionUserContext } from "@/lib/auth/session";
 
 type AppShellProps = {
-  activeRoute: "dashboard" | "cadastros" | "inscricoes" | "minhas-inscricoes";
+  activeRoute: AppRouteKey;
   eyebrow: string;
   title: string;
   description?: string;

@@ -136,5 +136,11 @@ function shouldUseSecureCookies(): boolean {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/cadastros/:path*", "/inscricoes/:path*", "/minhas-inscricoes/:path*"]
+  matcher: [
+    "/dashboard/:path*",
+    "/cadastros/:path*",
+    "/gestao-eventos/:path*",
+    "/inscricoes/:path*",
+    "/minhas-inscricoes/:path*"
+  ]
 };
