@@ -154,18 +154,35 @@
 }
 
 .card {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   height: 100%;
+  overflow: hidden;
   padding: 34px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 34px;
   background:
-    linear-gradient(180deg, rgba(255, 252, 250, 0.94), rgba(248, 240, 236, 0.9)),
-    rgba(255, 255, 255, 0.34);
-  box-shadow: 0 26px 72px rgba(81, 42, 49, 0.14);
+    linear-gradient(180deg, rgba(111, 73, 80, 0.32), rgba(111, 73, 80, 0.22) 36%, rgba(111, 73, 80, 0.34)),
+    linear-gradient(180deg, rgba(255, 250, 248, 0.24), rgba(255, 250, 248, 0.12));
+  box-shadow: 0 28px 80px rgba(81, 42, 49, 0.18);
   backdrop-filter: blur(18px);
+  color: #fffaf8;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(58, 28, 34, 0.12));
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .cardHeader {
@@ -178,6 +195,12 @@
   align-items: center;
   justify-content: center;
   min-height: 72px;
+  width: fit-content;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 12px 24px rgba(34, 14, 18, 0.12);
 }
 
 .logo {
@@ -190,7 +213,7 @@
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #914651;
+  color: rgba(255, 244, 241, 0.9);
 }
 
 .cardHeader h2 {
@@ -198,13 +221,15 @@
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2rem, 3vw, 3rem);
   line-height: 1;
-  color: #4e2d32;
+  color: #fffdfa;
+  text-shadow: 0 10px 24px rgba(45, 18, 24, 0.18);
 }
 
 .cardHeader p {
   margin: 10px 0 0;
-  color: #77575c;
+  color: rgba(255, 247, 244, 0.96);
   line-height: 1.7;
+  text-shadow: 0 6px 16px rgba(45, 18, 24, 0.12);
 }
 
 .form {
@@ -233,7 +258,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #77575c;
+  color: rgba(255, 244, 241, 0.9);
 }
 
 .field input {
@@ -259,9 +284,9 @@
   align-items: flex-start;
   gap: 12px;
   padding: 16px 18px;
-  border: 1px solid rgba(145, 70, 81, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .checkbox input {
@@ -272,35 +297,36 @@
 }
 
 .checkbox span {
-  color: #6e4b51;
+  color: rgba(255, 247, 244, 0.96);
   font-size: 0.95rem;
   line-height: 1.6;
 }
 
 .systemNote {
   padding: 16px 18px;
-  border: 1px solid rgba(145, 70, 81, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #77575c;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 247, 244, 0.96);
   line-height: 1.65;
 }
 
 .systemNote strong {
-  color: #4e2d32;
+  color: #fffdfa;
 }
 
 .systemNote code {
   font-family: "Courier New", Courier, monospace;
-  color: #6e3b46;
+  color: #fffdfa;
 }
 
 .feedback {
   min-height: 24px;
   margin: 0;
-  color: #8a3340;
+  color: #fffdfa;
   font-size: 0.92rem;
   font-weight: 700;
+  text-shadow: 0 6px 16px rgba(45, 18, 24, 0.14);
 }
 
 .actions {
