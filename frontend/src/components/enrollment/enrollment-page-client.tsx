@@ -499,7 +499,7 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
         <section className="stack-xl">
           {visibleEvents.map((evento) => (
             <article className="panel" key={evento.id}>
-              <div className="section-heading">
+              <div className="section-heading section-heading--event-focus">
                 <div>
                   <span className="eyebrow">Evento #{evento.id}</span>
                   <h2 className="event-title">{evento.nomeEvento}</h2>

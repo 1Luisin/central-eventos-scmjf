@@ -423,6 +423,22 @@ textarea {
   font-size: clamp(1.6rem, 2vw, 2.4rem);
 }
 
+.section-heading--event-focus {
+  align-items: center;
+}
+
+.section-heading--event-focus .eyebrow {
+  font-size: 0.86rem;
+  letter-spacing: 0.14em;
+}
+
+.section-heading--event-focus .event-title {
+  margin-bottom: 0;
+  font-size: clamp(1.9rem, 2.25vw, 2.65rem);
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
 .step-badge {
   display: inline-flex;
   align-items: center;
