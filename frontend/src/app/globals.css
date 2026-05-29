@@ -427,16 +427,23 @@ textarea {
   align-items: center;
 }
 
+.section-heading--event-focus > div:first-child {
+  padding-left: 16px;
+  border-left: 5px solid rgba(145, 70, 81, 0.52);
+}
+
 .section-heading--event-focus .eyebrow {
-  font-size: 0.86rem;
-  letter-spacing: 0.14em;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  font-weight: 900;
 }
 
 .section-heading--event-focus .event-title {
   margin-bottom: 0;
-  font-size: clamp(1.9rem, 2.25vw, 2.65rem);
-  font-weight: 650;
+  font-size: clamp(2.2rem, 2.7vw, 3.1rem);
+  font-weight: 750;
   letter-spacing: 0;
+  line-height: 1.04;
 }
 
 .step-badge {
