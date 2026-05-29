@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useDeferredValue, useState } from "react";
 
 import { getRequestErrorMessage, requestJson } from "@/lib/api/client";
@@ -216,14 +215,6 @@ export function MyEnrollmentsPageClient({ initialData }: MyEnrollmentsPageClient
                       Registro realizado em {formatDateTime(categoria.inscricao.dataHoraRegistro)}. {categoria.statusDescription}
                     </p>
 
-                    <div className="card-actions">
-                      <Link
-                        className="button button--secondary"
-                        href={`/inscricoes?categoriaId=${categoria.id}&eventoId=${evento.id}`}
-                      >
-                        Ver inscrição
-                      </Link>
-                    </div>
                   </section>
                 ))}
               </div>

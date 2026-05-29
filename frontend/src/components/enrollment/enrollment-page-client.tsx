@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
@@ -387,7 +388,14 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
     const state = getCategoryState(category);
 
     if (state === "confirmed") {
-      return <span className="button button--secondary button--static">Inscrição confirmada</span>;
+      return (
+        <>
+          <span className="button button--secondary button--static">Inscrição confirmada</span>
+          <Link className="button button--primary" href="/minhas-inscricoes">
+            Ver inscrição
+          </Link>
+        </>
+      );
     }
 
     if (state === "full") {
