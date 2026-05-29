@@ -428,20 +428,20 @@ textarea {
 }
 
 .section-heading--event-focus > div:first-child {
-  padding-left: 16px;
-  border-left: 5px solid rgba(145, 70, 81, 0.52);
+  padding-left: 14px;
+  border-left: 4px solid rgba(145, 70, 81, 0.46);
 }
 
 .section-heading--event-focus .eyebrow {
-  font-size: 0.95rem;
-  letter-spacing: 0;
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
   font-weight: 900;
 }
 
 .section-heading--event-focus .event-title {
   margin-bottom: 0;
-  font-size: clamp(2.2rem, 2.7vw, 3.1rem);
-  font-weight: 750;
+  font-size: clamp(2rem, 2.35vw, 2.75rem);
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.04;
 }
@@ -806,19 +806,19 @@ textarea {
 
 .event-card__header > div:first-child {
   gap: 8px;
-  padding-left: 16px;
-  border-left: 5px solid rgba(145, 70, 81, 0.5);
+  padding-left: 14px;
+  border-left: 4px solid rgba(145, 70, 81, 0.44);
 }
 
 .event-card__header .eyebrow {
-  font-size: 0.92rem;
-  letter-spacing: 0.08em;
+  font-size: 0.84rem;
+  letter-spacing: 0.1em;
   font-weight: 900;
 }
 
 .event-card__header .event-title {
-  font-size: clamp(2.05rem, 2.55vw, 2.85rem);
-  font-weight: 750;
+  font-size: clamp(1.8rem, 2.25vw, 2.45rem);
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.04;
 }
