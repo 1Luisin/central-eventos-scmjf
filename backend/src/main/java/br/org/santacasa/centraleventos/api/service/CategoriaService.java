@@ -100,6 +100,7 @@ public class CategoriaService {
         categoria.setDescricao(trimToNull(request.descricao()));
         categoria.setSnAtivo(normalizarFlag(request.ativo()));
         categoria.setNrInscricoes(request.limiteInscricoes());
+        categoria.setDhFimInsc(request.dataHoraFimInscricao());
     }
 
     private CategoriaResponse toResponse(Categoria categoria, long inscricoesRealizadas) {
@@ -113,6 +114,7 @@ public class CategoriaService {
                 categoria.getDescricao(),
                 categoria.getSnAtivo(),
                 categoria.getNrInscricoes(),
+                categoria.getDhFimInsc(),
                 inscricoesRealizadas,
                 vagasDisponiveis
         );

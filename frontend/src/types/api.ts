@@ -38,6 +38,7 @@ export type CategoriaResponse = {
   descricao: string | null;
   ativo: string;
   limiteInscricoes: number;
+  dataHoraFimInscricao: string | null;
   inscricoesRealizadas: number;
   vagasDisponiveis: number;
 };
@@ -73,6 +74,7 @@ export type CategoriaCreatePayload = {
   descricao?: string;
   ativo: "S" | "N";
   limiteInscricoes: number;
+  dataHoraFimInscricao?: string;
 };
 
 export type InscricaoCreatePayload = {
@@ -159,7 +161,8 @@ export type CategoriaStatus =
   | "disponivel"
   | "lotada"
   | "evento-inativo"
-  | "categoria-inativa";
+  | "categoria-inativa"
+  | "prazo-encerrado";
 
 export type CategoriaViewModel = CategoriaResponse & {
   eventoNome: string;

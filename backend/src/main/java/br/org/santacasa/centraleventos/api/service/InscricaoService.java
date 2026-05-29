@@ -51,6 +51,7 @@ public class InscricaoService {
 
         validarVinculoEventoCategoria(evento, categoria);
         validarAtivacao(evento, categoria);
+        validarPrazoInscricao(categoria);
         validarLimiteDeVagas(categoria);
 
         Inscricao inscricao = new Inscricao();
@@ -204,6 +205,12 @@ public class InscricaoService {
         long inscricoesRealizadas = inscricaoRepository.countByCategoria_Id(categoria.getId());
         if (inscricoesRealizadas >= categoria.getNrInscricoes()) {
             throw new BusinessRuleException("Categoria lotada");
+        }
+    }
+
+    private void validarPrazoInscricao(Categoria categoria) {
+        if (categoria.getDhFimInsc() != null && LocalDateTime.now().isAfter(categoria.getDhFimInsc())) {
+            throw new BusinessRuleException("Prazo de inscriÃ§Ã£o encerrado para esta categoria");
         }
     }
 

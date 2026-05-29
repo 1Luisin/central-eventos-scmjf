@@ -152,6 +152,7 @@ function buildFallbackCategoria(inscricao: InscricaoResponse): CategoriaResponse
     descricao: null,
     ativo: "N",
     limiteInscricoes: 0,
+    dataHoraFimInscricao: null,
     inscricoesRealizadas: 0,
     vagasDisponiveis: 0
   };

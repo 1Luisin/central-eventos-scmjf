@@ -67,6 +67,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
   const [categoryForm, setCategoryForm] = useState<CategoryFormState>(createDefaultCategoryForm());
   const [eventStartDate, setEventStartDate] = useState<Date | null>(null);
   const [eventEndDate, setEventEndDate] = useState<Date | null>(null);
+  const [categoryEnrollmentEndDate, setCategoryEnrollmentEndDate] = useState<Date | null>(null);
   const [setores, setSetores] = useState<string[]>([]);
   const [setoresFeedback, setSetoresFeedback] = useState<string | null>(null);
   const [loadingSetores, setLoadingSetores] = useState(false);
@@ -141,12 +142,15 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
     const editingCategory = findCategoryById(data, editingCategoryId);
 
     if (!editingCategory) {
-      resetCategoryForm(setEditingCategoryId, setCategoryForm);
+      resetCategoryForm(setEditingCategoryId, setCategoryForm, setCategoryEnrollmentEndDate);
       return;
     }
 
     setSelectedEventId(String(editingCategory.eventoId));
     setCategoryForm(mapCategoryToForm(editingCategory));
+    setCategoryEnrollmentEndDate(
+      editingCategory.dataHoraFimInscricao ? new Date(editingCategory.dataHoraFimInscricao) : null
+    );
   }, [data, editingCategoryId]);
 
   const selectedEvent = data.eventos.find((evento) => String(evento.id) === selectedEventId) ?? null;
@@ -258,7 +262,8 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
       externo: categoryForm.externo,
       descricao: trimOrUndefined(categoryForm.descricao),
       ativo: categoryForm.ativo,
-      limiteInscricoes: Number(categoryForm.limiteInscricoes)
+      limiteInscricoes: Number(categoryForm.limiteInscricoes),
+      dataHoraFimInscricao: toApiDateTimeFromDate(categoryEnrollmentEndDate) || undefined
     };
 
     if (!Number.isFinite(payload.limiteInscricoes) || payload.limiteInscricoes <= 0) {
@@ -281,7 +286,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
           ? `Categoria cadastrada com sucesso no evento "${selectedEvent.nomeEvento}".`
           : "Categoria atualizada com sucesso."
       );
-      resetCategoryForm(setEditingCategoryId, setCategoryForm);
+      resetCategoryForm(setEditingCategoryId, setCategoryForm, setCategoryEnrollmentEndDate);
       await refreshData(selectedEvent.id);
     } catch (error) {
       setCategoryMessage(getRequestErrorMessage(error));
@@ -329,6 +334,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
     setEditingCategoryId(categoria.id);
     setSelectedEventId(String(categoria.eventoId));
     setCategoryForm(mapCategoryToForm(categoria));
+    setCategoryEnrollmentEndDate(categoria.dataHoraFimInscricao ? new Date(categoria.dataHoraFimInscricao) : null);
     setCategoryMessage(null);
     setFeedback(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -564,6 +570,20 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
             </label>
 
             <div className="field">
+              <DateTimePickerField
+                label="PRAZO FINAL DE INSCRIÇÃO"
+                placeholder="Sem prazo definido"
+                value={categoryEnrollmentEndDate}
+                onChange={setCategoryEnrollmentEndDate}
+              />
+              {categoryEnrollmentEndDate ? (
+                <button className="button button--secondary" type="button" onClick={() => setCategoryEnrollmentEndDate(null)}>
+                  Remover prazo
+                </button>
+              ) : null}
+            </div>
+
+            <div className="field">
               <span>INSCRIÇÃO EXTERNA</span>
               <ScmjfSelect
                 aria-label="Inscrição externa"
@@ -623,7 +643,7 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
                 <button
                   className="button button--secondary"
                   type="button"
-                  onClick={() => resetCategoryForm(setEditingCategoryId, setCategoryForm)}
+                  onClick={() => resetCategoryForm(setEditingCategoryId, setCategoryForm, setCategoryEnrollmentEndDate)}
                 >
                   Cancelar edição
                 </button>
@@ -730,6 +750,11 @@ export function AdminPageClient({ initialData, sessionContext }: AdminPageClient
                         <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
                           {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
                         </span>
+                        {categoria.dataHoraFimInscricao ? (
+                          <span className="badge badge--ghost">
+                            Inscrições até {formatDateTime(categoria.dataHoraFimInscricao)}
+                          </span>
+                        ) : null}
                       </div>
 
                       <div className="card-actions">
@@ -903,8 +928,10 @@ function resetEventForm(
 
 function resetCategoryForm(
   setEditingCategoryId: React.Dispatch<React.SetStateAction<number | null>>,
-  setCategoryForm: React.Dispatch<React.SetStateAction<CategoryFormState>>
+  setCategoryForm: React.Dispatch<React.SetStateAction<CategoryFormState>>,
+  setCategoryEnrollmentEndDate: React.Dispatch<React.SetStateAction<Date | null>>
 ) {
   setEditingCategoryId(null);
   setCategoryForm(createDefaultCategoryForm());
+  setCategoryEnrollmentEndDate(null);
 }

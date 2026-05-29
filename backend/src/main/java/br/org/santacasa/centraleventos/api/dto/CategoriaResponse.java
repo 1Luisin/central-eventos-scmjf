@@ -1,5 +1,7 @@
 package br.org.santacasa.centraleventos.api.dto;
 
+import java.time.LocalDateTime;
+
 public record CategoriaResponse(
         Long id,
         Long eventoId,
@@ -8,6 +10,7 @@ public record CategoriaResponse(
         String descricao,
         String ativo,
         Long limiteInscricoes,
+        LocalDateTime dataHoraFimInscricao,
         long inscricoesRealizadas,
         long vagasDisponiveis
 ) {

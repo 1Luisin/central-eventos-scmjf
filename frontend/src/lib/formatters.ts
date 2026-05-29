@@ -62,7 +62,12 @@ export function normalizeText(value: FormDataEntryValue | null): string {
   return String(value ?? "").trim();
 }
 
-export function getCategoryStatus(eventoAtivo: string, categoriaAtiva: string, vagasDisponiveis: number): {
+export function getCategoryStatus(
+  eventoAtivo: string,
+  categoriaAtiva: string,
+  vagasDisponiveis: number,
+  dataHoraFimInscricao?: string | null
+): {
   status: CategoriaStatus;
   statusLabel: string;
   statusDescription: string;
@@ -95,6 +100,15 @@ export function getCategoryStatus(eventoAtivo: string, categoriaAtiva: string, v
     };
   }
 
+  if (isDeadlineExpired(dataHoraFimInscricao)) {
+    return {
+      status: "prazo-encerrado",
+      statusLabel: "Prazo encerrado",
+      statusDescription: "O prazo para inscriÃ§Ã£o nesta categoria foi encerrado.",
+      permiteInscricao: false
+    };
+  }
+
   return {
     status: "disponivel",
     statusLabel: "Inscrições abertas",
@@ -107,7 +121,8 @@ export function decorateCategoria(evento: EventoResponse, categoria: CategoriaRe
   const { status, statusLabel, statusDescription, permiteInscricao } = getCategoryStatus(
     evento.ativo,
     categoria.ativo,
-    categoria.vagasDisponiveis
+    categoria.vagasDisponiveis,
+    categoria.dataHoraFimInscricao
   );
 
   const ocupacaoPercentual = categoria.limiteInscricoes > 0
@@ -128,6 +143,15 @@ export function decorateCategoria(evento: EventoResponse, categoria: CategoriaRe
     usuarioJaInscrito: false,
     inscricaoAtual: null
   };
+}
+
+function isDeadlineExpired(value?: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const parsed = new Date(value);
+  return !Number.isNaN(parsed.getTime()) && Date.now() > parsed.getTime();
 }
 
 export function toTitleCaseFlag(flag: string | undefined, activeLabel: string, inactiveLabel: string): string {

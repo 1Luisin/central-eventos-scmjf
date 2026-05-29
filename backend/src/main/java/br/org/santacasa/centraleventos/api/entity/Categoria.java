@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +49,9 @@ public class Categoria {
 
     @Column(name = "NR_INSCRICOES", nullable = false)
     private Long nrInscricoes;
+
+    @Column(name = "DH_FIM_INSC")
+    private LocalDateTime dhFimInsc;
 
     @OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Inscricao> inscricoes = new ArrayList<>();
@@ -106,6 +110,14 @@ public class Categoria {
 
     public void setNrInscricoes(Long nrInscricoes) {
         this.nrInscricoes = nrInscricoes;
+    }
+
+    public LocalDateTime getDhFimInsc() {
+        return dhFimInsc;
+    }
+
+    public void setDhFimInsc(LocalDateTime dhFimInsc) {
+        this.dhFimInsc = dhFimInsc;
     }
 
     public List<Inscricao> getInscricoes() {

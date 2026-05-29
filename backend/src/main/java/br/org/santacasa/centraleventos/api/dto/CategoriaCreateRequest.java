@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
+
 public record CategoriaCreateRequest(
         @NotNull(message = "Identificador do evento é obrigatório")
         Long eventoId,
@@ -27,6 +29,8 @@ public record CategoriaCreateRequest(
 
         @NotNull(message = "Limite de inscrições é obrigatório")
         @Positive(message = "Limite de inscrições deve ser maior que zero")
-        Long limiteInscricoes
+        Long limiteInscricoes,
+
+        LocalDateTime dataHoraFimInscricao
 ) {
 }

@@ -569,6 +569,11 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                         <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
                           {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
                         </span>
+                        {categoria.dataHoraFimInscricao ? (
+                          <span className="badge badge--ghost">
+                            Inscrições até {formatDateTime(categoria.dataHoraFimInscricao)}
+                          </span>
+                        ) : null}
                         {categoryState === "confirmed" ? <span className="badge badge--success">Você já está inscrito</span> : null}
                       </div>
 
@@ -631,6 +636,11 @@ export function EnrollmentPageClient({ initialData, sessionContext }: Enrollment
                     <p>
                       <strong>Situação:</strong> {formatCountLabel(activeCategory.vagasDisponiveis, "vaga disponível", "vagas disponíveis")}
                     </p>
+                    {activeCategory.dataHoraFimInscricao ? (
+                      <p>
+                        <strong>Inscrições até:</strong> {formatDateTime(activeCategory.dataHoraFimInscricao)}
+                      </p>
+                    ) : null}
                     <p>{activeCategory.descricao || "Confirme os dados abaixo para concluir a inscrição nesta categoria."}</p>
                   </div>
 

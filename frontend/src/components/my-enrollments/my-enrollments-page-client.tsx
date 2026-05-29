@@ -169,6 +169,11 @@ export function MyEnrollmentsPageClient({ initialData }: MyEnrollmentsPageClient
                       <span className={categoria.ativo === "S" ? "badge badge--neutral" : "badge badge--danger"}>
                         {toTitleCaseFlag(categoria.ativo, "Categoria ativa", "Categoria inativa")}
                       </span>
+                      {categoria.dataHoraFimInscricao ? (
+                        <span className="badge badge--ghost">
+                          Inscrições até {formatDateTime(categoria.dataHoraFimInscricao)}
+                        </span>
+                      ) : null}
                     </div>
 
                     <div className="occupancy">
