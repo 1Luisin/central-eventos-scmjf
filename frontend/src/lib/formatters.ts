@@ -104,7 +104,7 @@ export function getCategoryStatus(
     return {
       status: "prazo-encerrado",
       statusLabel: "Prazo encerrado",
-      statusDescription: "O prazo para inscriÃ§Ã£o nesta categoria foi encerrado.",
+      statusDescription: "O prazo para inscrição nesta categoria foi encerrado.",
       permiteInscricao: false
     };
   }

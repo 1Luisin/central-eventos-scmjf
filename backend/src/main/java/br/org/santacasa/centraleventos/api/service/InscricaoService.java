@@ -210,7 +210,7 @@ public class InscricaoService {
 
     private void validarPrazoInscricao(Categoria categoria) {
         if (categoria.getDhFimInsc() != null && LocalDateTime.now().isAfter(categoria.getDhFimInsc())) {
-            throw new BusinessRuleException("Prazo de inscriÃ§Ã£o encerrado para esta categoria");
+            throw new BusinessRuleException("Prazo de inscrição encerrado para esta categoria");
         }
     }
 
