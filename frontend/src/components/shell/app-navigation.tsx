@@ -41,6 +41,18 @@ export function AppNavigation({ activeRoute, sessionContext }: AppNavigationProp
         ))}
       </div>
 
+      <div className="nav-section">
+        {availableParticipantItems.map((item) => (
+          <Link
+            key={item.href}
+            className={item.key === activeRoute ? "nav-link nav-link--active" : "nav-link"}
+            href={item.href}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+
       {sessionContext?.isInternalAdmin ? (
         <div className="nav-section nav-section--admin">
           <span className="nav-section__title">Área administrativa</span>
@@ -56,18 +68,6 @@ export function AppNavigation({ activeRoute, sessionContext }: AppNavigationProp
           ))}
         </div>
       ) : null}
-
-      <div className="nav-section">
-        {availableParticipantItems.map((item) => (
-          <Link
-            key={item.href}
-            className={item.key === activeRoute ? "nav-link nav-link--active" : "nav-link"}
-            href={item.href}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
     </nav>
   );
 }
