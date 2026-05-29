@@ -4,8 +4,8 @@
   --surface: rgba(255, 251, 249, 0.86);
   --surface-strong: #fffaf8;
   --surface-muted: #f2e3df;
-  --line: rgba(120, 65, 73, 0.18);
-  --line-strong: rgba(120, 65, 73, 0.28);
+  --line: rgba(120, 65, 73, 0.22);
+  --line-strong: rgba(120, 65, 73, 0.34);
   --text: #4e2d32;
   --text-soft: #77575c;
   --primary: #b35c68;
@@ -165,7 +165,7 @@ textarea {
 .sidebar-note,
 .panel,
 .page-hero {
-  border: 1px solid rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(145, 70, 81, 0.18);
   border-radius: var(--radius-xl);
   background:
     linear-gradient(180deg, rgba(255, 252, 250, 0.97), rgba(250, 243, 240, 0.95)),
@@ -330,7 +330,7 @@ textarea {
   min-width: 78px;
   min-height: 58px;
   padding: 10px 14px;
-  border: 1px solid rgba(145, 70, 81, 0.12);
+  border: 1px solid rgba(145, 70, 81, 0.18);
   border-radius: 18px;
   background: #ffffff;
 }
@@ -778,7 +778,7 @@ textarea {
 .event-card:hover,
 .event-admin-card:hover,
 .category-card:hover {
-  border-color: rgba(179, 92, 104, 0.26);
+  border-color: rgba(179, 92, 104, 0.34);
 }
 
 .event-card__header {
@@ -935,11 +935,11 @@ textarea {
 
 .category-card--selectable:hover {
   transform: translateY(-1px);
-  border-color: rgba(179, 92, 104, 0.24);
+  border-color: rgba(179, 92, 104, 0.34);
 }
 
 .category-card--selected {
-  border-color: rgba(179, 92, 104, 0.42);
+  border-color: rgba(179, 92, 104, 0.52);
   box-shadow: 0 16px 34px rgba(97, 47, 54, 0.12);
 }
 
@@ -1075,7 +1075,7 @@ textarea {
   display: block;
   margin-top: 16px;
   padding: 18px;
-  border: 1px dashed rgba(145, 70, 81, 0.24);
+  border: 1px dashed rgba(145, 70, 81, 0.34);
   border-radius: 18px;
   color: var(--text-soft);
   background: rgba(255, 255, 255, 0.52);
@@ -1151,7 +1151,7 @@ textarea {
   gap: 16px;
   padding: 20px;
   margin-bottom: 18px;
-  border: 1px solid rgba(139, 90, 61, 0.22);
+  border: 1px solid rgba(139, 90, 61, 0.3);
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(252, 247, 242, 0.96), rgba(245, 235, 228, 0.82));
   box-shadow: 0 14px 30px rgba(116, 71, 44, 0.08);
@@ -1191,7 +1191,7 @@ textarea {
 
 .confirmation-card__item {
   padding: 12px 14px;
-  border: 1px solid rgba(139, 90, 61, 0.16);
+  border: 1px solid rgba(139, 90, 61, 0.24);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.7);
 }
@@ -1843,7 +1843,7 @@ textarea {
   width: min(100%, 760px);
   max-height: min(88vh, 940px);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(145, 70, 81, 0.22);
   border-radius: 30px;
   background:
     linear-gradient(180deg, rgba(255, 252, 250, 0.98), rgba(248, 239, 236, 0.96)),
@@ -1991,7 +1991,7 @@ textarea {
   display: grid;
   gap: 14px;
   padding: 20px;
-  border: 1px solid rgba(139, 90, 61, 0.18);
+  border: 1px solid rgba(139, 90, 61, 0.28);
   border-radius: 24px;
   background: linear-gradient(180deg, rgba(252, 247, 242, 0.96), rgba(245, 235, 228, 0.82));
 }
