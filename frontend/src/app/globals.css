@@ -1028,6 +1028,10 @@ textarea {
   margin-top: auto;
 }
 
+.category-card > .card-actions {
+  margin-top: 0;
+}
+
 .event-card > .card-actions,
 .event-admin-card > .card-actions {
   padding-top: 16px;
