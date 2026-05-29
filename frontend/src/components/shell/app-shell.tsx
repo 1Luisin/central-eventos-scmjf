@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 import logoSantaCasa from "../../../imgs/logo-santa-casa2.png";
 import { AppNavigation, type AppRouteKey } from "@/components/shell/app-navigation";
@@ -36,9 +37,9 @@ export function AppShell({
       <header className="topbar">
         <div className="topbar__inner">
           <div className="topbar__brand">
-            <div className="topbar__logo-wrap" aria-hidden="true">
+            <Link className="topbar__logo-wrap" href="/dashboard" aria-label="Voltar para a aba de eventos">
               <Image src={logoSantaCasa} alt="" className="topbar__logo" sizes="160px" priority />
-            </div>
+            </Link>
 
             <div className="topbar__copy">
               <span className="eyebrow">Santa Casa de Misericórdia</span>
