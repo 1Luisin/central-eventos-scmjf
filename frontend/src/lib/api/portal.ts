@@ -73,12 +73,8 @@ function toDashboardItem(
   categorias: CategoriaResponse[],
   isExternalUser: boolean,
   inscricoesPorCategoria: Map<number, InscricaoResponse>
-): EventoDashboardItem | null {
+): EventoDashboardItem {
   const categoriasVisiveis = filterVisibleCategorias(categorias, isExternalUser);
-
-  if (categoriasVisiveis.length === 0) {
-    return null;
-  }
 
   const categoriasDecoradas = categoriasVisiveis.map((categoria) => {
     const inscricaoAtual = inscricoesPorCategoria.get(categoria.id) ?? null;
@@ -187,18 +183,16 @@ export async function getDashboardData(): Promise<DashboardData> {
     const inscricoesPorCategoria = new Map<number, InscricaoResponse>(
       minhasInscricoes.map((inscricao) => [inscricao.categoriaId, inscricao])
     );
-    const itens = (
-      await Promise.all(
-        eventos.map(async (evento) =>
-          toDashboardItem(
-            evento,
-            await listarCategorias(evento.id, headers),
-            isExternalUser,
-            inscricoesPorCategoria
-          )
+    const itens = await Promise.all(
+      eventos.map(async (evento) =>
+        toDashboardItem(
+          evento,
+          await listarCategorias(evento.id, headers),
+          isExternalUser,
+          inscricoesPorCategoria
         )
       )
-    ).filter((evento): evento is EventoDashboardItem => evento !== null);
+    );
 
     return {
       eventos: itens,

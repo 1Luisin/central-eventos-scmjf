@@ -29,10 +29,9 @@ public class EventoOwnershipService {
     public void validarPermissaoDeGestao(Evento evento, UsuarioOperacaoContext usuario) {
         validarAdministradorInterno(usuario);
 
-        String criador = logEventoRepository.findCriadorDoEvento(evento.getId())
-                .orElseThrow(() -> new AccessDeniedException("Não foi possível identificar o criador do evento informado"));
+        String criador = logEventoRepository.findCriadorDoEvento(evento.getId()).orElse(null);
 
-        if (!usuario.correspondeAoCriador(criador)) {
+        if (!usuario.correspondeAoCriador(criador) && !usuario.correspondeAoCriador(evento.getNmResponsavel())) {
             throw new AccessDeniedException("Somente o administrador que criou o evento pode gerenciá-lo");
         }
     }

@@ -11,7 +11,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class EventoService {
@@ -58,14 +62,26 @@ public class EventoService {
     @Transactional(readOnly = true)
     public List<EventoResponse> listarMeusEventos(UsuarioOperacaoContext usuario) {
         List<Long> eventoIds = eventoOwnershipService.listarIdsEventosCriados(usuario);
+        Set<Long> eventosIncluidos = new LinkedHashSet<>();
+        List<Evento> eventos = new ArrayList<>();
 
-        if (eventoIds.isEmpty()) {
-            return List.of();
+        for (Evento evento : eventoRepository.findAllById(eventoIds)) {
+            if (eventosIncluidos.add(evento.getId())) {
+                eventos.add(evento);
+            }
         }
 
-        return eventoRepository.findAllById(eventoIds)
+        if (usuario.nomeUsuario() != null && !usuario.nomeUsuario().isBlank()) {
+            for (Evento evento : eventoRepository.findByNmResponsavelIgnoreCaseOrderByDhInicioAsc(usuario.nomeUsuario())) {
+                if (eventosIncluidos.add(evento.getId())) {
+                    eventos.add(evento);
+                }
+            }
+        }
+
+        return eventos
                 .stream()
-                .sorted((left, right) -> left.getDhInicio().compareTo(right.getDhInicio()))
+                .sorted(Comparator.comparing(Evento::getDhInicio))
                 .map(this::toResponse)
                 .toList();
     }
