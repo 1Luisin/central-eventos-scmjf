@@ -399,17 +399,21 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
             <h2>{isManageMode ? "Gerenciar eventos" : "Cadastrar eventos"}</h2>
           </div>
 
-          <button className="button button--secondary" type="button" onClick={() => refreshData()} disabled={refreshing}>
-            {refreshing ? "Atualizando..." : "Atualizar lista"}
-          </button>
+          {isManageMode ? (
+            <button className="button button--secondary" type="button" onClick={() => refreshData()} disabled={refreshing}>
+              {refreshing ? "Atualizando..." : "Atualizar lista"}
+            </button>
+          ) : null}
         </div>
 
         {feedback ? <div className="feedback feedback--warning">{feedback}</div> : null}
 
-        <div className="section-meta">
-          <span>{formatCountLabel(data.eventos.length, "evento cadastrado", "eventos cadastrados")}</span>
-          <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
-        </div>
+        {isManageMode ? (
+          <div className="section-meta">
+            <span>{formatCountLabel(data.eventos.length, "evento cadastrado", "eventos cadastrados")}</span>
+            <span>Última atualização: {formatDateTime(data.atualizadoEm)}</span>
+          </div>
+        ) : null}
       </section>
 
       {showForms ? (
