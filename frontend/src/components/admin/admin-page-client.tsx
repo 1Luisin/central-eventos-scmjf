@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import ScmjfSelect from "@scmjf/select-component";
@@ -388,6 +389,61 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
     setFeedback(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  const cancelEnrollmentModal = cancelEnrollmentCandidate ? (
+    <div className="modal-overlay modal-overlay--centered" role="presentation" onClick={closeCancelEnrollmentModal}>
+      <section
+        className="modal-card modal-card--confirmation"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cancel-enrollment-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="modal-card__header">
+          <div>
+            <span className="eyebrow">Cancelar inscrição</span>
+            <h3 id="cancel-enrollment-title">Confirmar cancelamento</h3>
+            <p>Tem certeza que deseja cancelar a inscrição deste usuário?</p>
+          </div>
+
+          <button
+            className="modal-card__close"
+            type="button"
+            onClick={closeCancelEnrollmentModal}
+            disabled={cancelingEnrollmentId !== null}
+          >
+            Fechar
+          </button>
+        </div>
+
+        <div className="modal-card__body">
+          <div className="modal-copy">
+            <strong>{cancelEnrollmentCandidate.participantLabel}</strong>
+            <p>Esta ação remove a inscrição selecionada e libera a vaga da categoria novamente.</p>
+          </div>
+
+          <div className="modal-card__actions">
+            <button
+              className="button button--secondary"
+              type="button"
+              onClick={closeCancelEnrollmentModal}
+              disabled={cancelingEnrollmentId !== null}
+            >
+              Manter inscrição
+            </button>
+            <button
+              className="button button--danger"
+              type="button"
+              onClick={confirmCancelEnrollment}
+              disabled={cancelingEnrollmentId !== null}
+            >
+              {cancelingEnrollmentId !== null ? "Cancelando inscrição..." : "Cancelar inscrição"}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  ) : null;
 
   return (
     <>
@@ -894,60 +950,7 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
       ) : null}
     </div>
 
-    {cancelEnrollmentCandidate ? (
-      <div className="modal-overlay" role="presentation" onClick={closeCancelEnrollmentModal}>
-        <section
-          className="modal-card modal-card--confirmation"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cancel-enrollment-title"
-          onClick={(event) => event.stopPropagation()}
-        >
-          <div className="modal-card__header">
-            <div>
-              <span className="eyebrow">Cancelar inscrição</span>
-              <h3 id="cancel-enrollment-title">Confirmar cancelamento</h3>
-              <p>Tem certeza que deseja cancelar a inscrição deste usuário?</p>
-            </div>
-
-            <button
-              className="modal-card__close"
-              type="button"
-              onClick={closeCancelEnrollmentModal}
-              disabled={cancelingEnrollmentId !== null}
-            >
-              Fechar
-            </button>
-          </div>
-
-          <div className="modal-card__body">
-            <div className="modal-copy">
-              <strong>{cancelEnrollmentCandidate.participantLabel}</strong>
-              <p>Esta ação remove a inscrição selecionada e libera a vaga da categoria novamente.</p>
-            </div>
-
-            <div className="modal-card__actions">
-              <button
-                className="button button--secondary"
-                type="button"
-                onClick={closeCancelEnrollmentModal}
-                disabled={cancelingEnrollmentId !== null}
-              >
-                Manter inscrição
-              </button>
-              <button
-                className="button button--danger"
-                type="button"
-                onClick={confirmCancelEnrollment}
-                disabled={cancelingEnrollmentId !== null}
-              >
-                {cancelingEnrollmentId !== null ? "Cancelando inscrição..." : "Cancelar inscrição"}
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
-    ) : null}
+    {typeof document === "undefined" || !cancelEnrollmentModal ? null : createPortal(cancelEnrollmentModal, document.body)}
     </>
   );
 }

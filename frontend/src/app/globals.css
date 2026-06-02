@@ -1867,10 +1867,16 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
   padding: 24px;
   background: rgba(69, 37, 44, 0.42);
   backdrop-filter: blur(8px);
   animation: modal-overlay-in 0.18s ease-out both;
+}
+
+.modal-overlay--centered {
+  align-items: center;
 }
 
 .modal-card {
@@ -1982,10 +1988,18 @@ textarea {
     align-items: flex-end;
   }
 
+  .modal-overlay--centered {
+    align-items: center;
+  }
+
   .modal-card {
     width: 100%;
     max-height: min(92vh, 100%);
     border-radius: 24px 24px 0 0;
+  }
+
+  .modal-overlay--centered .modal-card {
+    border-radius: 24px;
   }
 
   .modal-card__header,
