@@ -63,6 +63,9 @@ public class CategoriaService {
             throw new BusinessRuleException("A categoria só pode ser atualizada dentro do evento original.");
         }
 
+        long inscricoesRealizadas = inscricaoRepository.countByCategoria_Id(categoria.getId());
+        validarLimiteNaoMenorQueInscricoes(request.limiteInscricoes(), inscricoesRealizadas);
+
         preencherCategoria(categoria, request);
         Categoria salva = categoriaRepository.save(categoria);
 
@@ -71,7 +74,7 @@ public class CategoriaService {
                 logEventoService.normalizarUsuarioLog(usuario.usuarioParaAuditoria(evento.getNmResponsavel()), evento.getNmResponsavel())
         );
 
-        return toResponse(salva, inscricaoRepository.countByCategoria_Id(salva.getId()));
+        return toResponse(salva, inscricoesRealizadas);
     }
 
     @Transactional(readOnly = true)
@@ -101,6 +104,14 @@ public class CategoriaService {
         categoria.setSnAtivo(normalizarFlag(request.ativo()));
         categoria.setNrInscricoes(request.limiteInscricoes());
         categoria.setDhFimInsc(request.dataHoraFimInscricao());
+    }
+
+    private void validarLimiteNaoMenorQueInscricoes(Long limiteInscricoes, long inscricoesRealizadas) {
+        if (limiteInscricoes != null && limiteInscricoes < inscricoesRealizadas) {
+            throw new BusinessRuleException(
+                    "O limite de vagas não pode ser menor que o número de inscrições já registradas."
+            );
+        }
     }
 
     private CategoriaResponse toResponse(Categoria categoria, long inscricoesRealizadas) {

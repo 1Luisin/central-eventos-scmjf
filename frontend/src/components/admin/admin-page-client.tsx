@@ -289,6 +289,21 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
       return;
     }
 
+    if (editingCategoryId !== null) {
+      const editingCategory = findCategoryById(data, editingCategoryId);
+
+      if (editingCategory && payload.limiteInscricoes < editingCategory.inscricoesRealizadas) {
+        setCategoryMessage(
+          `O limite de vagas não pode ser menor que ${formatCountLabel(
+            editingCategory.inscricoesRealizadas,
+            "inscrição já registrada",
+            "inscrições já registradas"
+          )}.`
+        );
+        return;
+      }
+    }
+
     try {
       setCategorySubmitting(true);
       await requestJson(editingCategoryId === null ? "/api/categorias" : `/api/categorias/${editingCategoryId}`, {
