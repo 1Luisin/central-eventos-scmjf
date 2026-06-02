@@ -49,6 +49,12 @@ type CategoryFormState = {
   descricao: string;
 };
 
+type CancelEnrollmentCandidate = {
+  inscricaoId: number;
+  participantLabel: string;
+  eventoId: number;
+};
+
 export function AdminPageClient({ initialData, sessionContext, mode = "cadastro" }: AdminPageClientProps) {
   const searchParams = useSearchParams();
   const requestedEventId = searchParams.get("eventoId");
@@ -67,6 +73,7 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const [categorySubmitting, setCategorySubmitting] = useState(false);
   const [cancelingEnrollmentId, setCancelingEnrollmentId] = useState<number | null>(null);
+  const [cancelEnrollmentCandidate, setCancelEnrollmentCandidate] = useState<CancelEnrollmentCandidate | null>(null);
   const [editingEventId, setEditingEventId] = useState<number | null>(initialEditingEventId);
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [eventForm, setEventForm] = useState<EventFormState>(createDefaultEventForm(loggedAdminName));
@@ -306,12 +313,25 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
     }
   }
 
-  async function handleCancelEnrollment(inscricaoId: number, participantLabel: string, eventoId: number) {
-    const confirmed = window.confirm(`Deseja cancelar a inscrição de ${participantLabel}?`);
+  function requestCancelEnrollment(inscricaoId: number, participantLabel: string, eventoId: number) {
+    setFeedback(null);
+    setCancelEnrollmentCandidate({ inscricaoId, participantLabel, eventoId });
+  }
 
-    if (!confirmed) {
+  function closeCancelEnrollmentModal() {
+    if (cancelingEnrollmentId !== null) {
       return;
     }
+
+    setCancelEnrollmentCandidate(null);
+  }
+
+  async function confirmCancelEnrollment() {
+    if (!cancelEnrollmentCandidate) {
+      return;
+    }
+
+    const { inscricaoId, eventoId } = cancelEnrollmentCandidate;
 
     try {
       setCancelingEnrollmentId(inscricaoId);
@@ -322,6 +342,7 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
       });
 
       setFeedback("Inscrição cancelada com sucesso.");
+      setCancelEnrollmentCandidate(null);
       await refreshData(eventoId);
     } catch (error) {
       setFeedback(getRequestErrorMessage(error));
@@ -354,6 +375,7 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
   }
 
   return (
+    <>
     <div className="stack-xl">
       <section className="panel">
         <div className="section-heading">
@@ -825,7 +847,7 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
                                   className="button button--danger"
                                   type="button"
                                   onClick={() =>
-                                    handleCancelEnrollment(
+                                    requestCancelEnrollment(
                                       inscricao.id,
                                       inscricao.tipoParticipante === "EXTERNO"
                                         ? inscricao.nomeUsuario
@@ -835,7 +857,7 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
                                   }
                                   disabled={cancelingEnrollmentId === inscricao.id}
                                 >
-                                  {cancelingEnrollmentId === inscricao.id ? "Cancelando..." : "Cancelar"}
+                                  {cancelingEnrollmentId === inscricao.id ? "Cancelando inscrição..." : "Cancelar inscrição"}
                                 </button>
                               </li>
                             ))}
@@ -852,6 +874,62 @@ export function AdminPageClient({ initialData, sessionContext, mode = "cadastro"
       </section>
       ) : null}
     </div>
+
+    {cancelEnrollmentCandidate ? (
+      <div className="modal-overlay" role="presentation" onClick={closeCancelEnrollmentModal}>
+        <section
+          className="modal-card modal-card--confirmation"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cancel-enrollment-title"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="modal-card__header">
+            <div>
+              <span className="eyebrow">Cancelar inscrição</span>
+              <h3 id="cancel-enrollment-title">Confirmar cancelamento</h3>
+              <p>Tem certeza que deseja cancelar a inscrição deste usuário?</p>
+            </div>
+
+            <button
+              className="modal-card__close"
+              type="button"
+              onClick={closeCancelEnrollmentModal}
+              disabled={cancelingEnrollmentId !== null}
+            >
+              Fechar
+            </button>
+          </div>
+
+          <div className="modal-card__body">
+            <div className="modal-copy">
+              <strong>{cancelEnrollmentCandidate.participantLabel}</strong>
+              <p>Esta ação remove a inscrição selecionada e libera a vaga da categoria novamente.</p>
+            </div>
+
+            <div className="modal-card__actions">
+              <button
+                className="button button--secondary"
+                type="button"
+                onClick={closeCancelEnrollmentModal}
+                disabled={cancelingEnrollmentId !== null}
+              >
+                Manter inscrição
+              </button>
+              <button
+                className="button button--danger"
+                type="button"
+                onClick={confirmCancelEnrollment}
+                disabled={cancelingEnrollmentId !== null}
+              >
+                {cancelingEnrollmentId !== null ? "Cancelando inscrição..." : "Cancelar inscrição"}
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    ) : null}
+    </>
   );
 }
 

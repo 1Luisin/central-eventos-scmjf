@@ -1887,6 +1887,10 @@ textarea {
   animation: modal-card-in 0.24s cubic-bezier(0.22, 0.8, 0.3, 1) both;
 }
 
+.modal-card--confirmation {
+  width: min(100%, 560px);
+}
+
 @keyframes modal-overlay-in {
   from {
     opacity: 0;
@@ -1950,6 +1954,13 @@ textarea {
   gap: 18px;
   padding: 22px 24px 24px;
   overflow-y: auto;
+}
+
+.modal-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .modal-card__section {
