@@ -1,1 +1,28 @@
+# Prevent accidental commits of local secrets and sensitive runtime artifacts.
+# This affects untracked files only; tracked files and history remain visible.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+secrets.local.json
+credentials.local.json
+service-account.local.json
+id_rsa
+id_ed25519
+id_ecdsa
+id_dsa
+*.log
+.vs/
+__pycache__/
+*.pyc
+
 runtime-logs/
+
+# Audited local configuration, internal documentation, or data backups.
+# Listing a tracked path here does not remove it from GitHub.
+/README.MD
+/backend/datasource-local.example.properties
+/backend/datasource-local.properties
+/backend/auth-local.properties
+/backend/mail-local.properties
